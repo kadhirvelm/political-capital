@@ -1,6 +1,6 @@
 var R = require('ramda');
 
-const port = 3003;
+const port = process.env.APP_PORT;
 
 const express = require('express')
 const MongoClient = require('mongodb').MongoClient;
