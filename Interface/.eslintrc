@@ -20,8 +20,6 @@
         "module": 0
     },
     "rules": {
-        "jsx-a11y/href-no-hash": "off",
-        "jsx-a11y/anchor-is-valid": ["warn", { "aspects": ["invalidHref"] }],
         // Possible Errors
         "comma-dangle": [2, "always-multiline"],
         "computed-property-spacing": [2, "never"],
@@ -118,7 +116,7 @@
         "no-shadow-restricted-names": 2,
         "no-undef": 2,
         "no-undef-init": 2,
-        "no-undefined": 2,
+        "no-undefined": 0,
         "no-unused-vars": ["error", { "vars": "all", "args": "after-used", "ignoreRestSiblings": false, "argsIgnorePattern": "event" }],
         "no-use-before-define": 2,
         "no-var": 2,

@@ -305,6 +305,10 @@ function seenEndGameStatus(){
 
 export function changeEndGameStatus(hasSeen){
   return (dispatch) => {
-    hasSeen ? dispatch(seenEndGameStatus()) : dispatch(showEndGameStatus())
+    if(hasSeen){
+      dispatch(seenEndGameStatus())
+    } else {
+      dispatch(showEndGameStatus())
+    }
   }
 }

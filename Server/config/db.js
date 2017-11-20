@@ -1,6 +1,6 @@
-if(process.env.REACT_APP_DEBUG === 'sdlkfh'){
+if(process.env.NODE_ENV === 'development'){
 	module.exports = {
-		url: 'mongodb://192.168.99.100:3002/political_capital'
+		url: process.env.MONGO_URL
 	}
 } else {
 	console.log('Accessing mlab database')
