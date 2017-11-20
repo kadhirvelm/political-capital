@@ -13,7 +13,7 @@ services:
       - MONGO_URL=mongodb://mongo/politicalcapital
       - APP_PORT=3001
     volumes:
-      - ./Server:/server_docker
+      - ./Server/Routes:/server_docker/Routes
     ports:
       - "3001:3001"
     links:
@@ -23,7 +23,7 @@ services:
       context: ./Interface
       dockerfile: Dockerfile
     volumes:
-      - ./Interface:/interface_docker
+      - ./Interface/src:/interface_docker/src
     ports:
       - "3000:3000"
     environment:

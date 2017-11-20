@@ -3,7 +3,7 @@ node_js:
 - "stable"
 os: osx
 env:
-  - REACT_APP_POLITICAL_CAPITAL=http://http://ec2-54-193-47-210.us-west-1.compute.amazonaws.com:3000
+  - REACT_APP_POLITICAL_CAPITAL=http://ec2-54-193-47-210.us-west-1.compute.amazonaws.com:3000
   - REACT_APP_DEBUG=false
 script:
   - npm test
