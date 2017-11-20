@@ -4,11 +4,7 @@
   "description": "",
   "main": "Server.js",
   "scripts": {
-<<<<<<< e706dade1cf0f1bdbf4612164bb36040c46ce92f
-    "test": "echo \"Error: no test specified\" && exit 1",
-=======
     "test": "jest",
->>>>>>> Updated
     "start": "nodemon server.js --legacy-watch --inspect --color=always",
     "build": "babel input.js -o compiled.js"
   },
