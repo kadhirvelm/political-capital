@@ -23,11 +23,10 @@ services:
       context: ./Interface
       dockerfile: Dockerfile
     volumes:
-      - ./Interface:/usr/src/app
+      - ./Interface:/interface_docker
     ports:
       - "3000:3000"
     environment:
       - REACT_APP_POLITICAL_CAPITAL=server:3001
-      - REACT_APP_DEBUG=true
     links:
       - server

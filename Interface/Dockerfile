@@ -1,11 +1,12 @@
 FROM node:latest
 
-RUN mkdir -p /usr/src/app
-ADD . /usr/src/app
-
-WORKDIR /usr/src/app
+# Install app dependencies
+COPY package.json /interface_docker/package.json
 RUN npm install
-RUN npm install --only=dev
+RUN npm install --global react-scripts
 
+COPY . /interface_docker
+
+WORKDIR /interface_docker
 EXPOSE 3000
 CMD [ "npm", "start" ]
