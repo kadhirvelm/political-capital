@@ -7,7 +7,7 @@ env:
   - REACT_APP_DEBUG=false
 script:
   - npm test
-  - if [ $TRAVIS_BRANCH = 'master' ]; then eval "npm install --only=dev"; eval "npm run build"; fi
+  - if [ $TRAVIS_BRANCH = 'master' ]; then eval "npm run install_all --only=dev"; eval "npm run build"; fi
 deploy:
   provider: s3
   access_key_id: AKIAJ5ZBUIJAQAIL2RFQ
