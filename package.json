@@ -6,7 +6,22 @@
   "scripts": {
     "connect": "ssh -i \"Political-Capital.pem\" ubuntu@ec2-54-193-47-210.us-west-1.compute.amazonaws.com",
     "start": "osascript start.scpt",
+    "test": "jest",
+    "build": "cd ./Interface && npm run build",
+    "test_server": "cd ./Server && npm test",
+    "test_interface": "cd ./Interface && npm test",
     "production": "osascript production.scpt"
+  },
+  "jest": {
+    "projects": [
+      "<rootDir>/Interface",
+      "<rootDir>/Server"
+    ],
+    "collectCoverage": false,
+    "collectCoverageFrom":[
+      "**/*.js",
+      "**/node_modules/**"
+    ]
   },
   "repository": {
     "type": "git",
@@ -22,6 +37,7 @@
   "devDependencies": {
     "css-loader": "^0.28.7",
     "file-loader": "^1.1.5",
+    "jest": "^21.2.1",
     "postcss-loader": "^2.0.6",
     "style-loader": "^0.19.0",
     "url-loader": "^0.6.2"
