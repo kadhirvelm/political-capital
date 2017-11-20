@@ -4,9 +4,12 @@ node_js:
 cache:
   directories:
     - node_modules
+env:
+  - REACT_APP_POLITICAL_CAPITAL=http://http://ec2-54-193-47-210.us-west-1.compute.amazonaws.com:3000
+  - REACT_APP_DEBUG=false
 script:
   - npm test
-  - if [ $TRAVIS_BRANCH = 'master' ]; then eval "npm install"; eval "npm run build"; fi
+  - if [ $TRAVIS_BRANCH = 'master' ]; then eval "npm install --dev"; eval "npm run build"; fi
 deploy:
   provider: s3
   access_key_id: AKIAJ5ZBUIJAQAIL2RFQ
