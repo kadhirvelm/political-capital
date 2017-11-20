@@ -1,15 +1,19 @@
 FROM node:latest
 
-RUN mkdir -p /server_docker
+RUN mkdir /install
+COPY package.json /install/package.json
 
+WORKDIR /install
+RUN npm install --verbose
+
+ENV NODE_PATH=/install/node_modules
+
+RUN mkdir /server_docker
 RUN npm install --global nodemon
 
-# Install app dependencies
-COPY package.json /server_docker/package.json
-RUN npm install
-
-COPY . /server_docker
-
 WORKDIR /server_docker
+
+COPY . /server_docker/
+
 EXPOSE 3001
 CMD [ "npm", "start" ]

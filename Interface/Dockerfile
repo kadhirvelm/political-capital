@@ -1,12 +1,17 @@
 FROM node:latest
 
-# Install app dependencies
-COPY package.json /interface_docker/package.json
-RUN npm install
-RUN npm install --global react-scripts
+RUN mkdir /install
+COPY package.json /install/package.json
 
-COPY . /interface_docker
+WORKDIR /install
+RUN npm install --verbose
 
+ENV NODE_PATH=/install/node_modules
+
+RUN mkdir /interface_docker
 WORKDIR /interface_docker
+
+COPY . /interface_docker/
+
 EXPOSE 3000
 CMD [ "npm", "start" ]
