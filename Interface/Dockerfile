@@ -1,13 +1,11 @@
 FROM node:latest
 
-RUN mkdir -p /interface_docker
+RUN mkdir -p /usr/src/app
+ADD . /usr/src/app
 
-# Install app dependencies
-COPY package.json /interface_docker/package.json
+WORKDIR /usr/src/app
 RUN npm install
+RUN npm install --only=dev
 
-COPY . /interface_docker
-
-WORKDIR /interface_docker
 EXPOSE 3000
 CMD [ "npm", "start" ]
