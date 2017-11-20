@@ -1,4 +1,4 @@
-[![Maintainability](https://api.codeclimate.com/v1/badges/cfe92d32241500e40837/maintainability)](https://codeclimate.com/github/kadhirvelm/political-capital/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/cfe92d32241500e40837/test_coverage)](https://codeclimate.com/github/kadhirvelm/political-capital/test_coverage)
+[![Build Status](https://travis-ci.org/kadhirvelm/political-capital.svg?branch=testing)](https://travis-ci.org/kadhirvelm/political-capital) [![Maintainability](https://api.codeclimate.com/v1/badges/cfe92d32241500e40837/maintainability)](https://codeclimate.com/github/kadhirvelm/political-capital/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/cfe92d32241500e40837/test_coverage)](https://codeclimate.com/github/kadhirvelm/political-capital/test_coverage)
 # PoliticalCapital
 
 Start the server with changing directories (cd) into Server and running:
