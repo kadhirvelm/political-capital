@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "connect": "ssh -i \"Political-Capital.pem\" ubuntu@ec2-54-193-47-210.us-west-1.compute.amazonaws.com",
-    "test": "jest --watch",
+    "test": "jest",
     "coverage": "nyc jest",
     "install_all": "npm install && cd ./Interface && npm install && npm install --only=dev",
     "build": "cd ./Interface && npm run build",
