@@ -2,7 +2,6 @@ import $ from 'jquery'
 
 export const FAILED_REQUEST = 'FAILED_REQUEST'
 
-
 export const SET_GAME_TYPE = 'SET_GAME_TYPE'
 export const REMOVE_GAME_TYPE = 'REMOVE_GAME_TYPE'
 
@@ -16,7 +15,6 @@ function setGameType(gameType){
 function removeGameType(){
   return {
     type: REMOVE_GAME_TYPE,
-    gameType: undefined,
   }
 }
 
@@ -41,7 +39,7 @@ function failed(message){
   }
 }
 
-function joinRoomRequest(room){
+function joinRoomRequest(){
   return {
     type: JOIN_ROOM_REQUEST,
     isFetching: true,
@@ -70,6 +68,7 @@ export const SET_PLAYER_NAME_SUCCESS = 'SET_PLAYER_NAME_SUCCESS'
 function setPlayerNameSuccess(playerName){
   return {
     type: SET_PLAYER_NAME_SUCCESS,
+    isFetching: false,
     playerName,
   }
 }
@@ -253,11 +252,11 @@ function createRoomsRequeset(){
   }
 }
 
-function createRoomsSuccess(rooms){
+function createRoomsSuccess(newRoom){
   return {
     type: CREATE_ROOMS_SUCCESS,
     isFetching: false,
-    rooms,
+    newRoom,
   }
 }
 
