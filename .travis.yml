@@ -1,13 +1,17 @@
 language: node_js
 node_js:
-- "stable"
+- stable
 os: osx
 env:
-  - REACT_APP_POLITICAL_CAPITAL=http://ec2-54-193-47-210.us-west-1.compute.amazonaws.com:3000
-  - REACT_APP_DEBUG=false
+- REACT_APP_POLITICAL_CAPITAL=http://ec2-54-193-47-210.us-west-1.compute.amazonaws.com:3000
+- REACT_APP_DEBUG=false
+before_install:
+- openssl aes-256-cbc -K $encrypted_d8e34271f162_key -iv $encrypted_d8e34271f162_iv
+  -in Political-Capital.pem.enc -out Political-Capital.pem -d
 script:
-  - npm test
-  - if [ $TRAVIS_BRANCH = 'master' ]; then eval "npm run install_all"; eval "npm run build"; fi
+- npm test
+- if [ $TRAVIS_BRANCH = 'master' ]; then eval "npm run install_all"; eval "npm run
+  build"; chmod +x ./deploy.sh && ./deploy.sh; fi
 deploy:
   provider: s3
   skip_cleanup: true
@@ -16,6 +20,6 @@ deploy:
   secret_access_key:
     secure: S0YhBjp6wNEozvfPEcrZkNyTEY5Y67GnWWg7kLBSF8MsStQyu4HZns8FEDoL4DQwPbLvIwsL5mXEALw7C7npHfiIPtftQObI1HVPyc26kCsWJVEYxHsS/UHNVEe/tM9ImV40+BhTCqhPCH261rohppfU/EG0Ak8pVe621tP/VZ0z7vBqKeiE4zpa0ImMRRX9+XZsJy5e3ODAAdGH4p+jksw5ntilcja/1a/5ZIiivSoJM4n+2wXfeN34a1zpacHpwg5pOFxFtgFGzxe44eeKTD5aKHoMaioKHazmqdpOjZr2OPMn2ULzsL/6Y3BH/8Nh7nT1b1zgy+wgGppEfla6dHctqpWY7XP7z3irrprMCkOTODH+tCjumTLNokJxLNv1TBPl5vJUwCJZD2BQiLarZtLM5ftlAGUOugZi45Dmhsw0i/rpRJ/qG4pRphDLhcvr5mwHDziFzBEr7nELIVbACCmQ36fda8AS/kX1renr95JOcu+52POuNbGMiytxKUjX2/cRw0x/Zlrh1xmWCPI247uliuB6Z9FEh3Vkk4ol5llU37+8m/cVsDRLIWjSWGlRKNUcBTfcxnLmSmpWuLSJu7UUGH1HIAcen2LYOgsr9EkZkM67BrOhVISzBDoA5SSjVd2dZq2x6CRs7UAFUwy3xx3NgX7p9XmDrrL8CVE/he8=
   bucket: political-capital.resync.games
-  local_dir: "Interface/build"
+  local_dir: Interface/build
   on:
     branch: master

@@ -14,19 +14,23 @@ services:
       - APP_PORT=3001
     volumes:
       - ./Server/Routes:/server_docker/Routes
+      - ./Server/config:/server_docker/config
     ports:
       - "3001:3001"
     links:
       - mongo
   interface:
+    volumes:
+      - ./Interface/src:/interface_docker/src
+    restart: always
     build:
       context: ./Interface
       dockerfile: Dockerfile
-    volumes:
-      - ./Interface/src:/interface_docker/src
     ports:
       - "3000:3000"
+      - "35729:35729"
     environment:
       - REACT_APP_POLITICAL_CAPITAL=server:3001
+      - REACT_APP_DEBUG=true
     links:
       - server
