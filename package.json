@@ -5,13 +5,12 @@
   "main": "index.js",
   "scripts": {
     "connect": "ssh -i \"Political-Capital.pem\" ubuntu@ec2-54-193-47-210.us-west-1.compute.amazonaws.com",
-    "start": "osascript start.scpt",
-    "test": "jest",
+    "test": "jest --watch",
+    "coverage": "nyc jest",
     "install_all": "npm install && cd ./Interface && npm install && npm install --only=dev",
     "build": "cd ./Interface && npm run build",
     "test_server": "cd ./Server && npm test",
-    "test_interface": "cd ./Interface && npm test",
-    "production": "osascript production.scpt"
+    "test_interface": "cd ./Interface && npm test"
   },
   "jest": {
     "projects": [
