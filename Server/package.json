@@ -4,7 +4,8 @@
   "description": "",
   "main": "Server.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --watch --color=always",
+    "jest": "jest --color=always",
     "start": "nodemon server.js --legacy-watch --inspect --color=always",
     "build": "babel input.js -o compiled.js"
   },

@@ -64,8 +64,6 @@ describe('Register components', () => {
     document.location = {}
     document.location.reload = reload
 
-    process.env.REACT_APP_POLITICAL_CAPITAL = 'http://192.168.99.103:3001'
-
     Object.defineProperty(window.location, 'href', {
       writable: true,
       value: 'http://localhost/',
