@@ -8,7 +8,7 @@ before_install:
 - openssl aes-256-cbc -K $encrypted_d8e34271f162_key -iv $encrypted_d8e34271f162_iv
   -in Political-Capital.pem.enc -out Political-Capital.pem -d
 script:
-- npm run install all
+- npm run install_all
 - npm test
 - if [ $TRAVIS_BRANCH = 'master' ]; then eval "npm run build"; chmod +x ./deploy.sh && ./deploy.sh; fi
 deploy:

@@ -202,7 +202,7 @@ class RoomConnection extends Component {
           </Flexbox>
           <Flexbox flexGrow={ 1 } justifyContent='center'>
             <font size={ 3 } style={ { margin: '10px', marginBottom: '10px' } }> <u> Available Games </u> </font>
-            <IconButton onTouchTap={ this.refreshRooms } style={ { width: 36, height: 36 } } iconStyle={ { width: 18, height: 18 } }>
+            <IconButton id='Refresh' onTouchTap={ this.refreshRooms } style={ { width: 36, height: 36 } } iconStyle={ { width: 18, height: 18 } }>
               { svgIcon('refresh', colors.MEDIUM_BLUE) }
             </IconButton>
           </Flexbox>
