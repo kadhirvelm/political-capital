@@ -48,7 +48,9 @@ class RoomConnection extends Component {
     })
   }
 
-  setCurrentRooms = (rooms, callback) => this.setState({ currentRooms: rooms }, callback)
+  setCurrentRooms = (rooms, callback) => {
+    this.setState({ currentRooms: rooms }, callback)
+  }
 
   refreshRooms = () => {
     this.state.dispatch(getCurrentRooms(this.setCurrentRooms))

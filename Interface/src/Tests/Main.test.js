@@ -71,10 +71,11 @@ describe('Register components', () => {
       value: 'http://localhost/',
     })
 
-    mountApplication = (initialEntries) => {
+    mountApplication = (initialEntries, passedProps) => {
+      const finalProps = passedProps || props
       return mount(
         <MemoryRouter initialEntries={ initialEntries }>
-          <Main { ...props } />
+          <Main { ...finalProps } />
         </MemoryRouter>, {
           context: { store: mockStore(political_capital), muiTheme: muiTheme, router: router },
           childContextTypes: { store: PropTypes.object, muiTheme: PropTypes.object, router: PropTypes.object },
@@ -86,6 +87,26 @@ describe('Register components', () => {
     const application = mountApplication()
     expect(application).not.toBeUndefined()
     expect(window.location.href.endsWith('rooms')).toBeTruthy()
+  })
+
+  describe('Testing game', () => {
+    let application
+
+    beforeEach(() => {
+      application = mountApplication([ '/game' ], {
+        serverActions: {
+          connectedRoom: { _id: 'TEST ROOM 1', roomName: 'Sample%20Room', gameType: 'Tutorial', players: [ { TestPlayer: {} } ] },
+          playerName: 'Test Player',
+          playerParty: 0,
+          inGame: true,
+          playerReady: true,
+        },
+      })
+    })
+
+    test('Rendering in game', () => {
+      expect(application).not.toBeUndefined()
+    })
   })
 
   describe('Testing rooms', () => {
@@ -104,11 +125,45 @@ describe('Register components', () => {
     test('Rendering non-empty rooms', () => {
       const getRoomsStub = sinon.stub(ServerActions, 'getCurrentRooms').callsFake((callback) => {
         callback([ { _id: 'TEST ROOM 1', roomName: 'Sample%20Room', gameType: 'Tutorial', players: [ { TestPlayer: {} } ] } ])
+        expect(application).not.toBeUndefined()
       })
       const refreshButton = application.find({ id: 'Refresh' }).hostNodes()
       expect(refreshButton).not.toBeUndefined()
       refreshButton.props().onTouchTap()
       getRoomsStub.restore()
+    })
+  })
+
+  describe('Testing connect', () => {
+    let application
+
+    beforeEach(() => {
+      application = mountApplication([ '/connect' ], {
+        serverActions: {
+          connectedRoom: { _id: 'TEST ROOM 1', roomName: 'Sample%20Room', gameType: 'Tutorial', players: [ { TestPlayer: {} } ] },
+          playerName: 'Test Player',
+          playerParty: 0,
+          inGame: false,
+          playerReady: false,
+        },
+      })
+    })
+
+    test('Rendering connected room', () => {
+      expect(application).not.toBeUndefined()
+    })
+  })
+
+  describe('Testing loading', () => {
+    let application
+
+    beforeEach(() => {
+      application = mountApplication([ '/*' ])
+    })
+
+    test('Viewing loading screen', () => {
+      expect(application).not.toBeUndefined()
+      expect(application.find({ id: 'Loading' }).hostNodes().length).toBe(1)
     })
   })
 })

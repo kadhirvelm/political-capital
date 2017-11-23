@@ -185,7 +185,7 @@ class PoliticalCapitalGame extends Component {
     })
 
     this.state.managingSocket.on('reconnect_error', (reason) => {
-      console.log('Socket reconnect error', reason, this.state.managingSocket)
+      // console.log('Socket reconnect error', reason, this.state.managingSocket)
     })
 
     this.state.managingSocket.on('reconnect_failed', () => {

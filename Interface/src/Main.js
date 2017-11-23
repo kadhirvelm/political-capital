@@ -34,7 +34,6 @@ export class Main extends Component {
       isFetching: props.serverActions.isFetching,
       errorMessage: props.serverActions.message,
       hasSeenTabulation: props.serverActions.hasSeenTabulation,
-      managingSocket: (this.state && this.state.managingSocket) ? this.state.managingSocket : props.serverActions.managingSocket,
       gameType: props.serverActions.gameType || 'Vanilla',
     })
   }
@@ -44,7 +43,7 @@ export class Main extends Component {
   }
 
   joinRoom = (room, socket) => {
-    this.setState({ managingSocket: socket, gameType: room.gameType, connectedRoom: room }, () => {
+    this.setState({ gameType: room.gameType, connectedRoom: room }, () => {
       this.state.dispatch(setRooms(room, socket))
     })
   }
@@ -138,7 +137,7 @@ export class Main extends Component {
 
   renderLoading = () => {
     this.renderCurrentState()
-    return (<div> Routing... </div>)
+    return (<div id='Loading'> Routing... </div>)
   }
 
   render() {
