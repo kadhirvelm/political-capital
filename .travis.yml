@@ -2,6 +2,9 @@ language: node_js
 node_js:
 - stable
 os: osx
+cache:
+  directories:
+    - node_modules
 env:
 - REACT_APP_POLITICAL_CAPITAL=http://ec2-54-193-47-210.us-west-1.compute.amazonaws.com:3000 REACT_APP_DEBUG=false
 before_install:
@@ -9,7 +12,11 @@ before_install:
   -in Political-Capital.pem.enc -out Political-Capital.pem -d
 script:
 - npm run install_all
+- cd ./Interface
+- CI=true npm test
+- cd ../Server
 - npm test
+- cd ..
 - if [ $TRAVIS_BRANCH = 'master' ]; then eval "npm run build"; chmod +x ./deploy.sh && ./deploy.sh; fi
 deploy:
   provider: s3
