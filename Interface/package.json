@@ -31,6 +31,13 @@
     "socket.io": "^2.0.4",
     "underscore": "^1.8.3"
   },
+  "jest": {
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/*.{js}",
+      "src/Main.js"
+    ]
+  },
   "devDependencies": {
     "enzyme": "^3.2.0",
     "enzyme-adapter-react-16": "^1.1.0",
@@ -45,6 +52,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "coverage": "npm test -- --coverage",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   }

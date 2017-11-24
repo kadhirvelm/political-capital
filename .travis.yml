@@ -13,9 +13,9 @@ before_install:
 script:
 - npm run install_all
 - cd ./Interface
-- CI=true npm test
+- npm test -- --coverage
 - cd ../Server
-- npm test
+- npm run jest
 - cd ..
 - if [ $TRAVIS_BRANCH = 'master' ]; then eval "npm run build"; chmod +x ./deploy.sh && ./deploy.sh; fi
 deploy:
