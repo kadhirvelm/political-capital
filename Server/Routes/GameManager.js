@@ -25,28 +25,48 @@ class GameManager {
     this.gameResolutionsAndChange()
   }
 
-  initialGameSettings(){
-    this.settings = this.settings || {
+  setBaseRoundBonuses(){
+    this.positiveBonus = 1
+    this.negativeBonus = 1
+    this.positiveVote = 1
+    this.negativeVote = 1
+  }
+
+  setBaseRoundData(){
+    this.rounds = {}
+    this.players = {}
+    this.parties = {}
+  }
+
+  baseSettings(){
+    return {
       START_SENATORS: 3,
       START_CAPITAL: 60,
       ROUNDS: 10,
       SENATE_TAX: 20,
       WIN: 'Individual',
     }
-    this.inGame = false
-    this.rounds = {}
-    this.players = {}
-    this.parties = {}
-    this.currentRound = 0
-    this.endGame = {}
+  }
+
+  setPartyCards(){
     this.handleThesePartyCards = {}
     this.individualPlayerBonuses = {}
-    this.positiveBonus = 1
-    this.negativeBonus = 1
-    this.positiveVote = 1
-    this.negativeVote = 1
-    this.roundWinner = undefined
     this.currActionsAgainstPlayers = {}
+  }
+
+  setRoundGameStats(){
+    this.roundWinner = undefined
+    this.currentRound = 0
+    this.endGame = {}
+  }
+
+  initialGameSettings(){
+    this.settings = this.settings || baseSettings()
+    this.inGame = false
+    setRoundGameStats()
+    setPartyCards()
+    setBaseRoundData()
+    setBaseRoundBonuses()
   }
 
   gameResolutionsAndChange(){
