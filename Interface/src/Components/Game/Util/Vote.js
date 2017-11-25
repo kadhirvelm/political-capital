@@ -11,30 +11,19 @@ import { curry, forEach } from 'ramda'
 
 import { _ } from 'underscore'
 
-const yes = {
-  color: colors.GREEN,
-  background: '#FFFFFF',
-  borderRadius: '10px',
-  margin: '10px',
-  padding: '15px',
-  height: 100,
-  width: 65,
-  borderWidth: '1px',
-  borderColor: colors.LIGHT_GRAY,
-  borderStyle: 'solid',
-}
-
-const no = {
-  color: colors.RED,
-  background: '#FFFFFF',
-  borderRadius: '10px',
-  margin: '10px',
-  padding: '15px',
-  height: 100,
-  width: 65,
-  borderWidth: '1px',
-  borderColor: colors.LIGHT_GRAY,
-  borderStyle: 'solid',
+const yesNoStyle = (color) => {
+  return {
+    color: color,
+    background: '#FFFFFF',
+    borderRadius: '10px',
+    margin: '10px',
+    padding: '15px',
+    height: 100,
+    width: 65,
+    borderWidth: '1px',
+    borderColor: colors.LIGHT_GRAY,
+    borderStyle: 'solid',
+  }
 }
 
 class Vote extends Component {
@@ -123,7 +112,7 @@ class Vote extends Component {
         <RaisedButton fullWidth={ true } label={ (this.state.disableVote > 0) ? this.state.disableVote : ('Vote ' + this.currentVote().yes + ' yes and ' + this.currentVote().no + ' no') } disabled={ this.state.disableVote > 0 } primary={ true } onTouchTap={ this.handleVote } buttonStyle={ { borderRadius: '15px' } } style={ { borderRadius: '15px' } } />
         <Flexbox justifyContent='center' flexWrap='wrap'>
           { _.values(this.state.votes).map((entry, index) => (
-            <Flexbox style={ entry ? yes : no } key={ index } justifyContent='center' alignItems='center' onTouchTap={ this.curryChangeVote(index) }>
+            <Flexbox style={ entry ? yesNoStyle(colors.GREEN) : yesNoStyle(colors.RED) } key={ index } justifyContent='center' alignItems='center' onTouchTap={ this.curryChangeVote(index) }>
               <font size={ 15 }> { entry ? 'Yes' : 'No' } </font>
             </Flexbox>
           ))

@@ -1,10 +1,8 @@
 import React, { Component } from 'react'
 import Flexbox from 'flexbox-react'
-
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table'
 
-import { colors } from '../../../styles/colors'
-
+import { returnWinner } from './util.js'
 import { _ } from 'underscore'
 
 class DisplayVotes extends Component {
@@ -57,16 +55,12 @@ class DisplayVotes extends Component {
     )
   }
 
-  returnWinner = () => {
-    return this.state.previousRound.roundWinner === 'yes' ? <font color={ colors.GREEN }> Passes </font> : <font color={ colors.RED }> Fails </font>
-  }
-
   render() {
     return (
       <Flexbox flexDirection='column'>
         { !this.state.limit &&
           <Flexbox flexDirection='column' alignItems='center'>
-            <font> { this.returnWinner() } (<font size={ 2 }> Yes: { this.state.previousRound.totalVotes.yes } &nbsp; No: { this.state.previousRound.totalVotes.no } </font>) </font>
+            <font> { returnWinner(this.state) } (<font size={ 2 }> Yes: { this.state.previousRound.totalVotes.yes } &nbsp; No: { this.state.previousRound.totalVotes.no } </font>) </font>
           </Flexbox>
         }
         { this.renderCurrentVotesTable() }

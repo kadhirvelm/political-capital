@@ -9,8 +9,9 @@ import CommonwealthTools from './Tools'
 import { commonwealthAllColors, commonwealthAllColorHexes } from '../../../styles/colors'
 
 class CommonwealthGame extends PoliticalCapitalGame {
+
   resolutionAndChance = () => <CommonwealthResolutionAndChance playerParty={ this.state.playerParty } managingSocket={ this.state.managingSocket } round={ this.state.rounds[this.state.currentRound] } currentRound={ this.state.currentRound } />
-  partyCards = () => <CommonwealthPartyCards id='PartyCards' dispatch={ this.state.dispatch } managingSocket={ this.state.managingSocket } parties={ this.state.parties } round={ this.state.rounds[this.state.currentRound] } playerParty={ this.state.playerParty } playerPartyName={ this.state.playerPartyName } selectedPartyCard={ this.state.selectedPartyCard } />
+  partyCards = () => <CommonwealthPartyCards { ...this.partyCardProps() } />
 
   renderNameAndParty = () => {
     return(
@@ -22,9 +23,7 @@ class CommonwealthGame extends PoliticalCapitalGame {
     )
   }
 
-  renderToolsComponent = () => <CommonwealthTools managingSocket={ this.state.managingSocket } rounds={ this.state.rounds } parties={ this.state.parties } players={ this.state.players } playerName={ this.state.playerName } playerParty={ this.state.playerParty }
-    playerPartyName={ this.state.playerPartyName } connectedRoom={ this.state.connectedRoom } currentRound={ this.state.currentRound }
-    openTryingToDisconnect={ this.openTryingToDisconnect } />
+  renderToolsComponent = () => <CommonwealthTools { ...this.toolsProps() } />
 }
 
 export default CommonwealthGame

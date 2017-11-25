@@ -26,10 +26,10 @@ class GameManager {
   }
 
   setBaseRoundBonuses(){
-    this.positiveBonus = 1
-    this.negativeBonus = 1
-    this.positiveVote = 1
-    this.negativeVote = 1
+    this.passesBonus = 1
+    this.failsBonus = 1
+    this.yesVoteModifier = 1
+    this.noVoteModifier = 1
   }
 
   setBaseRoundData(){
@@ -120,7 +120,7 @@ class GameManager {
   }
 
   updateRoomDetails(){
-    var ObjectID = require('mongodb').ObjectID;
+    var ObjectID = require('mongodb').ObjectID
     const details = { '_id' : new ObjectID(this.roomID) }
     const newRoom = { $set: { inGame: this.inGame, players: this.players, settings: this.settings, admin: this.admin } }
     this.db.collection('rooms').update(details, newRoom, (err, result) => {
@@ -130,25 +130,29 @@ class GameManager {
     })
   }
 
+  setCurrentGameSettingsBasedOnDBSettings(item){
+    this.inGame = item.inGame
+    this.rounds = item.rounds
+    this.players = item.players
+    this.parties = item.parties
+    this.currentRound = item.currentRound
+    this.handleThesePartyCards = item.handleThesePartyCards || (this.rounds && this.rounds[this.currentRound] && this.rounds[this.currentRound].handleThesePartyCards)
+    this.individualPlayerBonuses = item.individualPlayerBonuses || (this.rounds && this.rounds[this.currentRound] && this.rounds[this.currentRound].individualPlayerBonuses)
+    this.passesBonus = item.passesBonus || this.passesBonus
+    this.failsBonus = item.failsBonus || this.failsBonus
+    this.yesVoteModifier = item.yesVoteModifier || this.yesVoteModifier
+    this.noVoteModifier = item.noVoteModifier || this.noVoteModifier
+    this.roundWinner = item.roundWinner || this.roundWinner
+    this.currActionsAgainstPlayers = item.currActionsAgainstPlayers || this.currActionsAgainstPlayers
+    this.endGame = item.endGame || this.endGame
+  }
+
   fetchGameFromDB(){
     this.db.collection('games').findOne({ 'roomID' : this.roomID.toString() }, (error, item) => {
       if(error){
         console.log('Error fetching game', roomID)
       } else if(item) {
-        this.inGame = item.inGame
-        this.rounds = item.rounds
-        this.players = item.players
-        this.parties = item.parties
-        this.currentRound = item.currentRound
-        this.handleThesePartyCards = item.handleThesePartyCards || (this.rounds && this.rounds[this.currentRound] && this.rounds[this.currentRound].handleThesePartyCards)
-        this.individualPlayerBonuses = item.individualPlayerBonuses || (this.rounds && this.rounds[this.currentRound] && this.rounds[this.currentRound].individualPlayerBonuses)
-        this.positiveBonus = item.positiveBonus || this.positiveBonus
-        this.negativeBonus = item.negativeBonus || this.negativeBonus
-        this.positiveVote = item.positiveVote || this.positiveVote
-        this.negativeVote = item.negativeVote || this.negativeVote
-        this.roundWinner = item.roundWinner || this.roundWinner
-        this.currActionsAgainstPlayers = item.currActionsAgainstPlayers || this.currActionsAgainstPlayers
-        this.endGame = item.endGame || this.endGame
+        setCurrentGameSettingsBasedOnDBSettings(item)
       } else if(_.isNull(item)){
         console.log('Creating new game')
         const newGame = { roomID: this.roomID.toString(), players: {}, rounds: {}, parties: {}, currentRound: 0 }
@@ -160,8 +164,8 @@ class GameManager {
   updateGame(){
     const details = { 'roomID': this.roomID.toString() }
     const updatedGame = { roomID: this.roomID.toString(), rounds: this.rounds, players: this.players, parties: this.parties, currentRound: this.currentRound, inGame: this.inGame,
-      handleThesePartyCards: this.handleThesePartyCards, individualPlayerBonuses: this.individualPlayerBonuses, positiveBonus: this.positiveBonus, negativeBonus: this.negativeBonus,
-      positiveVote: this.positiveVote, negativeVote: this.negativeVote, roundWinner: this.roundWinner, currActionsAgainstPlayers: this.currActionsAgainstPlayers, endGame: this.endGame }
+      handleThesePartyCards: this.handleThesePartyCards, individualPlayerBonuses: this.individualPlayerBonuses, passesBonus: this.passesBonus, failsBonus: this.failsBonus,
+      yesVoteModifier: this.yesVoteModifier, noVoteModifier: this.noVoteModifier, roundWinner: this.roundWinner, currActionsAgainstPlayers: this.currActionsAgainstPlayers, endGame: this.endGame }
     this.db.collection('games').update(details, updatedGame, (err, result) => {
       if(err){
         console.log(err)
@@ -204,8 +208,8 @@ class GameManager {
     this.roomSocket.emit('allPlayersReady', R.isEmpty(R.filter( (player) => player.isReady === false, this.players)))
   }
 
-  emitFullGame(){
-    this.roomSocket.emit('receiveFullGame', { parties: this.parties, players: this.players, currentRound: this.currentRound, rounds: this.rounds, settings: this.settings, inGame: this.inGame, endGame: this.endGame })
+  emitFullGame(socket = this.roomSocket){
+    socket.emit('receiveFullGame', { parties: this.parties, players: this.players, currentRound: this.currentRound, rounds: this.rounds, settings: this.settings, inGame: this.inGame, endGame: this.endGame })
   }
 
   checkIfAllPartyNamesSet(){
@@ -217,24 +221,32 @@ class GameManager {
     }
   }
 
+  advanceRoundWithinGameMax(){
+    this.currentRound += 1
+    this.rounds[this.currentRound] = {
+      resolution: this.returnRandomResolution(),
+      chance: this.returnRandomChance(),
+      individualVotes: {},
+      totalVotes: {},
+      partyCards: {},
+      currentRoundStats: this.copyCurrentStats(),
+    }
+    this.roomSocket.emit('nextRound', { rounds: this.rounds, players: this.players, parties: this.parties, currentRound: this.currentRound } )
+    this.updateRoomDetails()
+  }
+
+  setEndGame(){
+    this.currentRound = undefined
+    this.endGame = { rounds: this.rounds, players: this.players, parties: this.parties, finalWinners: this.finalWinners() }
+    this.roomSocket.emit('endGame', this.endGame)
+    this.addToGameHistory(this.endGame)
+  }
+
   advanceRound(maxAdvance){
     if(this.currentRound < (maxAdvance || this.settings.ROUNDS)) {
-      this.currentRound += 1
-      this.rounds[this.currentRound] = {
-        resolution: this.returnRandomResolution(),
-        chance: this.returnRandomChance(),
-        individualVotes: {},
-        totalVotes: {},
-        partyCards: {},
-        currentRoundStats: this.copyCurrentStats(),
-      }
-      this.roomSocket.emit('nextRound', { rounds: this.rounds, players: this.players, parties: this.parties, currentRound: this.currentRound } )
-      this.updateRoomDetails()
+      advanceRoundWithinGameMax()
     } else if(this.currentRound >= this.settings.ROUNDS) {
-      this.currentRound = undefined
-      this.endGame = { rounds: this.rounds, players: this.players, parties: this.parties, finalWinners: this.finalWinners() }
-      this.roomSocket.emit('endGame', this.endGame)
-      this.addToGameHistory(this.endGame)
+      setEndGame()
     }
     this.updateGame()
   }
@@ -288,6 +300,15 @@ class GameManager {
     }
   }
 
+  handleDistributingOrActionablePartyCards(){
+    if(!this.hasTypeOfCard('Nullify') && !this.hasTypeOfCard('Steal') && !this.hasTypeOfCard('Take')){
+      this.beginDistributingCapitalAndSenators()
+      this.advanceRound()
+    } else {
+      this.updateGame()
+    }
+  }
+
   calculateRoundLogic(){
     this.rounds[this.currentRound].changeLogic = {}
     _.each(this.rounds[this.currentRound].chance.effect, (chance) => {
@@ -295,18 +316,14 @@ class GameManager {
     })
 
     this.totalVotes()
+
     R.forEachObjIndexed((roundPartyCard, party) => this.handlePartyCardEffects(roundPartyCard, party), this.rounds[this.currentRound].partyCards)
     this.rounds[this.currentRound].handleThesePartyCards = this.handleThesePartyCards
     this.rounds[this.currentRound].individualPlayerBonuses = this.individualPlayerBonuses
     this.rounds[this.currentRound].actionsAgainstPlayer = this.actionsAgainstPlayers()
     
     this.roomSocket.emit('allVotingFinalized', { rounds: this.rounds, currentRound: this.currentRound })
-    if(!this.hasTypeOfCard('Nullify') && !this.hasTypeOfCard('Steal') && !this.hasTypeOfCard('Take')){
-      this.beginDistributingCapitalAndSenators()
-      this.advanceRound()
-    } else {
-      this.updateGame()
-    }
+    handleDistributingOrActionablePartyCards()
   }
 
   actionsAgainstPlayers(){
@@ -316,10 +333,10 @@ class GameManager {
   }
 
   resetBonusTrackers(){
-    this.positiveBonus = 1
-    this.negativeBonus = 1
-    this.positiveVote = 1
-    this.negativeVote = 1
+    this.passesBonus = 1
+    this.failsBonus = 1
+    this.yesVoteModifier = 1
+    this.noVoteModifier = 1
     this.roundWinner = undefined
     this.individualPlayerBonuses = {}
     this.handleThesePartyCards = {}
@@ -334,54 +351,61 @@ class GameManager {
     this.rounds[this.currentRound].changeLogic[playerName][key] = (this.rounds[this.currentRound].changeLogic[playerName][key] || 0) + amount
   }
 
+  handleGainingAndLosingLogic(amount, changeBaseOnSenators){
+    _.each(_.values(this.players), (player) => {
+      player.politicalCapital += amount * (changeBaseOnSenators ? player.senators : 1)
+      this.changePlayerLogic('chance', player.name, amount)
+    })
+  }
+
   chanceEffect(effect){
     switch(effect){
       case 'Get 20':
-        _.each(_.values(this.players), (player) => {
-          player.politicalCapital += 20
-          this.changePlayerLogic('chance', player.name, 20)
-        })
+        handleGainingAndLosingLogic(20)
         break
       case 'Lose 20':
-        _.each(_.values(this.players), (player) => {
-          player.politicalCapital -= 20
-          this.changePlayerLogic('chance', player.name, -20)
-        })
+        handleGainingAndLosingLogic(-20)
         break
       case 'Lose 10 Senator':
-        _.each(_.values(this.players), (player) => {
-          player.politicalCapital -= (player.senators * 10)
-          this.changePlayerLogic('chance', player.name, -(player.senators * 10))
-        })
+        handleGainingAndLosingLogic(-10, true)
         break
       case 'Get 10 Senator':
-        _.each(_.values(this.players), (player) => {
-          player.politicalCapital += (player.senators * 10)
-          this.changePlayerLogic('chance', player.name, (player.senators * 10))
-        })
+        handleGainingAndLosingLogic(10, true)
         break
       case '2x Everything':
-        this.positiveBonus = 2
-        this.negativeBonus = 2
+        this.passesBonus = 2
+        this.failsBonus = 2
         break
       case '0.5x Everything':
-        this.positiveBonus = 0.5
-        this.negativeBonus = 0.5
+        this.passesBonus = 0.5
+        this.failsBonus = 0.5
         break
       case '2x Positives':
-        this.positiveBonus = 2
+        this.passesBonus = 2
         break
       case '2x Negatives':
-        this.negativeBonus = 2
+        this.failsBonus = 2
         break
       case 'Super Majority Fail':
-        this.positiveVote = 2
+        this.yesVoteModifier = 2
         break
       case 'Super Majority Pass':
-        this.negativeVote = 2
+        this.noVoteModifier = 2
         break
       default:
         break
+    }
+  }
+
+  determineTiedWinner = () => {
+    this.roundWinner = Math.random() > 0.5 ? 'yes' : 'no'
+  }
+
+  determineCurrentRoundWinner(yesTotal, noTotal){
+    if(yesTotal !== noTotal){
+      this.roundWinner = (yesTotal > noTotal) ? 'yes' : 'no'
+    } else {
+      this.determineTiedWinner()
     }
   }
 
@@ -392,37 +416,38 @@ class GameManager {
       totalVotes.no += individualVote.no
     })
     this.rounds[this.currentRound].totalVotes = totalVotes
-    const yesTotal = (totalVotes.yes * this.positiveVote)
-    const noTotal = (totalVotes.no * this.negativeVote)
-    if(yesTotal !== noTotal){
-      this.roundWinner = (yesTotal > noTotal) ? 'yes' : 'no'
-    } else {
-      this.roundWinner = Math.random() > 0.5 ? 'yes' : 'no'
-    }
+    determineCurrentRoundWinner(totalVotes.yes * this.yesVoteModifier, totalVotes.no * this.noVoteModifier)
     this.rounds[this.currentRound].roundWinner = this.roundWinner
+  }
+
+  handleTypedPartyCard(partyObject){
+    _.each(partyObject.players, (playerName) => {
+      if(roundPartyCard.value !== 'Steal'){
+        this.individualPlayerBonuses[this.playerName] = (roundPartyCard.value === '2x') ? { roundBonus: 2, } : { newSenators: 1 }
+      } else {
+        this.handleThesePartyCards[playerName] = 'Steal'
+      }
+    })
+  }
+
+  handleNeutralPartyCard(partyObject){
+    _.each(partyObject.players, (playerName) => {
+      if(roundPartyCard.value === 'Take' || roundPartyCard.value === 'Nullify'){
+        this.handleThesePartyCards[playerName] = (roundPartyCard.value === 'Take') ? 'Take' : 'Nullify'
+      } else if (roundPartyCard.value === 'Get') {
+        this.individualPlayerBonuses[playerName] = { roundBonusFlat: 20 }
+      }
+    })
   }
 
   handlePartyCardEffects(roundPartyCard, party){
     const partyObject = _.first(_.filter(this.parties, function(eachParty) {
       return eachParty.partyName === party
     })) 
-
     if(roundPartyCard.type === this.roundWinner) {
-      _.each(partyObject.players, (playerName) => {
-        if(roundPartyCard.value !== 'Steal'){
-          this.individualPlayerBonuses[this.playerName] = (roundPartyCard.value === '2x') ? { roundBonus: 2, } : { newSenators: 1 }
-        } else {
-          this.handleThesePartyCards[playerName] = 'Steal'
-        }
-      })
+      handleTypedPartyCard(partyObject)
     } else if (roundPartyCard.type === 'neutral'){
-      _.each(partyObject.players, (playerName) => {
-        if(roundPartyCard.value === 'Take' || roundPartyCard.value === 'Nullify'){
-          this.handleThesePartyCards[playerName] = (roundPartyCard.value === 'Take') ? 'Take' : 'Nullify'
-        } else if (roundPartyCard.value === 'Get') {
-          this.individualPlayerBonuses[playerName] = { roundBonusFlat: 20 }
-        }
-      })
+      handleNeutralPartyCard(partyObject)
     }
   }
 
@@ -430,49 +455,54 @@ class GameManager {
     return resolution[this.roundWinner]
   }
 
-  beginDistributingCapitalAndSenators(){
+  handlePoliticalCapitalDistribution(finalResolutionPayout){
     const currentResolution = this.rounds[this.currentRound].resolution
     const yesFavor = this.roundWinner === 'yes' ? 'inFavor' : 'against'
     const noFavor = this.roundWinner === 'no' ? 'inFavor' : 'against'
 
-    const handleIncreaseAndDecrease = (votes, changePlayerName) => {
+    const politicalCapitalYes = votes.yes * (_.isString(finalResolutionPayout[yesFavor]) ? 0 : finalResolutionPayout[yesFavor]) * this.passesBonus * ( yesFavor === 'inFavor' ? ((this.individualPlayerBonuses[changePlayerName] && this.individualPlayerBonuses[changePlayerName].roundBonus) || 1) : 1)
+    const politicalCapitalNo = votes.no * (_.isString(finalResolutionPayout[noFavor]) ? 0 : finalResolutionPayout[noFavor]) * this.failsBonus * ( noFavor === 'inFavor' ? (this.individualPlayerBonuses[changePlayerName].roundBonus || 1) : 1)
+    const politicalCapitalOther = ((this.individualPlayerBonuses[changePlayerName] && this.individualPlayerBonuses[changePlayerName].roundBonusFlat) || 0)
 
-      const finalResolutionPayout = this.currentResolutionPayout(currentResolution, changePlayerName)
-      /** POLITICAL CAPITAL DISTRIBUTION */
-      const politicalCapitalYes = votes.yes * (_.isString(finalResolutionPayout[yesFavor]) ? 0 : finalResolutionPayout[yesFavor]) * this.positiveBonus * ( yesFavor === 'inFavor' ? ((this.individualPlayerBonuses[changePlayerName] && this.individualPlayerBonuses[changePlayerName].roundBonus) || 1) : 1)
-      const politicalCapitalNo = votes.no * (_.isString(finalResolutionPayout[noFavor]) ? 0 : finalResolutionPayout[noFavor]) * this.negativeBonus * ( noFavor === 'inFavor' ? (this.individualPlayerBonuses[changePlayerName].roundBonus || 1) : 1)
-      const politicalCapitalOther = ((this.individualPlayerBonuses[changePlayerName] && this.individualPlayerBonuses[changePlayerName].roundBonusFlat) || 0)
+    this.players[changePlayerName].politicalCapital += politicalCapitalYes + politicalCapitalNo + politicalCapitalOther
+    this.players[changePlayerName].politicalCapital = Math.round(this.players[changePlayerName].politicalCapital)
 
-      this.players[changePlayerName].politicalCapital += politicalCapitalYes + politicalCapitalNo + politicalCapitalOther
-      this.players[changePlayerName].politicalCapital = Math.round(this.players[changePlayerName].politicalCapital)
+    const senatorResolution = (votes.no === 0 ? (_.isString(finalResolutionPayout[yesFavor]) ? ( finalResolutionPayout[yesFavor].startsWith('-') ? -1 * this.failsBonus : 1 * this.passesBonus * ((this.individualPlayerBonuses[changePlayerName] && this.individualPlayerBonuses[changePlayerName].roundBonus) || 1)) : 0): 0)
+     + (votes.yes === 0 ? (_.isString(finalResolutionPayout[noFavor]) ? ( finalResolutionPayout[noFavor].startsWith('-') ? -1 * this.failsBonus : 1 * this.passesBonus * (this.individualPlayerBonuses[changePlayerName].roundBonus || 1)) : 0): 0)
+    const senatorOther = ((this.individualPlayerBonuses[changePlayerName] && this.individualPlayerBonuses[changePlayerName].newSenators) || 0)
+  }
 
-      const senatorResolution = (votes.no === 0 ? (_.isString(finalResolutionPayout[yesFavor]) ? ( finalResolutionPayout[yesFavor].startsWith('-') ? -1 * this.negativeBonus : 1 * this.positiveBonus * ((this.individualPlayerBonuses[changePlayerName] && this.individualPlayerBonuses[changePlayerName].roundBonus) || 1)) : 0): 0)
-       + (votes.yes === 0 ? (_.isString(finalResolutionPayout[noFavor]) ? ( finalResolutionPayout[noFavor].startsWith('-') ? -1 * this.negativeBonus : 1 * this.positiveBonus * (this.individualPlayerBonuses[changePlayerName].roundBonus || 1)) : 0): 0)
-      const senatorOther = ((this.individualPlayerBonuses[changePlayerName] && this.individualPlayerBonuses[changePlayerName].newSenators) || 0)
+  handleSenatorDistribution(){
+    this.players[changePlayerName].senators += senatorResolution + senatorOther
+    this.players[changePlayerName].senators = Math.max(Math.round(this.players[changePlayerName].senators), this.settings.START_SENATORS)
 
-      /** SENATOR DISTRIBUTION */
-      this.players[changePlayerName].senators += senatorResolution + senatorOther 
-      this.players[changePlayerName].senators = Math.max(Math.round(this.players[changePlayerName].senators), this.settings.START_SENATORS) //minimum number of senators
+    this.rounds[this.currentRound].changeLogic[changePlayerName] = _.extend(this.rounds[this.currentRound].changeLogic[changePlayerName] || {},{
+      politicalCapitalYes: politicalCapitalYes, politicalCapitalNo: politicalCapitalNo, politicalCapitalOther: politicalCapitalOther, senatorResolution: Math.round(senatorResolution), senatorOther: Math.round(senatorOther)
+    })
+  }
 
-      this.rounds[this.currentRound].changeLogic[changePlayerName] = _.extend(this.rounds[this.currentRound].changeLogic[changePlayerName] || {},{
-        politicalCapitalYes: politicalCapitalYes, politicalCapitalNo: politicalCapitalNo, politicalCapitalOther: politicalCapitalOther, senatorResolution: Math.round(senatorResolution), senatorOther: Math.round(senatorOther)
-      })
+  handleTaxDeduction(){
+    if(this.currentRound % 2 === 0){
+      const numSenatorsPaidOff = (this.players[changePlayerName].politicalCapital - (this.players[changePlayerName].politicalCapital % this.settings.SENATE_TAX))/this.settings.SENATE_TAX
+      
+      const totalSenatorsForTax = Math.min(this.players[changePlayerName].senators, Math.max(Math.round(numSenatorsPaidOff), 3))
+      const totalSenatorTax = Math.min(this.players[changePlayerName].senators, Math.max(Math.round(numSenatorsPaidOff), 3)) * -this.settings.SENATE_TAX
 
-      /** SENATE TAX DEDUCTION */
-      if(this.currentRound % 2 === 0){
-        const numSenatorsPaidOff = (this.players[changePlayerName].politicalCapital - (this.players[changePlayerName].politicalCapital % this.settings.SENATE_TAX))/this.settings.SENATE_TAX
-        
-        const totalSenatorsForTax = Math.min(this.players[changePlayerName].senators, Math.max(Math.round(numSenatorsPaidOff), 3))
-        const totalSenatorTax = Math.min(this.players[changePlayerName].senators, Math.max(Math.round(numSenatorsPaidOff), 3)) * -this.settings.SENATE_TAX
+      this.rounds[this.currentRound].changeLogic[changePlayerName].totalSenatorsForTax = totalSenatorsForTax
+      this.rounds[this.currentRound].changeLogic[changePlayerName].totalSenatorTax = totalSenatorTax
 
-        this.rounds[this.currentRound].changeLogic[changePlayerName].totalSenatorsForTax = totalSenatorsForTax
-        this.rounds[this.currentRound].changeLogic[changePlayerName].totalSenatorTax = totalSenatorTax
-
-        this.players[changePlayerName].senators = (numSenatorsPaidOff >= this.players[changePlayerName].senators) ? this.players[changePlayerName].senators : Math.max(Math.round(numSenatorsPaidOff), 3)
-        this.players[changePlayerName].politicalCapital -= this.players[changePlayerName].senators * this.settings.SENATE_TAX
-      }
+      this.players[changePlayerName].senators = (numSenatorsPaidOff >= this.players[changePlayerName].senators) ? this.players[changePlayerName].senators : Math.max(Math.round(numSenatorsPaidOff), 3)
+      this.players[changePlayerName].politicalCapital -= this.players[changePlayerName].senators * this.settings.SENATE_TAX
     }
+  }
 
+  beginDistributingCapitalAndSenators(){
+    const handleIncreaseAndDecrease = (votes, changePlayerName) => {
+      const finalResolutionPayout = this.currentResolutionPayout(currentResolution, changePlayerName)
+      handlePoliticalCapitalDistribution(finalResolutionPayout)
+      handleSenatorDistribution()
+      handleTaxDeduction()
+    }
     R.forEachObjIndexed( handleIncreaseAndDecrease, this.rounds[this.currentRound].individualVotes)
   }
 
@@ -516,7 +546,7 @@ class GameManager {
       return !_.isUndefined(outputProps)
     } catch(e){
       console.log('Error object', object, property)
-      return false 
+      return false
     }
   }
 
@@ -524,111 +554,112 @@ class GameManager {
     return { yes: ['2x', 'Steal', 'Senator'], no: ['2x', 'Steal', 'Senator'], neutral: ['Get', 'Take', 'None', 'Nullify'] }
   }
 
+  /**
+   * Handle all individual player socket connections
+   */
+
   handleRoomSocketConnection(){
     this.roomSocket.on('connection', (socket) => {
       this.handleSocketCallback(socket)
     })
   }
 
-  handleSocketCallback(socket){
-    socket.on('getFullGame', () =>  {
-      socket.emit('receiveFullGame', { parties: this.parties, players: this.players, currentRound: this.currentRound, rounds: this.rounds, settings: this.settings, inGame: this.inGame, endGame: this.endGame })
-    })
+  finalizePartyCardLogic = (partyCard) => {
+    const playerParty = this.players[playerName].party
+    const party = this.parties[playerParty]
+    party.partyCards[partyCard.type] = _.without(party.partyCards[partyCard.type], partyCard.value)
+    this.rounds[this.currentRound].partyCards[party.partyName] = partyCard
+    this.roomSocket.to(playerParty).emit('finalizePartyCard', this.rounds)
+    this.emitFullGame()
+    this.checkIfAllPartyCardsSet()
+  }
 
-    /** GAME INITIATION. */
-
-    var playerName = ''
-
-    socket.on('newPlayer', (newPlayer) => {
-      playerName = newPlayer.toString()
-      if(!_.contains(_.keys(this.players), newPlayer)){
-        this.players[playerName.toString()] = { name: newPlayer, isReady: false }
-      }
-      this.updateAllPlayers()
-      this.updateRoomDetails()
-    })
-
-    socket.on('disconnect', (reason) => {
-      console.log('Disconnected', playerName, this.namespace, reason)
-    })
-
-    socket.on('leaveRoom', () => {
-      if(this.players[playerName] && this.players[playerName].party && this.parties && this.parties[this.players[playerName].party] && this.parties[this.players[playerName].party].players){
-        if(this.parties[this.players[playerName].party].players.length === 1){
-          this.parties = _.omit(this.parties, this.players[playerName].party)
-        } else {
-          this.parties = _.reject(this.parties[this.players[playerName].party].players, (player) => player === playerName)
+  handlePartyCards(socket, playerName){
+    socket.on('getPartyCards', () => {
+      if(this.catchObjectErrors(this.players, playerName)){
+        const playerParty = this.players[playerName] && this.players[playerName].party
+        const party = this.parties ? this.parties[playerParty] : { partyName: '' }
+        if(!_.isUndefined(party) && this.currentRound){
+          const selectedPartyCard = ( this.rounds[this.currentRound] ? this.rounds[this.currentRound].partyCards[party.partyName] : {})
+          socket.emit('receivePartyCards', { parties: this.parties, selectedPartyCard: selectedPartyCard } )
         }
       }
-      this.players = _.omit(this.players, playerName)
-      if(playerName === this.admin && _.keys(this.players).length > 0){
-        this.updateAdmin(_.sample(_.values(this.players)).name)
+    })
+    socket.on('selectPartyCard', (partyCard) => {
+      if(this.catchObjectErrors(this.players, playerName)){
+        const playerParty = this.players[playerName].party
+        this.roomSocket.to(playerParty).emit('selectPartyCard', partyCard)
       }
+    })
+    socket.on('finalizePartyCard', (partyCard) => {
+      if(this.catchObjectErrors(this.players, playerName)){
+        finalizePartyCardLogic(partyCard)
+      }
+    })
+  }
 
-      if (_.keys(this.players).length <= 1 && this.inGame){
-        this.setInGame(false)
-        this.roomSocket.emit('closeGame')
-        this.deleteRoom(this.roomID)
-      } else {
-        this.emitFullGame()
-        this.checkDeleteRoom()
-        this.updateRoomDetails()
+  handleVoteAndActionRecording(socket, playerName){
+    socket.on('vote', (vote) => {
+      if(this.currentRound && playerName){
+        this.rounds[this.currentRound].individualVotes[playerName] = vote
+        this.updateGameVote()
       }
     })
 
-    socket.on('closeGame', () =>  {
-      this.setInGame(false)
-      this.roomSocket.emit('closeGame')
-      this.deleteRoom(this.roomID)
+    socket.on('recordAction', (action) => {
+      this.roomSocket.emit('actionsAgainstPlayers', _.extend(action, { fromPlayer: playerName }))
+    })
+  }
+
+  handlePartyCardActions(socket, playerName){
+    socket.on('Nullify', (toPlayer) => {
+      if(this.currentRound){
+        this.rounds[this.currentRound].individualPlayerBonuses[toPlayer] = { roundBonus: 1, newSenators: 0, roundBonusFlat: 0 }
+        this.rounds[this.currentRound].handleThesePartyCards = _.omit(this.rounds[this.currentRound].handleThesePartyCards, toPlayer)
+        this.removeFromHandleThesePartyCards(playerName)
+      }
     })
 
-    function clearSocketRooms(socket, partyNumber){ // needs to be an independent context in order to properly remove from rooms
-      _.each(_.values(socket.rooms), (room) => {
-        if(room !== socket.id && room !== partyNumber) {
-          socket.leave(room)
-        }
-      })
+    stealAndTakeLogic = (amount, fromPlayer) => {
+      this.transferFromPlayer(amount, fromPlayer, playerName)
+      
+      this.changePlayerLogic('steal', fromPlayer, -amount)
+      this.changePlayerLogic('steal', playerName, amount)
+
+      this.removeFromHandleThesePartyCards(playerName)
     }
 
-    socket.on('identifyPlayer', (name, partyNumber, partyName) => {
-      if(name){
-        playerName = name.toString()
-        if(partyNumber && !_.contains(_.keys(socket.rooms), partyNumber)){
-          clearSocketRooms(socket, partyNumber)
-          socket.join(partyNumber)
-        }
-      }
-
-      this.emitFullGame()
-    })
-
-    socket.on('adjustSettings', (settings) => {
-      if(playerName === this.admin){
-        this.adjustSettings(settings)
+    socket.on('Steal', (fromPlayer) => {
+      if(this.catchObjectErrors(this.players, playerName) && this.catchObjectErrors(this.players, fromPlayer)){
+        stealAndTakeLogic(this.players[fromPlayer].senators * 5, fromPlayer)
       }
     })
 
-    socket.on('playerColorSelected', (item) => {
-      this.roomSocket.emit('playerColorSelected', item)
+    socket.on('Take', (fromPlayer) => {
+      if(this.catchObjectErrors(this.players, playerName) && this.catchObjectErrors(this.players, fromPlayer)){
+        stealAndTakeLogic(20, fromPlayer)
+      }
+    })
+  }
+
+  handleGameMechanics(socket, playerName){
+    socket.on('getCurrentRoundDetails', () => {
+      socket.emit('updateCurrentRoundDetails', { currentRound: this.currentRound, rounds: this.rounds })
     })
 
-    socket.on('startGame', () => {
-      if(playerName === this.admin){
-        this.inGame = true
-        this.roomSocket.emit('startGame')
-        this.updateGame()
+    socket.on('transferToPlayer', (amount, toPlayer) => {     
+      if(this.catchObjectErrors(this.players, playerName) && this.catchObjectErrors(this.players, toPlayer)){
+        this.transferFromPlayer(amount, playerName, toPlayer)
+        this.roomSocket.emit('bribeSentOut', amount)
       }
     })
 
-    socket.on('playerReady', (name, party) => {
-      playerName = name.toString()
-      this.players[name] = { name: name, party: party, isReady: true, politicalCapital: this.settings.START_CAPITAL, senators: this.settings.START_SENATORS }
-      clearSocketRooms(socket, party)
-      socket.join(party)
+    handlePartyCards(socket, playerName)
+    handlePartyCardActions(socket, playerName)
+    handleVoteAndActionRecording(socket, playerName)
+  }
 
-      this.updateAllPlayers()
-    })
-
+  handlePartyNameLogic(socket, playerName){
     socket.on('setPartyName', (name) => {
       if(this.catchObjectErrors(this.players, playerName)){
         const playerParty = this.players[playerName].party
@@ -659,108 +690,132 @@ class GameManager {
         this.checkIfAllPartyNamesSet()
       }
     })
+  }
 
-    /** END GAME INITIATION. */
-
-    /** GAME MECHANICS. */
-
-    socket.on('getCurrentRoundDetails', () => {
-      socket.emit('updateCurrentRoundDetails', { currentRound: this.currentRound, rounds: this.rounds })
+  clearSocketRooms(socket, partyNumber){ // needs to be an independent context in order to properly remove from rooms
+    _.each(_.values(socket.rooms), (room) => {
+      if(room !== socket.id && room !== partyNumber) {
+        socket.leave(room)
+      }
     })
+  }
 
-    socket.on('getPartyCards', () => {
-      if(this.catchObjectErrors(this.players, playerName)){
-        const playerParty = this.players[playerName] && this.players[playerName].party
-        const party = this.parties ? this.parties[playerParty] : { partyName: '' }
-        if(!_.isUndefined(party) && this.currentRound){
-          const selectedPartyCard = ( this.rounds[this.currentRound] ? this.rounds[this.currentRound].partyCards[party.partyName] : {})
-          socket.emit('receivePartyCards', { parties: this.parties, selectedPartyCard: selectedPartyCard } )
-        }
+  handleIdentifyingPlayerLogic = (name, partyNumber, partyName) => {
+    if(name){
+      playerName = name.toString()
+      if(partyNumber && !_.contains(_.keys(socket.rooms), partyNumber)){
+        clearSocketRooms(socket, partyNumber)
+        socket.join(partyNumber)
+      }
+    }
+    this.emitFullGame()
+  }
+
+  handleIndividualPlayerSettings(socket, playerName){
+    socket.on('identifyPlayer', handleIdentifyingPlayerLogic)
+
+    socket.on('adjustSettings', (settings) => {
+      if(playerName === this.admin){
+        this.adjustSettings(settings)
       }
     })
 
-    socket.on('selectPartyCard', (partyCard) => {
-      if(this.catchObjectErrors(this.players, playerName)){
-        const playerParty = this.players[playerName].party
-        this.roomSocket.to(playerParty).emit('selectPartyCard', partyCard)
+    socket.on('playerColorSelected', (item) => {
+      this.roomSocket.emit('playerColorSelected', item)
+    })
+
+    socket.on('playerReady', (name, party) => {
+      playerName = name.toString()
+      this.players[name] = { name: name, party: party, isReady: true, politicalCapital: this.settings.START_CAPITAL, senators: this.settings.START_SENATORS }
+      clearSocketRooms(socket, party)
+      socket.join(party)
+      this.updateAllPlayers()
+    })
+  }
+
+  omitPlayerFromParty = (socket, playerName) => {
+    if(this.players[playerName] && this.players[playerName].party && this.parties && this.parties[this.players[playerName].party] && this.parties[this.players[playerName].party].players){
+      if(this.parties[this.players[playerName].party].players.length === 1){
+        this.parties = _.omit(this.parties, this.players[playerName].party)
+      } else {
+        this.parties = _.reject(this.parties[this.players[playerName].party].players, (player) => player === playerName)
+      }
+    }
+  }
+
+  updateAdminIfNeeded = (socket, playerName) => {
+    if(playerName === this.admin && _.keys(this.players).length > 0){
+      this.updateAdmin(_.sample(_.values(this.players)).name)
+    }
+  }
+
+  endGameIfNotEnoughPlayers = (socket, playerName) => {
+    this.setInGame(false)
+    this.roomSocket.emit('closeGame')
+    this.deleteRoom(this.roomID)
+  }
+
+  updateAllPlayers = (socket, playerName) => {
+    this.emitFullGame()
+    this.checkDeleteRoom()
+    this.updateRoomDetails()
+  }
+
+  handlePlayerLeavingRoom(socket, playerName){
+    socket.on('leaveRoom', () => {
+      omitPlayerFromParty(socket, playerName)
+      this.players = _.omit(this.players, playerName)
+      updateAdminIfNeeded(socket, playerName)
+      if (_.keys(this.players).length <= 1 && this.inGame){
+        endGameIfNotEnoughPlayers(socket, playerName)
+      } else {
+        updateAllPlayers(socket, playerName)
       }
     })
+  }
 
-    socket.on('finalizePartyCard', (partyCard) => {
-      if(this.catchObjectErrors(this.players, playerName)){
-        const playerParty = this.players[playerName].party
-        const party = this.parties[playerParty]
-        party.partyCards[partyCard.type] = _.without(party.partyCards[partyCard.type], partyCard.value)
-        this.rounds[this.currentRound].partyCards[party.partyName] = partyCard
-        this.roomSocket.to(playerParty).emit('finalizePartyCard', this.rounds)
-        this.emitFullGame()
-        this.checkIfAllPartyCardsSet()
+  handleStartingAndClosingGame(socket, playerName){
+    socket.on('closeGame', () =>  {
+      endGameIfNotEnoughPlayers(socket, playerName)
+    })
+
+    socket.on('startGame', () => {
+      if(playerName === this.admin){
+        this.inGame = true
+        this.roomSocket.emit('startGame')
+        this.updateGame()
       }
     })
+  }
 
-    socket.on('vote', (vote) => {
-      if(this.currentRound && playerName){
-        this.rounds[this.currentRound].individualVotes[playerName] = vote
-        this.updateGameVote()
+  handleSocketCallback(socket){
+    socket.on('getFullGame', () =>  {
+      emitFullGame(socket)
+    })
+
+    var playerName = ''
+
+    socket.on('newPlayer', (newPlayer) => {
+      playerName = newPlayer.toString()
+      if(!_.contains(_.keys(this.players), newPlayer)){
+        this.players[playerName.toString()] = { name: newPlayer, isReady: false }
       }
+      this.updateAllPlayers()
+      this.updateRoomDetails()
     })
 
-    socket.on('recordAction', (action) => {
-      this.roomSocket.emit('actionsAgainstPlayers', _.extend(action, { fromPlayer: playerName }))
+    socket.on('disconnect', (reason) => {
+      console.log('Disconnected', playerName, this.namespace, reason)
     })
 
-    socket.on('Nullify', (toPlayer) => {
-      if(this.currentRound){
-        this.rounds[this.currentRound].individualPlayerBonuses[toPlayer] = { roundBonus: 1, newSenators: 0, roundBonusFlat: 0 }
-        this.rounds[this.currentRound].handleThesePartyCards = _.omit(this.rounds[this.currentRound].handleThesePartyCards, toPlayer)
-        this.removeFromHandleThesePartyCards(playerName)
-      }
-    })
-
-    socket.on('Steal', (fromPlayer) => {
-      if(this.catchObjectErrors(this.players, playerName) && this.catchObjectErrors(this.players, fromPlayer)){
-        this.transferFromPlayer(this.players[fromPlayer].senators * 5, fromPlayer, playerName)
-
-        this.changePlayerLogic('steal', fromPlayer, -this.players[fromPlayer].senators * 5)
-        this.changePlayerLogic('steal', playerName, this.players[fromPlayer].senators * 5)
-
-        this.removeFromHandleThesePartyCards(playerName)
-      }
-    })
-
-    socket.on('Take', (fromPlayer) => {
-      if(this.catchObjectErrors(this.players, playerName) && this.catchObjectErrors(this.players, fromPlayer)){
-        this.transferFromPlayer(20, fromPlayer, playerName)
-
-        this.changePlayerLogic('steal', fromPlayer, -20)
-        this.changePlayerLogic('steal', playerName, 20)
-
-        this.removeFromHandleThesePartyCards(playerName)
-      }
-    })
-
-    socket.on('transferToPlayer', (amount, toPlayer) => {     
-      if(this.catchObjectErrors(this.players, playerName) && this.catchObjectErrors(this.players, toPlayer)){
-        this.transferFromPlayer(amount, playerName, toPlayer)
-        this.roomSocket.emit('bribeSentOut', amount)
-      }
-    })
+    handleStartingAndClosingGame(socket, playerName)
+    handlePlayerLeavingRoom(socket, playerName)
+    handleIndividualPlayerSettings(socket, playerName)
+    handlePartyNameLogic(socket, playerName)
+    handleGameMechanics(socket, playerName)
   }
 }
 
 GameManager.prototype.id = function() {
-	return this.namespace.hashCode();
+	return this.namespace.hashCode()
 }
-
-String.prototype.hashCode = function() {
-  var hash = 0, i, chr;
-  if (this.length === 0) return hash;
-  for (i = 0; i < this.length; i++) {
-    chr   = this.charCodeAt(i);
-    hash  = ((hash << 5) - hash) + chr;
-    hash |= 0; // Convert to 32bit integer
-  }
-  return hash;
-};
-
-module.exports = GameManager;

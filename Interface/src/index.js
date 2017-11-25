@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import Main from './Main'
-import GameOverview from './Components/GameOverviewScreen'
+import GameOverview from './Components/OutsideGame/GameOverviewScreen'
 import './styles/global.css'
 
 import { createStore, applyMiddleware } from 'redux'
@@ -68,3 +68,9 @@ ReactDOM.render((
   </Provider>),
 document.getElementById('root')
 )
+
+// eslint-disable-next-line
+String.prototype.replaceAll = function(str1, str2, ignore) {
+  // eslint-disable-next-line
+  return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g,"\\$&"),(ignore?"gi":"g")),(typeof(str2)=="string")?str2.replace(/\$/g,"$$$$"):str2);
+}
