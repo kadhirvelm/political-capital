@@ -69,6 +69,8 @@ describe('Register components', () => {
       value: 'http://localhost/',
     })
 
+    process.env.REACT_APP_POLITICAL_CAPITAL = process.env.REACT_APP_POLITICAL_CAPITAL || 'http://ec2-54-193-47-210.us-west-1.compute.amazonaws.com:3000'
+
     mountApplication = (initialEntries, passedProps) => {
       const finalProps = passedProps || props
       return mount(

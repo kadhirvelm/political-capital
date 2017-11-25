@@ -2,8 +2,8 @@ import React, { Component } from 'react'
 import Flexbox from 'flexbox-react'
 import { Link } from 'react-router-dom'
 
-import { colors, allColors, allColorHexes } from '../styles/colors'
-import { svgIcon } from '../Images/icons'
+import { colors, allColors, allColorHexes } from '../../styles/colors'
+import { svgIcon } from '../../Images/icons'
 
 import RaisedButton from 'material-ui/RaisedButton'
 import TextField from 'material-ui/TextField'
@@ -15,7 +15,7 @@ import { values, sortWith, ascend, prop, match, curry, assoc } from 'ramda'
 
 import { _ } from 'underscore'
 
-import { setPlayerName, readyUp, inGame, setRooms } from '../State/ServerActions'
+import { setPlayerName, readyUp, inGame, setRooms } from '../../State/ServerActions'
 
 const io = require('socket.io-client')
 

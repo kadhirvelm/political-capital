@@ -1,5 +1,5 @@
 import React from 'react'
-import PoliticalCapitalGame from '../PoliticalCapitalGame'
+import PoliticalCapitalGame from '../Game'
 import Flexbox from 'flexbox-react'
 
 import CommonwealthResolutionAndChance from './ResolutionAndChance'

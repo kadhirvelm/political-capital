@@ -15,10 +15,10 @@ import {
   StepLabel,
 } from 'material-ui/Stepper'
 
-import { getCurrentRooms, createNewRoom, getSpecificRoom, setPlayerName } from '../State/ServerActions'
+import { getCurrentRooms, createNewRoom, getSpecificRoom, setPlayerName } from '../../State/ServerActions'
 
-import { colors } from '../styles/colors'
-import { svgIcon } from '../Images/icons'
+import { colors } from '../../styles/colors'
+import { svgIcon } from '../../Images/icons'
 import { curry } from 'ramda'
 
 import { _ } from 'underscore'

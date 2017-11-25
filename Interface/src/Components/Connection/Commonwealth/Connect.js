@@ -1,7 +1,7 @@
 import React from 'react'
 import Flexbox from 'flexbox-react'
 
-import PoliticalCapitalConnect from '../PoliticalCapitalConnect'
+import PoliticalCapitalConnect from '../Connect'
 import { commonwealthAllColors, commonwealthAllColorHexes, colors } from '../../../styles/colors'
 
 import RaisedButton from 'material-ui/RaisedButton'
