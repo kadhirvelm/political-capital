@@ -397,7 +397,7 @@ class GameManager {
     }
   }
 
-  determineTiedWinner = () => {
+  determineTiedWinner(){
     this.roundWinner = Math.random() > 0.5 ? 'yes' : 'no'
   }
 
