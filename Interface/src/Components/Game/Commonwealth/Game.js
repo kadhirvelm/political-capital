@@ -1,12 +1,12 @@
 import React from 'react'
-import PoliticalCapitalGame from '../PoliticalCapitalGame'
+import PoliticalCapitalGame from '../Game'
 import Flexbox from 'flexbox-react'
 
-import CommonwealthResolutionAndChance from './CommonwealthResolutionAndChance'
-import CommonwealthPartyCards from './CommonwealthPartyCards'
-import CommonwealthTools from './CommonwealthTools'
+import CommonwealthResolutionAndChance from './ResolutionAndChance'
+import CommonwealthPartyCards from './PartyCards'
+import CommonwealthTools from './Tools'
 
-import { commonwealthAllColors, commonwealthAllColorHexes } from '../../styles/colors'
+import { commonwealthAllColors, commonwealthAllColorHexes } from '../../../styles/colors'
 
 class CommonwealthGame extends PoliticalCapitalGame {
   resolutionAndChance = () => <CommonwealthResolutionAndChance playerParty={ this.state.playerParty } managingSocket={ this.state.managingSocket } round={ this.state.rounds[this.state.currentRound] } currentRound={ this.state.currentRound } />

@@ -1,11 +1,11 @@
 import React, { Component } from 'react'
 import Flexbox from 'flexbox-react'
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group'
-import '../styles/Transitions.css'
+import '../../styles/Transitions.css'
 
 import RaisedButton from 'material-ui/RaisedButton'
 
-import { colors } from '../styles/colors'
+import { colors } from '../../styles/colors'
 
 import { _ } from 'underscore'
 
@@ -128,7 +128,6 @@ class PartyCards extends Component {
   }
 
   selectCard = (entry, event) => {
-    console.log('Emitting', this.state.managingSocket, entry)
     if(_.isEqual(this.state.selectedPartyCard, entry)){
       this.state.managingSocket.emit('selectPartyCard')
     } else {
@@ -179,7 +178,55 @@ class PartyCards extends Component {
     return string.length > 20 ? string.substring(0, 20) + '...' : string
   }
 
-  renderSelectPartyCardFor = () => <font> Select party card for { this.cut(this.state.playerPartyName) || '' } </font>
+  renderHasSelectedCard = () => {
+    return(
+      <RaisedButton backgroundColor={ this.color(this.state.selectedPartyCard.type) } style={ { width: '75%', position: 'fixed', right: '10px', bottom: '10px' } }
+        label={'Select: ' + this.translate(this.state.selectedPartyCard.type) + ' - ' + this.state.selectedPartyCard.value } onTouchTap={ this.handleFinalSelection }
+        labelColor={ this.state.selectedPartyCard.type === 'neutral' ? '#000000' : '#FFFFFF' } />
+    )
+  }
+
+  renderHasNotSelectedPartyCardLabel = () => {
+    return(
+      <Flexbox justifyContent='center'>
+        <font> Select party card for { this.cut(this.state.playerPartyName) || '' } </font>
+      </Flexbox>
+    )
+  }
+
+  renderHasSelectedCard = () => {
+    return(
+      <Flexbox key='Collecting' flexGrow={ 1 } flexDirection='column' alignItems='center'>
+        <font> Collecting Party Cards ( { _.keys(this.state.round.partyCards).length } / { _.keys(this.state.parties).length } ) </font>
+        <Flexbox flexGrow={ 1 } style={ selectedPartyStyle }> { this.valueBonus(this.state.round.partyCards[this.state.playerPartyName].value, this.state.round.partyCards[this.state.playerPartyName].type) } </Flexbox>
+      </Flexbox>
+    )
+  }
+
+  renderAvailablePartyCardsTable = () => {
+    return(
+      <Flexbox flexGrow={ 1 } flexDirection='row' justifyContent='space-around' flexWrap='wrap'>
+        { this.state.availablePartyCards.map((entry, index) => (
+          <Flexbox key={ index } flexDirection='column' style={ _.isEqual(this.state.selectedPartyCard, entry) ? selectedPartyStyle : basePartyStyle } onClick={ this.currySelectCard(entry) }>
+            <Flexbox justifyContent='center'>
+              <font size={ 4 }> Party Card </font>
+            </Flexbox>
+            <Flexbox flexGrow={ 1 }> { this.valueBonus(entry.value, entry.type) } </Flexbox>
+          </Flexbox>
+        ))
+        }
+      </Flexbox>
+    )
+  }
+
+  renderIsSelectingPartyCard = () => {
+    return(
+      <Flexbox key='Selecting' flexDirection='column' alignItems='center'>
+        { !_.isEmpty(this.state.selectedPartyCard) ? this.renderHasSelectedCard() : this.renderHasNotSelectedPartyCardLabel() }
+        { this.state.availablePartyCards && this.renderAvailablePartyCardsTable() }
+      </Flexbox>
+    )
+  }
 
   render() {
     return (
@@ -189,36 +236,7 @@ class PartyCards extends Component {
           transitionEnterTimeout={ 500 }
           transitionLeaveTimeout={ 500 }
         >
-          { this.hasFinalizedCardSelection() ?
-            <Flexbox key='Collecting' flexGrow={ 1 } flexDirection='column' alignItems='center'>
-              <font> Collecting Party Cards ( { _.keys(this.state.round.partyCards).length } / { _.keys(this.state.parties).length } ) </font>
-              <Flexbox flexGrow={ 1 } style={ selectedPartyStyle }> { this.valueBonus(this.state.round.partyCards[this.state.playerPartyName].value, this.state.round.partyCards[this.state.playerPartyName].type) } </Flexbox>
-            </Flexbox>
-            :
-            <Flexbox key='Selecting' flexDirection='column' alignItems='center'>
-              { !_.isEmpty(this.state.selectedPartyCard) ?
-                <RaisedButton backgroundColor={ this.color(this.state.selectedPartyCard.type) } style={ { width: '75%', position: 'fixed', right: '10px', bottom: '10px' } }
-                  label={'Select: ' + this.translate(this.state.selectedPartyCard.type) + ' - ' + this.state.selectedPartyCard.value } onTouchTap={ this.handleFinalSelection } labelColor={ this.state.selectedPartyCard.type === 'neutral' ? '#000000' : '#FFFFFF' } />
-                :
-                <Flexbox justifyContent='center'>
-                  { this.renderSelectPartyCardFor() }
-                </Flexbox>
-              }
-              { this.state.availablePartyCards &&
-              <Flexbox flexGrow={ 1 } flexDirection='row' justifyContent='space-around' flexWrap='wrap'>
-                { this.state.availablePartyCards.map((entry, index) => (
-                  <Flexbox key={ index } flexDirection='column' style={ _.isEqual(this.state.selectedPartyCard, entry) ? selectedPartyStyle : basePartyStyle } onClick={ this.currySelectCard(entry) }>
-                    <Flexbox justifyContent='center'>
-                      <font size={ 4 }> Party Card </font>
-                    </Flexbox>
-                    <Flexbox flexGrow={ 1 }> { this.valueBonus(entry.value, entry.type) } </Flexbox>
-                  </Flexbox>
-                ))
-                }
-              </Flexbox>
-              }
-            </Flexbox>
-          }
+          { this.hasFinalizedCardSelection() ? this.renderHasSelectedCard() : this.renderIsSelectingPartyCard() }
         </ReactCSSTransitionGroup>
       </Flexbox>
     )

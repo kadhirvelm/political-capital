@@ -1,13 +1,13 @@
 import React from 'react'
 import Flexbox from 'flexbox-react'
 
-import PoliticalCapitalConnect from '../PoliticalCapitalConnect'
-import { commonwealthAllColors, commonwealthAllColorHexes, colors } from '../../styles/colors'
+import PoliticalCapitalConnect from '../Connect'
+import { commonwealthAllColors, commonwealthAllColorHexes, colors } from '../../../styles/colors'
 
 import RaisedButton from 'material-ui/RaisedButton'
 import IconButton from 'material-ui/IconButton'
 
-import { svgIcon } from '../../Images/icons'
+import { svgIcon } from '../../../Images/icons'
 import { _ } from 'underscore'
 
 class CommonwealthConnect extends PoliticalCapitalConnect {

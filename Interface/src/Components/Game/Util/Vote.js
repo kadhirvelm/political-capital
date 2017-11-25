@@ -1,11 +1,11 @@
 import React, { Component } from 'react'
 import Flexbox from 'flexbox-react'
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group'
-import '../styles/Transitions.css'
+import '../../../styles/Transitions.css'
 
 import RaisedButton from 'material-ui/RaisedButton'
 
-import { colors } from '../styles/colors'
+import { colors } from '../../../styles/colors'
 
 import { curry, forEach } from 'ramda'
 
@@ -104,10 +104,46 @@ class Vote extends Component {
   changeVote = (index, event) => {
     const currVotes = this.state.votes
     currVotes[index] = !currVotes[index]
-    this.setState({ votes: currVotes }) // dispatch action
+    this.setState({ votes: currVotes })
   }
 
   curryChangeVote = curry(this.changeVote)
+
+  renderHasVotedDisplay = () => {
+    return(
+      <Flexbox key='Voted' flexDirection='column' alignItems='center'>
+        <font size={ 2 }> Submitted: <font color='#27AE60'> { this.state.round.individualVotes[this.state.playerName].yes } Yes </font> and <font color='#E74C3C'> { this.state.round.individualVotes[this.state.playerName].no } No </font>. </font>
+      </Flexbox>
+    )
+  }
+
+  renderIsVotingDisplay = () => {
+    return(
+      <Flexbox key='Voting' flexDirection='column' flexGrow={ 1 } alignItems='center'>
+        <RaisedButton fullWidth={ true } label={ (this.state.disableVote > 0) ? this.state.disableVote : ('Vote ' + this.currentVote().yes + ' yes and ' + this.currentVote().no + ' no') } disabled={ this.state.disableVote > 0 } primary={ true } onTouchTap={ this.handleVote } buttonStyle={ { borderRadius: '15px' } } style={ { borderRadius: '15px' } } />
+        <Flexbox justifyContent='center' flexWrap='wrap'>
+          { _.values(this.state.votes).map((entry, index) => (
+            <Flexbox style={ entry ? yes : no } key={ index } justifyContent='center' alignItems='center' onTouchTap={ this.curryChangeVote(index) }>
+              <font size={ 15 }> { entry ? 'Yes' : 'No' } </font>
+            </Flexbox>
+          ))
+          }
+        </Flexbox>
+      </Flexbox>
+    )
+  }
+
+  renderVoteDisplay = () => {
+    return(
+      <ReactCSSTransitionGroup
+        transitionName='fade-fast'
+        transitionEnterTimeout={ 500 }
+        transitionLeaveTimeout={ 500 }
+      >
+        { _.contains(_.keys(this.state.round.individualVotes), this.state.playerName.toString()) ? this.renderHasVotedDisplay() : this.renderIsVotingDisplay() }
+      </ReactCSSTransitionGroup>
+    )
+  }
 
   render() {
     return (
@@ -115,29 +151,7 @@ class Vote extends Component {
         <Flexbox flexDirection='column' alignItems='center' style={ { marginBottom: '10px' } }>
           <font size={ 4 }> Collecting Votes ({ _.keys(this.state.round.individualVotes).length } / { _.keys(this.state.players).length }) </font>
         </Flexbox>
-        <ReactCSSTransitionGroup
-          transitionName='fade-fast'
-          transitionEnterTimeout={ 500 }
-          transitionLeaveTimeout={ 500 }
-          >
-          { _.contains(_.keys(this.state.round.individualVotes), this.state.playerName.toString()) ?
-            <Flexbox key='Voted' flexDirection='column' alignItems='center'>
-              <font size={ 2 }> Submitted: <font color='#27AE60'> { this.state.round.individualVotes[this.state.playerName].yes } Yes </font> and <font color='#E74C3C'> { this.state.round.individualVotes[this.state.playerName].no } No </font>. </font>
-            </Flexbox>
-            :
-            <Flexbox key='Voting' flexDirection='column' flexGrow={ 1 } alignItems='center'>
-              <RaisedButton fullWidth={ true } label={ (this.state.disableVote > 0) ? this.state.disableVote : ('Vote ' + this.currentVote().yes + ' yes and ' + this.currentVote().no + ' no') } disabled={ this.state.disableVote > 0 } primary={ true } onTouchTap={ this.handleVote } buttonStyle={ { borderRadius: '15px' } } style={ { borderRadius: '15px' } } />
-              <Flexbox justifyContent='center' flexWrap='wrap'>
-                { _.values(this.state.votes).map((entry, index) => (
-                  <Flexbox style={ entry ? yes : no } key={ index } justifyContent='center' alignItems='center' onTouchTap={ this.curryChangeVote(index) }>
-                    <font size={ 15 }> { entry ? 'Yes' : 'No' } </font>
-                  </Flexbox>
-                  ))
-                }
-              </Flexbox>
-            </Flexbox>
-          }
-        </ReactCSSTransitionGroup>
+        { this.renderVoteDisplay() }
       </Flexbox>
     )
   }

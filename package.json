@@ -5,15 +5,15 @@
   "main": "index.js",
   "scripts": {
     "connect": "ssh -i \"Political-Capital.pem\" ubuntu@ec2-54-193-47-210.us-west-1.compute.amazonaws.com",
-    "start": "osascript start.scpt",
-    "test": "jest",
-    "install_all": "npm install && cd ./Interface && npm install && npm install --only=dev",
+    "test": "cd ./Interface && CI=true npm run test && cd ../Server && npm run jest && cd ..",
+    "coverage": "jest -- --env=jsdom --coverage",
+    "install_all": "npm install && cd ./Interface && npm install && npm install --only=dev && cd ../Server && npm install && npm install --only=dev",
     "build": "cd ./Interface && npm run build",
     "test_server": "cd ./Server && npm test",
-    "test_interface": "cd ./Interface && npm test",
-    "production": "osascript production.scpt"
+    "test_interface": "cd ./Interface && npm test"
   },
   "jest": {
+    "testEnvironment": "jsdom",
     "projects": [
       "<rootDir>/Interface",
       "<rootDir>/Server"
@@ -37,10 +37,18 @@
   },
   "devDependencies": {
     "css-loader": "^0.28.7",
+    "enzyme": "^3.2.0",
+    "enzyme-adapter-react-16": "^1.1.0",
     "file-loader": "^1.1.5",
     "jest": "^21.2.1",
+    "jest-enzyme": "^4.0.1",
+    "jsdom": "^11.4.0",
     "postcss-loader": "^2.0.6",
+    "ramda": "^0.25.0",
+    "react": "^16.1.1",
+    "react-scripts": "^1.0.17",
     "style-loader": "^0.19.0",
+    "underscore": "^1.8.3",
     "url-loader": "^0.6.2"
   }
 }

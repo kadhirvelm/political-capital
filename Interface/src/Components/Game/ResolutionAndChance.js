@@ -3,7 +3,7 @@ import Flexbox from 'flexbox-react'
 
 import { map } from 'ramda'
 
-import { colors } from '../styles/colors'
+import { colors } from '../../styles/colors'
 
 class ResolutionAndChance extends Component {
   constructor(props){
@@ -65,7 +65,7 @@ class ResolutionAndChance extends Component {
   overviewEffectStyle = { background: '#353535', width: '250px', padding: '10px', marginTop: '10px', borderRadius: '10px', color: '#F2BD1E' }
   numberStyle = { marginBottom: '10px' }
 
-  resolutionTable = (resolution) => {
+  renderResolutionTable = (resolution) => {
     return(
       <Flexbox flexDirection='column' flexGrow={ 1 } style={ this.state.isOverview ? { width: '250px' } : {} }>
         <Flexbox flexGrow={ 1 } justifyContent='space-around'>
@@ -87,48 +87,70 @@ class ResolutionAndChance extends Component {
     )
   }
 
+  resolutionTable = (resolution) => {
+    return this.renderResolutionTable(resolution)
+  }
+
   renderResolutionTitle = () => <h1> Resolution </h1>
+
+  renderResolution = () => {
+    return(
+      <Flexbox flexDirection='column' alignItems='center' style={ !this.state.isOverview ? (this.state.horizontal ? this.horizontalCardStyle : this.cardStyle) : this.overviewStyle }>
+        { this.renderResolutionTitle() }
+        { this.state.resolution &&
+          <Flexbox flexDirection='column' flexGrow={ 1 }>
+            { !this.state.isOverview && <Flexbox style={ this.cardFlavorStyle }> { this.state.resolution.flavorText } </Flexbox> }
+            <Flexbox flexGrow={ 1 } justifyContent='center' alignItems='flex-end'>
+              <Flexbox justifyContent='center' style={ this.effectStyle }> { this.resolutionTable(this.state.resolution) } </Flexbox>
+            </Flexbox>
+          </Flexbox>
+        }
+      </Flexbox>
+    )
+  }
+
+  renderChance = () => {
+    return(
+      <Flexbox flexDirection='column' alignItems='center' flexGrow={ 1 } style={ !this.state.isOverview ? (this.state.horizontal ? this.horizontalCardStyle : this.cardStyle) : this.overviewStyle }>
+        <h1> Chance </h1>
+        { this.state.chance &&
+          <Flexbox flexDirection='column' flexGrow={ 1 }>
+            { !this.state.isOverview && <Flexbox style={ this.cardFlavorStyle }> { this.state.chance.flavorText } </Flexbox> }
+            <Flexbox flexGrow={ 1 } justifyContent='center' alignItems='flex-end'>
+              <Flexbox alignItems='center' flexDirection='column' style={ this.state.isOverview ? this.overviewEffectStyle : this.effectStyle }>
+                { map(this.effect, this.state.chance.effect).map((entry, index) => (
+                  <div key={ index }> { entry } </div>
+                ))
+                }
+              </Flexbox>
+            </Flexbox>
+          </Flexbox>
+        }
+      </Flexbox>
+    )
+  }
+
+  renderSenateTaxReminder = () => {
+    return(
+      <Flexbox flexDirection='column' alignItems='center' style={ { marginTop: '10px' } }>
+        { (this.state.currentRound && !this.state.horizontal) &&
+          <Flexbox flexDirection='column' alignItems='center'>
+            <font> Round { this.state.currentRound } </font>
+            <font color={ colors.RED }> { (this.state.currentRound % 2 === 0) && 'Senate tax this round!' } </font>
+          </Flexbox>
+        }
+      </Flexbox>
+    )
+  }
 
   render() {
     return (
       <Flexbox flexDirection='column'>
         <Flexbox flexGrow={ 1 } flexDirection={ (this.state.horizontal && !this.state.isOverview) ? 'row' : 'column' } alignItems='center' justifyContent='center'>
-          <Flexbox flexDirection='column' alignItems='center' style={ !this.state.isOverview ? (this.state.horizontal ? this.horizontalCardStyle : this.cardStyle) : this.overviewStyle }>
-            { this.renderResolutionTitle() }
-            { this.state.resolution &&
-              <Flexbox flexDirection='column' flexGrow={ 1 }>
-                { !this.state.isOverview && <Flexbox style={ this.cardFlavorStyle }> { this.state.resolution.flavorText } </Flexbox> }
-                <Flexbox flexGrow={ 1 } justifyContent='center' alignItems='flex-end'>
-                  <Flexbox justifyContent='center' style={ this.effectStyle }> { this.resolutionTable(this.state.resolution) } </Flexbox>
-                </Flexbox>
-              </Flexbox>
-            }
-          </Flexbox>
-          <Flexbox flexDirection='column' alignItems='center' flexGrow={ 1 } style={ !this.state.isOverview ? (this.state.horizontal ? this.horizontalCardStyle : this.cardStyle) : this.overviewStyle }>
-            <h1> Chance </h1>
-            { this.state.chance &&
-              <Flexbox flexDirection='column' flexGrow={ 1 }>
-                { !this.state.isOverview && <Flexbox style={ this.cardFlavorStyle }> { this.state.chance.flavorText } </Flexbox> }
-                <Flexbox flexGrow={ 1 } justifyContent='center' alignItems='flex-end'>
-                  <Flexbox alignItems='center' flexDirection='column' style={ this.state.isOverview ? this.overviewEffectStyle : this.effectStyle }>
-                    { map(this.effect, this.state.chance.effect).map((entry, index) => (
-                        <div key={ index }> { entry } </div>
-                      ))
-                    }
-                  </Flexbox>
-                </Flexbox>
-              </Flexbox>
-            }
-          </Flexbox>
+          { this.renderResolution() }
+          { this.renderChance() }
         </Flexbox>
-        <Flexbox flexDirection='column' alignItems='center' style={ { marginTop: '10px' } }>
-          { (this.state.currentRound && !this.state.horizontal) &&
-            <Flexbox flexDirection='column' alignItems='center'>
-              <font> Round { this.state.currentRound } </font>
-              <font color={ colors.RED }> { (this.state.currentRound % 2 === 0) && 'Senate tax this round!' } </font>
-            </Flexbox>
-          }
-        </Flexbox>
+        { this.renderSenateTaxReminder() }
       </Flexbox>
     )
   }

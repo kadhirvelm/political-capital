@@ -4,7 +4,8 @@
   "description": "",
   "main": "Server.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --watch --color=always",
+    "jest": "nyc jest --color=always",
     "start": "nodemon server.js --legacy-watch --inspect --color=always",
     "build": "babel input.js -o compiled.js"
   },
@@ -25,6 +26,7 @@
     "babel-preset-es2015": "^6.24.1",
     "chai": "^4.1.2",
     "nodemon": "^1.11.0",
+    "nyc": "^11.3.0",
     "sinon": "^4.1.2"
   }
 }
