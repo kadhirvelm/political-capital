@@ -273,7 +273,7 @@ class PoliticalCapital extends Component {
             { this.renderChangeArrow(false, 'arrow_left') }
           </Flexbox>
           <Flexbox flexBasis='75%'>
-            <RaisedButton fullWidth={ true } label={ this.allColors[this.state.playerParty - 1] } icon={ this.renderPartySelectButtonIcon } backgroundColor={ this.allColorHexes[this.state.playerParty - 1] } onTouchTap={ !this.state.playerReady && this.curryChangePlayerParty(true) } style={ { width: '20%', margin: '3px' } } />
+            <RaisedButton fullWidth={ true } label={ this.allColors[this.state.playerParty - 1] } icon={ this.renderPartySelectButtonIcon() } backgroundColor={ this.allColorHexes[this.state.playerParty - 1] } onTouchTap={ !this.state.playerReady && this.curryChangePlayerParty(true) } style={ { width: '20%', margin: '3px' } } />
           </Flexbox>
           <Flexbox>
             { this.renderChangeArrow(true, 'arrow_right') }

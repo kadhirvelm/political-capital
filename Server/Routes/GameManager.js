@@ -776,9 +776,7 @@ class GameManager {
 
   handleStartingAndClosingGame(socket, playerName){
     socket.on('closeGame', () =>  {
-      this.setInGame(false)
-      this.roomSocket.emit('closeGame')
-      this.deleteRoom(this.roomID)
+      endGameIfNotEnoughPlayers(socket, playerName)
     })
 
     socket.on('startGame', () => {
