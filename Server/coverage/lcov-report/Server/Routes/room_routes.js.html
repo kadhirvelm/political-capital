@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for Server/Routes/room_routes.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../index.html">All files</a> / <a href="index.html">Server/Routes</a> room_routes.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>0/80</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>0/32</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>0/24</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>0/76</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144</td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">var R = <span class="cstat-no" title="statement not covered" >require('ramda')</span>
+var _ = <span class="cstat-no" title="statement not covered" >require('underscore')</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >module.exports = <span class="fstat-no" title="function not covered" >fu</span>nction(app, io, db) {</span>
+&nbsp;
+	var ObjectID = <span class="cstat-no" title="statement not covered" >require('mongodb').ObjectID;</span>
+&nbsp;
+	var currentGameManagers = <span class="cstat-no" title="statement not covered" >[];</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >	turnAllGameManagersOn();</span>
+&nbsp;
+	function <span class="fstat-no" title="function not covered" >reduceGamemanager(</span>gameManager){
+<span class="cstat-no" title="statement not covered" >		return {</span>
+			gameManagerName: gameManager.namespace,
+			roomID: gameManager.roomID,
+			admin: gameManager.admin,
+			settings: gameManager.settings,
+		}
+	}
+&nbsp;
+	function <span class="fstat-no" title="function not covered" >createNewRoom(</span>req, res){
+		var gameManager = <span class="cstat-no" title="statement not covered" >createGameManager(req.body.gameType || 'Vanilla', gameName, undefined, req.body.admin);</span>
+		var newRoom = <span class="cstat-no" title="statement not covered" >{ gameType: req.body.gameType || 'Vanilla', roomName: gameName, password: req.body.password, admin: req.body.admin, gameManager: reduceGamemanager(gameManager), inGame: false, players: {}, settings: {} };</span>
+<span class="cstat-no" title="statement not covered" >		db.collection('rooms').insert(newRoom, <span class="fstat-no" title="function not covered" >(e</span>rr, result) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >			if (err) {</span>
+<span class="cstat-no" title="statement not covered" >				res.send({ 'error': err });</span>
+			} else {
+<span class="cstat-no" title="statement not covered" >				gameManager.updateRoomID(result.ops[0]._id.toString())</span>
+<span class="cstat-no" title="statement not covered" >				currentGameManagers.push(gameManager);</span>
+<span class="cstat-no" title="statement not covered" >				res.send(result.ops[0]);</span>
+			}
+		})
+	}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >	app.post('/rooms', <span class="fstat-no" title="function not covered" >(r</span>eq, res) =&gt; {</span>
+		const gameName = <span class="cstat-no" title="statement not covered" >req.body.roomName.replaceAll(' ', '%20');</span>
+<span class="cstat-no" title="statement not covered" >		if (!R.contains(gameName.hashCode(), currentGameManagers)) {</span>
+<span class="cstat-no" title="statement not covered" >			createNewRoom(req, res)</span>
+		} else {
+<span class="cstat-no" title="statement not covered" >			res.status(400).send({ 'error': 'Duplicate game name not allowed.' })</span>
+		}
+	});
+&nbsp;
+<span class="cstat-no" title="statement not covered" >	app.get('/rooms', <span class="fstat-no" title="function not covered" >(r</span>eq, res) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >		db.collection('rooms').find().toArray( <span class="fstat-no" title="function not covered" >fu</span>nction(err, items) {</span>
+<span class="cstat-no" title="statement not covered" >			R.forEach(turnOnGameManager, items)</span>
+<span class="cstat-no" title="statement not covered" >			res.send(items);</span>
+		})
+	});
+&nbsp;
+<span class="cstat-no" title="statement not covered" >	app.post('/room/exists', <span class="fstat-no" title="function not covered" >(r</span>eq, res) =&gt; {</span>
+		const details = <span class="cstat-no" title="statement not covered" >{ '_id' : new ObjectID(req.body.roomID) };</span>
+<span class="cstat-no" title="statement not covered" >		db.collection('rooms').findOne(details, <span class="fstat-no" title="function not covered" >(e</span>rr, item) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >			if(!_.isNull(item)){</span>
+<span class="cstat-no" title="statement not covered" >				res.send({ exists: true })</span>
+			} else {
+<span class="cstat-no" title="statement not covered" >				res.send({ exists: false })</span>
+			}
+		})
+	});
+&nbsp;
+	function <span class="fstat-no" title="function not covered" >turnAllGameManagersOn(</span>) {
+<span class="cstat-no" title="statement not covered" >		db.collection('rooms').find().toArray( <span class="fstat-no" title="function not covered" >fu</span>nction(err, items) {</span>
+<span class="cstat-no" title="statement not covered" >			R.forEach(turnOnGameManager, items)</span>
+		})
+	}
+&nbsp;
+	function <span class="fstat-no" title="function not covered" >turnOnGameManager(</span>item) {
+<span class="cstat-no" title="statement not covered" >		if (!containsGameManager(item._id.toString())) {</span>
+			var gameManager = <span class="cstat-no" title="statement not covered" >createGameManager(item.gameType, item.roomName, item._id.toString(), item.admin, item.settings);</span>
+<span class="cstat-no" title="statement not covered" >			currentGameManagers.push(gameManager);</span>
+		}
+	}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >	app.put('/rooms', <span class="fstat-no" title="function not covered" >(r</span>eq, res) =&gt; {</span>
+		const details = <span class="cstat-no" title="statement not covered" >{ '_id' : new ObjectID(req.body.roomID) };</span>
+		const newRoom = <span class="cstat-no" title="statement not covered" >{ $set: { roomName: req.body.roomName.replaceAll(' ', '_'), password: req.body.password } }</span>
+<span class="cstat-no" title="statement not covered" >		db.collection('rooms').update(details, newRoom, <span class="fstat-no" title="function not covered" >(e</span>rr, result) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >			if (err){</span>
+<span class="cstat-no" title="statement not covered" >				res.send({ 'error': err })</span>
+			} else {
+<span class="cstat-no" title="statement not covered" >				res.send(result)</span>
+			}
+		})
+	})
+&nbsp;
+<span class="cstat-no" title="statement not covered" >	app.delete('/rooms', <span class="fstat-no" title="function not covered" >(r</span>eq, res) =&gt; {</span>
+		const callback = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(e</span>rr, item) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >			if (err){</span>
+<span class="cstat-no" title="statement not covered" >				res.send({ 'error': err });</span>
+			} else {
+<span class="cstat-no" title="statement not covered" >				res.send({ 'message': req.body.roomID + ' deleted.' });</span>
+			}
+		}
+<span class="cstat-no" title="statement not covered" >		shutdownRoomSocket(roomID)</span>
+<span class="cstat-no" title="statement not covered" >		deleteRoom(req.body.roomID, callback)</span>
+	})
+&nbsp;
+<span class="cstat-no" title="statement not covered" >	containsGameManager = <span class="fstat-no" title="function not covered" >(r</span>oomID) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >		return _.contains(_.pluck(currentGameManagers, 'roomID'), roomID.toString())</span>
+	}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >	shutdownRoomSocket = <span class="fstat-no" title="function not covered" >(r</span>oomID) =&gt; {</span>
+		const gameManager = <span class="cstat-no" title="statement not covered" >_.first(_.filter(currentGameManagers, <span class="fstat-no" title="function not covered" >(m</span>anager) =&gt; { <span class="cstat-no" title="statement not covered" >return manager.roomID === roomID </span>}))</span>
+<span class="cstat-no" title="statement not covered" >		if(gameManager){ <span class="cstat-no" title="statement not covered" >gameManager.disconnect() </span>}</span>
+	}
+&nbsp;
+	var GameManager = <span class="cstat-no" title="statement not covered" >require('./GameManager');</span>
+	var CommonwealthGameManager = <span class="cstat-no" title="statement not covered" >require('./CommonwealthGameManager');</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >	createGameManager = <span class="fstat-no" title="function not covered" >(g</span>ameType, gameManagerName, roomID, admin, settings) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >		switch(gameType){</span>
+			case 'Commonwealth':
+<span class="cstat-no" title="statement not covered" >				return new CommonwealthGameManager(io, gameManagerName, roomID || 'PENDING', deleteRoom, db, admin, settings);</span>
+			default:
+<span class="cstat-no" title="statement not covered" >				return new GameManager(io, gameManagerName, roomID || 'PENDING', deleteRoom, db, admin, settings);</span>
+		}
+	}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >	deleteRoom = <span class="fstat-no" title="function not covered" >(r</span>oomID, callback) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >		if(roomID !== 'PENDING') {</span>
+<span class="cstat-no" title="statement not covered" >			shutdownRoomSocket(roomID)</span>
+			const details = <span class="cstat-no" title="statement not covered" >{ '_id' : new ObjectID(roomID) };</span>
+<span class="cstat-no" title="statement not covered" >			db.collection('rooms').deleteOne(details, callback)</span>
+<span class="cstat-no" title="statement not covered" >			currentGameManagers = R.filter( <span class="fstat-no" title="function not covered" >(g</span>ameManagerID) =&gt; <span class="cstat-no" title="statement not covered" >gameManagerID === roomID,</span> currentGameManagers)</span>
+		}
+	}
+&nbsp;
+};
+&nbsp;
+<span class="cstat-no" title="statement not covered" >String.prototype.hashCode = <span class="fstat-no" title="function not covered" >fu</span>nction() {</span>
+  var hash = <span class="cstat-no" title="statement not covered" >0,</span> i, chr;
+<span class="cstat-no" title="statement not covered" >  if (this.length === 0) <span class="cstat-no" title="statement not covered" >return hash;</span></span>
+<span class="cstat-no" title="statement not covered" >  for (i = 0; i &lt; this.length; i++) {</span>
+<span class="cstat-no" title="statement not covered" >    chr   = this.charCodeAt(i);</span>
+<span class="cstat-no" title="statement not covered" >    hash  = ((hash &lt;&lt; 5) - hash) + chr;</span>
+<span class="cstat-no" title="statement not covered" >    hash |= 0; </span>// Convert to 32bit integer
+  }
+<span class="cstat-no" title="statement not covered" >  return hash;</span>
+};
+&nbsp;
+<span class="cstat-no" title="statement not covered" >String.prototype.replaceAll = <span class="fstat-no" title="function not covered" >fu</span>nction(str1, str2, ignore) {</span>
+<span class="cstat-no" title="statement not covered" >  return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\&lt;\&gt;\-\&amp;])/g,"\\$&amp;"),(ignore?"gi":"g")),(typeof(str2)=="string")?str2.replace(/\$/g,"$$$$"):str2);</span>
+} </pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Sat Nov 25 2017 14:56:28 GMT-0800 (PST)
+</div>
+</div>
+<script src="../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../sorter.js"></script>
+</body>
+</html>
