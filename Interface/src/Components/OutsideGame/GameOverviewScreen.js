@@ -6,7 +6,7 @@ import { svgIcon } from '../../Images/icons'
 
 import '../../styles/Transitions.css'
 
-import EndGame from './Game/EndGame'
+import EndGame from './EndGame'
 import ResolutionAndChance from './Game/ResolutionAndChance'
 import DisplayVotes from './Game/DisplayVotes'
 
