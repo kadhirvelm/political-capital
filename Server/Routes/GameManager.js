@@ -120,7 +120,7 @@ class GameManager {
   }
 
   updateRoomDetails(){
-    var ObjectID = require('mongodb').ObjectID;
+    var ObjectID = require('mongodb').ObjectID
     const details = { '_id' : new ObjectID(this.roomID) }
     const newRoom = { $set: { inGame: this.inGame, players: this.players, settings: this.settings, admin: this.admin } }
     this.db.collection('rooms').update(details, newRoom, (err, result) => {
@@ -451,8 +451,8 @@ class GameManager {
       const senatorOther = ((this.individualPlayerBonuses[changePlayerName] && this.individualPlayerBonuses[changePlayerName].newSenators) || 0)
 
       /** SENATOR DISTRIBUTION */
-      this.players[changePlayerName].senators += senatorResolution + senatorOther 
-      this.players[changePlayerName].senators = Math.max(Math.round(this.players[changePlayerName].senators), this.settings.START_SENATORS) //minimum number of senators
+      this.players[changePlayerName].senators += senatorResolution + senatorOther
+      this.players[changePlayerName].senators = Math.max(Math.round(this.players[changePlayerName].senators), this.settings.START_SENATORS)
 
       this.rounds[this.currentRound].changeLogic[changePlayerName] = _.extend(this.rounds[this.currentRound].changeLogic[changePlayerName] || {},{
         politicalCapitalYes: politicalCapitalYes, politicalCapitalNo: politicalCapitalNo, politicalCapitalOther: politicalCapitalOther, senatorResolution: Math.round(senatorResolution), senatorOther: Math.round(senatorOther)
@@ -516,7 +516,7 @@ class GameManager {
       return !_.isUndefined(outputProps)
     } catch(e){
       console.log('Error object', object, property)
-      return false 
+      return false
     }
   }
 
@@ -530,140 +530,7 @@ class GameManager {
     })
   }
 
-  handleSocketCallback(socket){
-    socket.on('getFullGame', () =>  {
-      socket.emit('receiveFullGame', { parties: this.parties, players: this.players, currentRound: this.currentRound, rounds: this.rounds, settings: this.settings, inGame: this.inGame, endGame: this.endGame })
-    })
-
-    /** GAME INITIATION. */
-
-    var playerName = ''
-
-    socket.on('newPlayer', (newPlayer) => {
-      playerName = newPlayer.toString()
-      if(!_.contains(_.keys(this.players), newPlayer)){
-        this.players[playerName.toString()] = { name: newPlayer, isReady: false }
-      }
-      this.updateAllPlayers()
-      this.updateRoomDetails()
-    })
-
-    socket.on('disconnect', (reason) => {
-      console.log('Disconnected', playerName, this.namespace, reason)
-    })
-
-    socket.on('leaveRoom', () => {
-      if(this.players[playerName] && this.players[playerName].party && this.parties && this.parties[this.players[playerName].party] && this.parties[this.players[playerName].party].players){
-        if(this.parties[this.players[playerName].party].players.length === 1){
-          this.parties = _.omit(this.parties, this.players[playerName].party)
-        } else {
-          this.parties = _.reject(this.parties[this.players[playerName].party].players, (player) => player === playerName)
-        }
-      }
-      this.players = _.omit(this.players, playerName)
-      if(playerName === this.admin && _.keys(this.players).length > 0){
-        this.updateAdmin(_.sample(_.values(this.players)).name)
-      }
-
-      if (_.keys(this.players).length <= 1 && this.inGame){
-        this.setInGame(false)
-        this.roomSocket.emit('closeGame')
-        this.deleteRoom(this.roomID)
-      } else {
-        this.emitFullGame()
-        this.checkDeleteRoom()
-        this.updateRoomDetails()
-      }
-    })
-
-    socket.on('closeGame', () =>  {
-      this.setInGame(false)
-      this.roomSocket.emit('closeGame')
-      this.deleteRoom(this.roomID)
-    })
-
-    function clearSocketRooms(socket, partyNumber){ // needs to be an independent context in order to properly remove from rooms
-      _.each(_.values(socket.rooms), (room) => {
-        if(room !== socket.id && room !== partyNumber) {
-          socket.leave(room)
-        }
-      })
-    }
-
-    socket.on('identifyPlayer', (name, partyNumber, partyName) => {
-      if(name){
-        playerName = name.toString()
-        if(partyNumber && !_.contains(_.keys(socket.rooms), partyNumber)){
-          clearSocketRooms(socket, partyNumber)
-          socket.join(partyNumber)
-        }
-      }
-
-      this.emitFullGame()
-    })
-
-    socket.on('adjustSettings', (settings) => {
-      if(playerName === this.admin){
-        this.adjustSettings(settings)
-      }
-    })
-
-    socket.on('playerColorSelected', (item) => {
-      this.roomSocket.emit('playerColorSelected', item)
-    })
-
-    socket.on('startGame', () => {
-      if(playerName === this.admin){
-        this.inGame = true
-        this.roomSocket.emit('startGame')
-        this.updateGame()
-      }
-    })
-
-    socket.on('playerReady', (name, party) => {
-      playerName = name.toString()
-      this.players[name] = { name: name, party: party, isReady: true, politicalCapital: this.settings.START_CAPITAL, senators: this.settings.START_SENATORS }
-      clearSocketRooms(socket, party)
-      socket.join(party)
-
-      this.updateAllPlayers()
-    })
-
-    socket.on('setPartyName', (name) => {
-      if(this.catchObjectErrors(this.players, playerName)){
-        const playerParty = this.players[playerName].party
-        this.roomSocket.to(playerParty).emit('getPartyName', name)
-      }
-    })
-
-    socket.on('finalizePartyName', (name) => {
-      if(this.catchObjectErrors(this.players, playerName)){
-        const playerParty = this.players[playerName].party
-        
-        if(!(playerParty in this.parties)) {
-          this.parties[playerParty] = { players: [ playerName ], partyName: name, partyCards: this.initialPartyCards() }
-        } else {
-          this.parties[playerParty].players.push(playerName)
-        }
-
-        _.forEach(this.players, (player) => {
-          if(player.party === playerParty && (!_.contains(this.parties[playerParty].players, player.name))){
-            this.parties[playerParty].players.push(player.name)
-          }
-        })
-
-        this.parties[playerParty].players = R.uniq(this.parties[playerParty].players)
-
-        this.roomSocket.to(playerParty).emit('finalizePartyName', name)
-        this.updateGame()
-        this.checkIfAllPartyNamesSet()
-      }
-    })
-
-    /** END GAME INITIATION. */
-
-    /** GAME MECHANICS. */
-
+  handleGameMechanics(socket){
     socket.on('getCurrentRoundDetails', () => {
       socket.emit('updateCurrentRoundDetails', { currentRound: this.currentRound, rounds: this.rounds })
     })
@@ -746,21 +613,164 @@ class GameManager {
       }
     })
   }
+
+  handlePartyNameLogic(socket){
+    socket.on('setPartyName', (name) => {
+      if(this.catchObjectErrors(this.players, playerName)){
+        const playerParty = this.players[playerName].party
+        this.roomSocket.to(playerParty).emit('getPartyName', name)
+      }
+    })
+
+    socket.on('finalizePartyName', (name) => {
+      if(this.catchObjectErrors(this.players, playerName)){
+        const playerParty = this.players[playerName].party
+        
+        if(!(playerParty in this.parties)) {
+          this.parties[playerParty] = { players: [ playerName ], partyName: name, partyCards: this.initialPartyCards() }
+        } else {
+          this.parties[playerParty].players.push(playerName)
+        }
+
+        _.forEach(this.players, (player) => {
+          if(player.party === playerParty && (!_.contains(this.parties[playerParty].players, player.name))){
+            this.parties[playerParty].players.push(player.name)
+          }
+        })
+
+        this.parties[playerParty].players = R.uniq(this.parties[playerParty].players)
+
+        this.roomSocket.to(playerParty).emit('finalizePartyName', name)
+        this.updateGame()
+        this.checkIfAllPartyNamesSet()
+      }
+    })
+  }
+
+  handleIndividualPlayerSettings(socket){
+    function clearSocketRooms(socket, partyNumber){ // needs to be an independent context in order to properly remove from rooms
+      _.each(_.values(socket.rooms), (room) => {
+        if(room !== socket.id && room !== partyNumber) {
+          socket.leave(room)
+        }
+      })
+    }
+
+    socket.on('identifyPlayer', (name, partyNumber, partyName) => {
+      if(name){
+        playerName = name.toString()
+        if(partyNumber && !_.contains(_.keys(socket.rooms), partyNumber)){
+          clearSocketRooms(socket, partyNumber)
+          socket.join(partyNumber)
+        }
+      }
+      this.emitFullGame()
+    })
+
+    socket.on('adjustSettings', (settings) => {
+      if(playerName === this.admin){
+        this.adjustSettings(settings)
+      }
+    })
+
+    socket.on('playerColorSelected', (item) => {
+      this.roomSocket.emit('playerColorSelected', item)
+    })
+
+    socket.on('playerReady', (name, party) => {
+      playerName = name.toString()
+      this.players[name] = { name: name, party: party, isReady: true, politicalCapital: this.settings.START_CAPITAL, senators: this.settings.START_SENATORS }
+      clearSocketRooms(socket, party)
+      socket.join(party)
+      this.updateAllPlayers()
+    })
+  }
+
+  handlePlayerLeavingRoom(socket){
+    socket.on('leaveRoom', () => {
+      if(this.players[playerName] && this.players[playerName].party && this.parties && this.parties[this.players[playerName].party] && this.parties[this.players[playerName].party].players){
+        if(this.parties[this.players[playerName].party].players.length === 1){
+          this.parties = _.omit(this.parties, this.players[playerName].party)
+        } else {
+          this.parties = _.reject(this.parties[this.players[playerName].party].players, (player) => player === playerName)
+        }
+      }
+      this.players = _.omit(this.players, playerName)
+      if(playerName === this.admin && _.keys(this.players).length > 0){
+        this.updateAdmin(_.sample(_.values(this.players)).name)
+      }
+
+      if (_.keys(this.players).length <= 1 && this.inGame){
+        this.setInGame(false)
+        this.roomSocket.emit('closeGame')
+        this.deleteRoom(this.roomID)
+      } else {
+        this.emitFullGame()
+        this.checkDeleteRoom()
+        this.updateRoomDetails()
+      }
+    })
+  }
+
+  handleStartingAndClosingGame(socket){
+    socket.on('closeGame', () =>  {
+      this.setInGame(false)
+      this.roomSocket.emit('closeGame')
+      this.deleteRoom(this.roomID)
+    })
+
+    socket.on('startGame', () => {
+      if(playerName === this.admin){
+        this.inGame = true
+        this.roomSocket.emit('startGame')
+        this.updateGame()
+      }
+    })
+  }
+
+  handleSocketCallback(socket){
+    socket.on('getFullGame', () =>  {
+      socket.emit('receiveFullGame', { parties: this.parties, players: this.players, currentRound: this.currentRound, rounds: this.rounds, settings: this.settings, inGame: this.inGame, endGame: this.endGame })
+    })
+
+    /** GAME INITIATION. */
+
+    var playerName = ''
+
+    socket.on('newPlayer', (newPlayer) => {
+      playerName = newPlayer.toString()
+      if(!_.contains(_.keys(this.players), newPlayer)){
+        this.players[playerName.toString()] = { name: newPlayer, isReady: false }
+      }
+      this.updateAllPlayers()
+      this.updateRoomDetails()
+    })
+
+    socket.on('disconnect', (reason) => {
+      console.log('Disconnected', playerName, this.namespace, reason)
+    })
+
+    handleStartingAndClosingGame(socket)
+    handlePlayerLeavingRoom(socket)
+    handleIndividualPlayerSettings(socket)
+    handlePartyNameLogic(socket)
+    handleGameMechanics(socket)
+  }
 }
 
 GameManager.prototype.id = function() {
-	return this.namespace.hashCode();
+	return this.namespace.hashCode()
 }
 
 String.prototype.hashCode = function() {
-  var hash = 0, i, chr;
-  if (this.length === 0) return hash;
+  var hash = 0, i, chr
+  if (this.length === 0) return hash
   for (i = 0; i < this.length; i++) {
-    chr   = this.charCodeAt(i);
-    hash  = ((hash << 5) - hash) + chr;
-    hash |= 0; // Convert to 32bit integer
+    chr   = this.charCodeAt(i)
+    hash  = ((hash << 5) - hash) + chr
+    hash |= 0 // Convert to 32bit integer
   }
-  return hash;
-};
+  return hash
+}
 
-module.exports = GameManager;
+module.exports = GameManager

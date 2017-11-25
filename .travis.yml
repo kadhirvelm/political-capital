@@ -4,6 +4,10 @@ node_js:
 cache:
   directories:
     - node_modules
+addons:
+  ssh_known_hosts:
+    - ec2-54-193-47-210.us-west-1.compute.amazonaws.com
+    - 54.193.47.210
 env:
 - REACT_APP_POLITICAL_CAPITAL=http://ec2-54-193-47-210.us-west-1.compute.amazonaws.com:3000 REACT_APP_DEBUG=false
 before_install:

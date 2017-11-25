@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import Main from './Main'
-import GameOverview from './Components/GameOverviewScreen'
+import GameOverview from './Components/OutsideGame/GameOverviewScreen'
 import './styles/global.css'
 
 import { createStore, applyMiddleware } from 'redux'
