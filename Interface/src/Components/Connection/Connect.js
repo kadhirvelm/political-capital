@@ -285,6 +285,19 @@ class PoliticalCapital extends Component {
     return isName ? 'Selecting' : colors.DARK_GRAY
   }
 
+  renderCurrentPlayer = () => {
+    return(
+      <Flexbox style={ { marginTop: '20px', marginBottom: '20px' } }>
+        <Flexbox flexBasis='50%' flexWrap='wrap' justifyContent='center'>
+          <font style={ { textDecoration: 'underline' } }> Selected { this.partyType } </font>
+        </Flexbox>
+        <Flexbox flexBasis='50%' flexWrap='wrap' justifyContent='center'>
+          <font style={ { textDecoration: 'underline' } }> Name </font>
+        </Flexbox>
+      </Flexbox>
+    )
+  }
+
   renderReadyPlayer = (entry) => {
     return(
       <Flexbox flexBasis='50%' flexWrap='wrap' justifyContent='center'>
@@ -296,35 +309,37 @@ class PoliticalCapital extends Component {
     )
   }
 
+  renderPlayersViewTable = () => {
+    return(
+      <div>
+        { this.state.players.map((entry, index) => (
+          <Flexbox key={ index } flexGrow={ 1 }>
+            { this.renderReadyPlayer(entry) }
+            <Flexbox flexBasis='50%' flexWrap='wrap' justifyContent='center' alignItems='center'>
+              <font size={ 4 } color={ colors.DARK_GRAY }> { entry.name } </font>
+              <div style={ { marginLeft: '5px' } }> { entry.name === this.state.connectedRoom.admin && svgIcon('crown') } </div>
+            </Flexbox>
+          </Flexbox>
+        ))
+        }
+      </div>
+    )
+  }
+
+  renderPlayerTableWithLoader = () => {
+    return (this.state.players.length > 0 ?
+      this.renderPlayersViewTable()
+      :
+      <Flexbox justifyContent='center'>
+        <CircularProgress color={ this.colors.DARK_BLUE } />
+      </Flexbox>)
+  }
+
   renderPlayers = () => {
     return(
       <Flexbox flexGrow={ 1 } flexDirection='column'>
-        <Flexbox style={ { marginTop: '20px', marginBottom: '20px' } }>
-          <Flexbox flexBasis='50%' flexWrap='wrap' justifyContent='center'>
-            <font style={ { textDecoration: 'underline' } }> Selected { this.partyType } </font>
-          </Flexbox>
-          <Flexbox flexBasis='50%' flexWrap='wrap' justifyContent='center'>
-            <font style={ { textDecoration: 'underline' } }> Name </font>
-          </Flexbox>
-        </Flexbox>
-        { this.state.players.length > 0 ?
-          <div>
-            { this.state.players.map((entry, index) => (
-              <Flexbox key={ index } flexGrow={ 1 }>
-                { this.renderReadyPlayer(entry) }
-                <Flexbox flexBasis='50%' flexWrap='wrap' justifyContent='center' alignItems='center'>
-                  <font size={ 4 } color={ colors.DARK_GRAY }> { entry.name } </font>
-                  <div style={ { marginLeft: '5px' } }> { entry.name === this.state.connectedRoom.admin && svgIcon('crown') } </div>
-                </Flexbox>
-              </Flexbox>
-            ))
-            }
-          </div>
-          :
-          <Flexbox justifyContent='center'>
-            <CircularProgress color={ this.colors.DARK_BLUE } />
-          </Flexbox>
-        }
+        { this.renderCurrentPlayer() }
+        { this.renderPlayerTableWithLoader() }
       </Flexbox>
     )
   }
@@ -343,6 +358,21 @@ class PoliticalCapital extends Component {
     )
   }
 
+  renderDetailedSettingsView = () => {
+    return this.state.showSettings ?
+      <Flexbox style={ { backgroundColor: this.colors.LIGHTEST_GRAY, padding: '5px', borderColor: this.colors.LIGHT_GRAY, borderStyle: 'solid', borderWidth: '1px', borderRadius: '10px' } } flexDirection='column'>
+        <Flexbox justifyContent='flex-start' flexGrow={ 1 } style={ { marginBottom: '10px' } }> <font size='2'> Settings </font> </Flexbox>
+        <Flexbox flexGrow={ 1 } flexWrap='wrap' justifyContent='space-around' alignItems='flex-end'>
+          { this.settings().map((settings, index) => (
+            <div key={ index }> { this.adjustItem(settings.name, settings.key, settings.max, settings.min) } </div>
+          ))
+          }
+        </Flexbox>
+      </Flexbox>
+      :
+      <div />
+  }
+
   renderSettings = () => {
     return(
       <Flexbox flexDirection='column'>
@@ -350,17 +380,7 @@ class PoliticalCapital extends Component {
           <RaisedButton label={ this.state.showSettings ? 'Hide' : (this.state.isAdmin ? 'Adjust Settings' : 'Show Settings') } primary={ this.state.showSettings } onTouchTap={ this.changeShowSettings } style={ { marginTop: '15px' } } />
           { (this.state.settingsChangeIndicator && !this.state.isAdmin) && <font color={ this.colors.RED } style={ { marginLeft: '15px' } }> Settings changed! </font> }
         </Flexbox>
-        { this.state.showSettings &&
-            <Flexbox style={ { backgroundColor: this.colors.LIGHTEST_GRAY, padding: '5px', borderColor: this.colors.LIGHT_GRAY, borderStyle: 'solid', borderWidth: '1px', borderRadius: '10px' } } flexDirection='column'>
-              <Flexbox justifyContent='flex-start' flexGrow={ 1 } style={ { marginBottom: '10px' } }> <font size='2'> Settings </font> </Flexbox>
-              <Flexbox flexGrow={ 1 } flexWrap='wrap' justifyContent='space-around' alignItems='flex-end'>
-                { this.settings().map((settings, index) => (
-                  <div key={ index }> { this.adjustItem(settings.name, settings.key, settings.max, settings.min) } </div>
-                ))
-                }
-              </Flexbox>
-            </Flexbox>
-        }
+        { this.renderDetailedSettingsView() }
       </Flexbox>
     )
   }

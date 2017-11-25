@@ -3,7 +3,7 @@ import Flexbox from 'flexbox-react'
 
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table'
 
-import { colors } from '../styles/colors'
+import { colors } from '../../../styles/colors'
 
 import { _ } from 'underscore'
 
@@ -38,8 +38,27 @@ class DisplayVotes extends Component {
     return _.map(this.state.previousRound.individualVotes, singlePlayer)
   }
 
+  renderCurrentVotesTable = () => {
+    return(
+      <Flexbox flexDirection='column' style={ { borderStyle: 'solid', borderColor: 'grey', borderWidth: '0.5px', padding: '7px', background: '#FFFFFF' } }>
+        <Table selectable={ false } fixedHeader={ true } style={ { tableLayout: 'auto' } }>
+          <TableHeader displaySelectAll={ false } adjustForCheckbox={ false }>
+            <TableRow>
+              <TableHeaderColumn> Name </TableHeaderColumn>
+              <TableHeaderColumn> Yes </TableHeaderColumn>
+              <TableHeaderColumn> No </TableHeaderColumn>
+            </TableRow>
+          </TableHeader>
+          <TableBody displayRowCheckbox={ false }>
+            { this.returnIndividualPlayers() }
+          </TableBody>
+        </Table>
+      </Flexbox>
+    )
+  }
+
   returnWinner = () => {
-    return this.state.previousRound.totalVotes.yes > this.state.previousRound.totalVotes.no ? <font color={ colors.GREEN }> Passed </font> : <font color={ colors.RED }> Failed </font>
+    return this.state.previousRound.roundWinner === 'yes' ? <font color={ colors.GREEN }> Passes </font> : <font color={ colors.RED }> Fails </font>
   }
 
   render() {
@@ -50,20 +69,7 @@ class DisplayVotes extends Component {
             <font> { this.returnWinner() } (<font size={ 2 }> Yes: { this.state.previousRound.totalVotes.yes } &nbsp; No: { this.state.previousRound.totalVotes.no } </font>) </font>
           </Flexbox>
         }
-        <Flexbox flexDirection='column' style={ { borderStyle: 'solid', borderColor: 'grey', borderWidth: '0.5px', padding: '7px', background: '#FFFFFF' } }>
-          <Table selectable={ false } fixedHeader={ true } style={ { tableLayout: 'auto' } }>
-            <TableHeader displaySelectAll={ false } adjustForCheckbox={ false }>
-              <TableRow>
-                <TableHeaderColumn> Name </TableHeaderColumn>
-                <TableHeaderColumn> Yes </TableHeaderColumn>
-                <TableHeaderColumn> No </TableHeaderColumn>
-              </TableRow>
-            </TableHeader>
-            <TableBody displayRowCheckbox={ false }>
-              { this.returnIndividualPlayers() }
-            </TableBody>
-          </Table>
-        </Flexbox>
+        { this.renderCurrentVotesTable() }
       </Flexbox>
     )
   }

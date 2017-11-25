@@ -6,8 +6,8 @@ import SelectField from 'material-ui/SelectField'
 import MenuItem from 'material-ui/MenuItem'
 import DisplayVotes from './DisplayVotes'
 
-import { svgIcon } from '../Images/icons'
-import { colors, allColorHexes } from '../styles/colors'
+import { svgIcon } from '../../../Images/icons'
+import { colors, allColorHexes } from '../../../styles/colors'
 
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table'
 
@@ -83,7 +83,7 @@ class EndRoundLogistics extends Component {
       <SelectField value={ this.state.selectedPlayer } floatingLabelText='Select Player' onChange={ this.handlePlayerSelection }>
         { _.filter(_.values(this.state.players), (player) => player.name !== this.state.playerName).map((player) => (
           <MenuItem key={ player.name } value={ player.name } primaryText={ player.name } />
-          ))
+        ))
         }
       </SelectField>
     )
@@ -108,17 +108,6 @@ class EndRoundLogistics extends Component {
     }
   }
 
-  /**
-  <Flexbox flexGrow={ 1 } flexDirection='column' justifyContent='space-around' style={ { borderStyle: 'solid', borderColor: 'grey', borderWidth: '0.5px', padding: '7px', overflowY: 'scroll', height: '50px' } }>
-   { _.keys(this.state.round.partyCards).map( (entry, index) => (
-    <Flexbox alignItems='center' key={ index } style={ { marginBottom: '15px', marginTop: '15px' } }>
-      <Flexbox style={ partyCardShowStyle }> { entry } ({ _.first(_.filter(_.values(this.state.parties), (party) => party.partyName === entry)).players.toString() }) </Flexbox>
-      <Flexbox flexGrow={ 1 } justifyContent='flex-end'> { this.renderType(this.state.round.partyCards[entry].type) }, { this.state.round.partyCards[entry].value } </Flexbox>
-    </Flexbox>
-    ))
-   }
-  </Flexbox> */
-
   showPlayerOptions = () => {
     return(
       <Flexbox flexGrow={ 1 } flexDirection='column' justifyContent='center' alignItems='center' style={ { marginTop: '10px' } }>
@@ -133,33 +122,45 @@ class EndRoundLogistics extends Component {
     )
   }
 
-  renderPartyCardHandler = () => {
-    if(this.hasTypeOfCard('Nullify')){
-      return(
-        <Flexbox>
-          { this.hasPlayerNullifyCard(this.handleSteal) ?
-            <div> { this.showPlayerOptions() } </div>
-            :
-            <div> Waiting for players to nullify </div>
-          }
-        </Flexbox>
-      )
-    } else if (!this.hasTypeOfCard('Nullify') && (this.hasTypeOfCard('Steal') || this.hasTypeOfCard('Take'))) {
-      return (
-        <Flexbox flexGrow={ 1 } justifyContent='center'>
-          { this.hasPlayerStealTakeCard() ?
-            <div> { this.showPlayerOptions() } </div>
-            :
-            <div style={ { marginTop: '10px' } }> Waiting for players to steal. </div>
-          }
-        </Flexbox>
-      )
-    }
-    return (
+  renderNullifyPresent = () => {
+    return(
+      <Flexbox>
+        { this.hasPlayerNullifyCard(this.handleSteal) ?
+          <div> { this.showPlayerOptions() } </div>
+          :
+          <div> Waiting for players to nullify </div>
+        }
+      </Flexbox>
+    )
+  }
+
+  renderTakeAndSteal = () => {
+    return(
+      <Flexbox flexGrow={ 1 } justifyContent='center'>
+        { this.hasPlayerStealTakeCard() ?
+          <div> { this.showPlayerOptions() } </div>
+          :
+          <div style={ { marginTop: '10px' } }> Waiting for players to steal. </div>
+        }
+      </Flexbox>
+    )
+  }
+
+  renderFinalTally = () => {
+    return(
       <Flexbox flexGrow={ 1 } justifyContent='flex-end'>
         <RaisedButton label='Final Tally' primary={ true } onTouchTap={ this.showFinalTally } style={ { marginTop: '10px' } } />
-     </Flexbox>
+      </Flexbox>
     )
+  }
+
+  renderPartyCardHandler = () => {
+    if(this.hasTypeOfCard('Nullify')){
+      return this.renderNullifyPresent()
+    } else if (!this.hasTypeOfCard('Nullify') && (this.hasTypeOfCard('Steal') || this.hasTypeOfCard('Take'))) {
+      return this.renderTakeAndSteal()
+    }
+    return this.renderFinalTally()
   }
 
   renderEffective = (partyCard) => {
@@ -173,7 +174,37 @@ class EndRoundLogistics extends Component {
     this.setState({ showVotes: !this.state.showVotes })
   }
 
-  displayPartyCardResolution = () => {
+  renderEffectivePartyCardsBody = () => {
+    return(
+      <TableBody displayRowCheckbox={ false }>
+        { _.keys(this.state.round.partyCards).map((entry, index) => (
+          <TableRow key={ index }>
+            <TableRowColumn style={ { wordWrap: 'break-word', whiteSpace: 'normal' } }> { entry } </TableRowColumn>
+            <TableRowColumn style={ { wordWrap: 'break-word', whiteSpace: 'normal' } }> { this.renderType(this.state.round.partyCards[entry].type) }, { this.state.round.partyCards[entry].value } </TableRowColumn>
+            <TableRowColumn style={ { wordWrap: 'break-word', whiteSpace: 'normal' } }> { this.renderEffective(this.state.round.partyCards[entry]) } </TableRowColumn>
+          </TableRow>
+        ))
+        }
+      </TableBody>
+    )
+  }
+
+  renderEffectivePartyCardsByParty = () => {
+    return(
+      <Table selectable={ false } style={ { borderColor: colors.LIGHT_GRAY, borderStyle: 'solid', borderWidth: '1px' } }>
+        <TableHeader displaySelectAll={ false } adjustForCheckbox={ false }>
+          <TableRow>
+            <TableHeaderColumn> Party </TableHeaderColumn>
+            <TableHeaderColumn> Party Card </TableHeaderColumn>
+            <TableHeaderColumn> Effective </TableHeaderColumn>
+          </TableRow>
+        </TableHeader>
+        { this.renderEffectivePartyCardsBody() }
+      </Table>
+    )
+  }
+
+  displayPartyCardResolutionLogicAndStandings = () => {
     return(
       <Flexbox flexDirection='column' flexBasis='auto'>
         <Flexbox flexDirection='column' alignItems='center' style={ { marginBottom: '15px' } }>
@@ -187,25 +218,7 @@ class EndRoundLogistics extends Component {
           <RaisedButton label={ this.state.showVotes ? 'Hide Votes' : 'Display Votes' } backgroundColor={ this.state.showVotes ? colors.RED : colors.LIGHT_GRAY } onTouchTap={ this.handleDisplayingVotes } />
           { this.state.showVotes && <DisplayVotes limit={ true } round={ this.state.rounds[this.state.currentRound] } /> }
         </Flexbox>
-        <Table selectable={ false } style={ { borderColor: colors.LIGHT_GRAY, borderStyle: 'solid', borderWidth: '1px' } }>
-          <TableHeader displaySelectAll={ false } adjustForCheckbox={ false }>
-            <TableRow>
-              <TableHeaderColumn> Party </TableHeaderColumn>
-              <TableHeaderColumn> Party Card </TableHeaderColumn>
-              <TableHeaderColumn> Effective </TableHeaderColumn>
-            </TableRow>
-          </TableHeader>
-          <TableBody displayRowCheckbox={ false }>
-            { _.keys(this.state.round.partyCards).map((entry, index) => (
-              <TableRow key={ index }>
-                <TableRowColumn style={ { wordWrap: 'break-word', whiteSpace: 'normal' } }> { entry } </TableRowColumn>
-                <TableRowColumn style={ { wordWrap: 'break-word', whiteSpace: 'normal' } }> { this.renderType(this.state.round.partyCards[entry].type) }, { this.state.round.partyCards[entry].value } </TableRowColumn>
-                <TableRowColumn style={ { wordWrap: 'break-word', whiteSpace: 'normal' } }> { this.renderEffective(this.state.round.partyCards[entry]) } </TableRowColumn>
-              </TableRow>
-              ))
-            }
-          </TableBody>
-        </Table>
+        { this.renderEffectivePartyCardsByParty() }
       </Flexbox>
     )
   }
@@ -238,6 +251,7 @@ class EndRoundLogistics extends Component {
   color = (amount) => {
     return (amount === 0 ? colors.ORANGE : (amount > 0 ? colors.GREEN : colors.RED))
   }
+
   icon = (amount) => {
     return (amount === 0 ? '' : (amount > 0 ? svgIcon('circle_up', this.color(amount)) : svgIcon('circle_down', this.color(amount))))
   }
@@ -260,6 +274,75 @@ class EndRoundLogistics extends Component {
     )
   }
 
+  renderIsDiplayingCalculationLogic = (playerLogic) => {
+    return(
+      <Flexbox flexDirection='column'>
+        <Flexbox flexDirection='column' flexGrow={ 1 } style={ { marginTop: '10px', marginBottom: '10px' } }>
+          <Flexbox flexGrow={ 1 } justifyContent='flex-start' style={ { marginBottom: '10px' } }> { this.renderTitle('Political Capital', 'politicalCapital') } </Flexbox>
+
+          <Flexbox alignItems='baseline' justifyContent='space-around'>
+            <font> Resolution) </font>
+            { this.renderIndividualCategory('No', playerLogic.politicalCapitalNo) }
+            { this.renderIndividualCategory('Yes', playerLogic.politicalCapitalYes) }
+            { this.renderIndividualCategory('Party Card', playerLogic.politicalCapitalOther) }
+          </Flexbox>
+          <Flexbox alignItems='baseline' justifyContent='space-around' style={ { marginTop: '10px' } }>
+            <font> Miscellanous) </font>
+            { this.renderIndividualCategory('Steals', playerLogic.steal || 0) }
+            { this.renderIndividualCategory('Chance', playerLogic.chance || 0) }
+            { !_.isUndefined(playerLogic.totalSenatorTax) && this.renderIndividualCategory('Tax', playerLogic.totalSenatorTax) }
+          </Flexbox>
+        </Flexbox>
+
+        <Flexbox flexDirection='column' flexGrow={ 1 }>
+          <Flexbox flexGrow={ 1 } justifyContent='flex-start' style={ { marginBottom: '10px' } }> { this.renderTitle('Senators', 'senators') } </Flexbox>
+          <Flexbox alignItems='baseline' justifyContent='space-around'>
+            <font> Resolution) </font>
+            { this.renderIndividualCategory('Voting', playerLogic.senatorResolution) }
+            { this.renderIndividualCategory('Party Card', playerLogic.senatorOther) }
+            { !_.isUndefined(playerLogic.totalSenatorTax) && this.renderIndividualCategory('Taxed', playerLogic.totalSenatorsForTax) }
+          </Flexbox>
+        </Flexbox>
+      </Flexbox>
+    )
+  }
+
+  renderCurrentStandings = () => {
+    return(
+      <Flexbox flexDirection='column' style={ { borderStyle: 'solid', borderColor: colors.DARK_GRAY, borderRadius: '10px', borderWidth: '0.5px', padding: '7px', background: colors.SLIGHTLY_DARKER_PASTEL } }>
+        <Flexbox flexGrow={ 1 } justifyContent='flex-start'> <font size={ 2 }> Current Standings </font> </Flexbox>
+        <Table selectable={ false } fixedHeader={ true } style={ { tableLayout: 'auto' } }>
+          <TableHeader displaySelectAll={ false } adjustForCheckbox={ false }>
+            <TableRow>
+              <TableHeaderColumn> Name </TableHeaderColumn>
+              <TableHeaderColumn> Senators </TableHeaderColumn>
+              <TableHeaderColumn> Capital </TableHeaderColumn>
+              <TableHeaderColumn> Party </TableHeaderColumn>
+            </TableRow>
+          </TableHeader>
+          <TableBody displayRowCheckbox={ false }>
+            { this.returnIndividualPlayers(this.state.parties) }
+          </TableBody>
+        </Table>
+      </Flexbox>
+    )
+  }
+
+  renderShowCalculationsButton = (playerLogic) => {
+    return(
+      <Flexbox flexDirection='column' flexGrow={ 1 } style={ this.state.showCalculations ? { marginBottom: '15px', borderStyle: 'solid', borderRadius: '10px', borderColor: colors.DARKER_PASTEL, borderWidth: '0.5px', padding: '7px', background: colors.SLIGHTLY_DARKER_PASTEL } : { marginBottom: '15px' } }>
+        <Flexbox flexGrow={ 1 } justifyContent='flex-start'>
+          <RaisedButton label={ (this.state.showCalculations ? 'Close' : 'Show') + ' Calculations' } secondary={ this.state.showCalculations } onTouchTap={ this.showCalculations } />
+          <Flexbox flexGrow={ 1 } justifyContent='space-around'>
+            <Flexbox alignItems='center'> { svgIcon('coinDollar', this.color(this.changeAmount('politicalCapital'))) } <font color={ this.color(this.changeAmount('politicalCapital')) } style={ { marginLeft: '10px' } }> { this.state.players[this.state.playerName].politicalCapital } </font> </Flexbox>
+            <Flexbox alignItems='center'> { svgIcon('senator', this.color(this.changeAmount('senators'))) } <font color={ this.color(this.changeAmount('senators')) } style={ { marginLeft: '10px' } }> { this.state.players[this.state.playerName].senators } </font> </Flexbox>
+          </Flexbox>
+        </Flexbox>
+        { (this.state.showCalculations && playerLogic) && this.renderIsDiplayingCalculationLogic(playerLogic) }
+      </Flexbox>
+    )
+  }
+
   displayFinalTally = () => {
     const playerLogic = this.state.round.changeLogic[this.state.playerName]
     return(
@@ -267,60 +350,17 @@ class EndRoundLogistics extends Component {
         <Flexbox flexGrow={ 1 } justifyContent='flex-end' style={ { marginTop: '15px', marginBottom: '15px' } }>
           <RaisedButton primary={ true } label='Next Round' onTouchTap={ this.handleFinish } />
         </Flexbox>
-        <Flexbox flexDirection='column' flexGrow={ 1 } style={ this.state.showCalculations ? { marginBottom: '15px', borderStyle: 'solid', borderRadius: '10px', borderColor: colors.DARKER_PASTEL, borderWidth: '0.5px', padding: '7px', background: colors.SLIGHTLY_DARKER_PASTEL } : { marginBottom: '15px' } }>
-          <Flexbox flexGrow={ 1 } justifyContent='flex-start'>
-            <RaisedButton label={ (this.state.showCalculations ? 'Close' : 'Show') + ' Calculations' } secondary={ this.state.showCalculations } onTouchTap={ this.showCalculations } />
-            <Flexbox flexGrow={ 1 } justifyContent='space-around'>
-              <Flexbox alignItems='center'> { svgIcon('coinDollar', this.color(this.changeAmount('politicalCapital'))) } <font color={ this.color(this.changeAmount('politicalCapital')) } style={ { marginLeft: '10px' } }> { this.state.players[this.state.playerName].politicalCapital } </font> </Flexbox>
-              <Flexbox alignItems='center'> { svgIcon('senator', this.color(this.changeAmount('senators'))) } <font color={ this.color(this.changeAmount('senators')) } style={ { marginLeft: '10px' } }> { this.state.players[this.state.playerName].senators } </font> </Flexbox>
-            </Flexbox>
-          </Flexbox>
-          { (this.state.showCalculations && playerLogic) &&
-            <Flexbox flexDirection='column'>
-              <Flexbox flexDirection='column' flexGrow={ 1 } style={ { marginTop: '10px', marginBottom: '10px' } }>
-                <Flexbox flexGrow={ 1 } justifyContent='flex-start' style={ { marginBottom: '10px' } }> { this.renderTitle('Political Capital', 'politicalCapital') } </Flexbox>
-                <Flexbox alignItems='baseline' justifyContent='space-around'>
-                  <font> Resolution) </font>
-                  { this.renderIndividualCategory('No', playerLogic.politicalCapitalNo) }
-                  { this.renderIndividualCategory('Yes', playerLogic.politicalCapitalYes) }
-                  { this.renderIndividualCategory('Party Card', playerLogic.politicalCapitalOther) }
-                </Flexbox>
-                <Flexbox alignItems='baseline' justifyContent='space-around' style={ { marginTop: '10px' } }>
-                  <font> Miscellanous) </font>
-                  { this.renderIndividualCategory('Steals', playerLogic.steal || 0) }
-                  { this.renderIndividualCategory('Chance', playerLogic.chance || 0) }
-                  { !_.isUndefined(playerLogic.totalSenatorTax) && this.renderIndividualCategory('Tax', playerLogic.totalSenatorTax) }
-                </Flexbox>
-              </Flexbox>
+        { this.renderShowCalculationsButton(playerLogic) }
+        { this.renderCurrentStandings() }
+      </Flexbox>
+    )
+  }
 
-              <Flexbox flexDirection='column' flexGrow={ 1 }>
-                <Flexbox flexGrow={ 1 } justifyContent='flex-start' style={ { marginBottom: '10px' } }> { this.renderTitle('Senators', 'senators') } </Flexbox>
-                <Flexbox alignItems='baseline' justifyContent='space-around'>
-                  <font> Resolution) </font>
-                  { this.renderIndividualCategory('Voting', playerLogic.senatorResolution) }
-                  { this.renderIndividualCategory('Party Card', playerLogic.senatorOther) }
-                  { !_.isUndefined(playerLogic.totalSenatorTax) && this.renderIndividualCategory('Taxed', playerLogic.totalSenatorsForTax) }
-                </Flexbox>
-              </Flexbox>
-            </Flexbox>
-          }
-        </Flexbox>
-        <Flexbox flexDirection='column' style={ { borderStyle: 'solid', borderColor: colors.DARK_GRAY, borderRadius: '10px', borderWidth: '0.5px', padding: '7px', background: colors.SLIGHTLY_DARKER_PASTEL } }>
-          <Flexbox flexGrow={ 1 } justifyContent='flex-start'> <font size={ 2 }> Current Standings </font> </Flexbox>
-          <Table selectable={ false } fixedHeader={ true } style={ { tableLayout: 'auto' } }>
-            <TableHeader displaySelectAll={ false } adjustForCheckbox={ false }>
-              <TableRow>
-                <TableHeaderColumn> Name </TableHeaderColumn>
-                <TableHeaderColumn> Senators </TableHeaderColumn>
-                <TableHeaderColumn> Capital </TableHeaderColumn>
-                <TableHeaderColumn> Party </TableHeaderColumn>
-              </TableRow>
-            </TableHeader>
-            <TableBody displayRowCheckbox={ false }>
-              { this.returnIndividualPlayers(this.state.parties) }
-            </TableBody>
-          </Table>
-        </Flexbox>
+  renderCurrentRoundLabel = () => {
+    return(
+      <Flexbox flexDirection='column' alignItems='center' flexGrow={ 1 }>
+        <font> Round { this.state.currentRound } </font>
+        <font> { (this.state.currentRound % 2 === 0) && 'Senate tax this round!' } </font>
       </Flexbox>
     )
   }
@@ -328,15 +368,8 @@ class EndRoundLogistics extends Component {
   render() {
     return (
       <Flexbox flexDirection='column' style={ { marginTop: '10px' } }>
-        <Flexbox flexDirection='column' alignItems='center' flexGrow={ 1 }>
-          <font> Round { this.state.currentRound } </font>
-          <font> { (this.state.currentRound % 2 === 0) && 'Senate tax this round!' } </font>
-        </Flexbox>
-        { this.state.displayFinalTally ?
-          this.displayFinalTally()
-          :
-          this.displayPartyCardResolution()
-        }
+        { this.renderCurrentRoundLabel() }
+        { this.state.displayFinalTally ? this.displayFinalTally() : this.displayPartyCardResolutionLogicAndStandings() }
       </Flexbox>
     )
   }

@@ -1,9 +1,9 @@
 import React from 'react'
-import Tools from '../Tools'
+import Tools from '../Util/Tools'
 
 import { TableRowColumn } from 'material-ui/Table'
-import { svgIcon } from '../../Images/icons'
-import { commonwealthAllColors, commonwealthAllColorHexes } from '../../styles/colors'
+import { svgIcon } from '../../../Images/icons'
+import { commonwealthAllColors, commonwealthAllColorHexes } from '../../../styles/colors'
 import { _ } from 'underscore'
 
 class CommonwealthTools extends Tools {

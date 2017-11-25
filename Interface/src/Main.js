@@ -4,7 +4,7 @@ import Async from 'react-code-splitting'
 import Flexbox from 'flexbox-react'
 import { Route, Switch } from 'react-router-dom'
 
-import RoomConnection from './Components/RoomConnection'
+import RoomConnection from './Components/Connection/RoomConnection'
 
 import { mapStateToProps } from './State/StateMethods'
 import { connect } from 'react-redux'
@@ -81,8 +81,8 @@ export class Main extends Component {
     }
   }
 
-  renderPoliticalCapitalGame = (props) => <Async load={ import('./Components/PoliticalCapitalGame') } componentProps={ props } />
-  renderCommonwealthGame = (props) => <Async load={ import('./Components/CommonwealthComponents/CommonwealthGame') } componentProps={ props } />
+  renderPoliticalCapitalGame = (props) => <Async load={ import('./Components/Game/Game') } componentProps={ props } />
+  renderCommonwealthGame = (props) => <Async load={ import('./Components/Game/Commonwealth/Game') } componentProps={ props } />
 
   renderGame = () => {
     const props = {
@@ -103,8 +103,8 @@ export class Main extends Component {
     }
   }
 
-  renderPoliticalCapitalConnect = (props) => <Async load={ import('./Components/PoliticalCapitalConnect') } componentProps={ props } />
-  renderCommonwealthConnect = (props) => <Async load={ import('./Components/CommonwealthComponents/CommonwealthConnect') } componentProps={ props } />
+  renderPoliticalCapitalConnect = (props) => <Async load={ import('./Components/Connection/Connect') } componentProps={ props } />
+  renderCommonwealthConnect = (props) => <Async load={ import('./Components/Connection/Commonwealth/Connect') } componentProps={ props } />
 
   renderConnection = () => {
     const props = {

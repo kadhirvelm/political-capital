@@ -1,13 +1,13 @@
 import React, { Component } from 'react'
 import Flexbox from 'flexbox-react'
-import { colors } from '../styles/colors'
-import { svgIcon } from '../Images/icons'
-import '../styles/Transitions.css'
+import { colors } from '../../styles/colors'
+import { svgIcon } from '../../Images/icons'
+import '../../styles/Transitions.css'
 
 // import Sound from 'react-sound'
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group'
 
-import { changeEndGameStatus } from '../State/ServerActions'
+import { changeEndGameStatus } from '../../State/ServerActions'
 
 import { _ } from 'underscore'
 

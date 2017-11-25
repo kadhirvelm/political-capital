@@ -4,11 +4,13 @@ import ReactCSSTransitionGroup from 'react-addons-css-transition-group'
 
 import ResolutionAndChance from './ResolutionAndChance'
 import PartyCards from './PartyCards'
-import Vote from './Vote'
-import EndRoundLogistics from './EndRoundLogistics'
-import EndGame from './EndGame'
-import Tools from './Tools'
-import PlayerValues from './PlayerValues'
+
+import EndGame from '../OutsideGame/EndGame'
+
+import Vote from './Util/Vote'
+import EndRoundLogistics from './Util/EndRoundLogistics'
+import Tools from './Util/Tools'
+import PlayerValues from './Util/PlayerValues'
 
 import CircularProgress from 'material-ui/CircularProgress'
 import Dialog from 'material-ui/Dialog'
@@ -18,11 +20,11 @@ import TextField from 'material-ui/TextField'
 import Snackbar from 'material-ui/Snackbar'
 
 import { _ } from 'underscore'
-import { colors } from '../styles/colors'
-import '../styles/Transitions.css'
-import { svgIcon } from '../Images/icons'
+import { colors } from '../../styles/colors'
+import '../../styles/Transitions.css'
+import { svgIcon } from '../../Images/icons'
 
-import { finalizePartyName, readyUp } from '../State/ServerActions'
+import { finalizePartyName, readyUp } from '../../State/ServerActions'
 
 import { match } from 'ramda'
 
@@ -33,7 +35,11 @@ const io = require('socket.io-client')
 class PoliticalCapitalGame extends Component {
   constructor(props){
     super(props)
-    this.state = Object.assign({}, this.propsConst(props), {
+    this.state = Object.assign({}, this.propsConst(props), this.baseStateSettings(props))
+  }
+
+  baseStateSettings = (props) => {
+    return {
       managingSocket: io(process.env.REACT_APP_POLITICAL_CAPITAL + '/' + props.connectedRoom.roomName),
       rounds: {},
       players: {},
@@ -46,7 +52,7 @@ class PoliticalCapitalGame extends Component {
       openBribe: false,
       bribeSentOut: false,
       preventAllSounds: false,
-    })
+    }
   }
 
   propsConst(props){
@@ -83,13 +89,9 @@ class PoliticalCapitalGame extends Component {
     this.setState(this.propsConst(nextProps))
   }
 
-  receivedFullGame = (gameInfo) => {
-    this.setState(Object.assign({}, this.updateAllRounds(gameInfo.rounds), this.updateAllPlayers(gameInfo.players), this.updateAllParties(gameInfo.parties), this.updateCurrentRound(gameInfo.currentRound), { firstFetchedGame: true }), () => {
-      if(gameInfo.endGame){
-        this.handleEndGame(gameInfo.endGame)
-      }
-    })
-  }
+  /**
+   * Socket round logic handlers
+   */
 
   fetchPlayerPartyAndPlayerPartyName = (gameInfo) => {
     const playerParty = gameInfo.players[this.state.playerName].party
@@ -101,7 +103,23 @@ class PoliticalCapitalGame extends Component {
     return { playerPartyName: playerPartyName, playerParty: playerParty }
   }
 
-  handleSocketConnections(){
+  receivedFullGame = (gameInfo) => {
+    this.setState(Object.assign({}, this.updateAllRounds(gameInfo.rounds), this.updateAllPlayers(gameInfo.players), this.updateAllParties(gameInfo.parties), this.updateCurrentRound(gameInfo.currentRound), { firstFetchedGame: true }), () => {
+      if(gameInfo.endGame){
+        this.handleEndGame(gameInfo.endGame)
+      }
+    })
+  }
+
+  handleReceivingFullGameLogic = () => {
+    this.state.managingSocket.on('receiveFullGame', (gameInfo) => {
+      this.setState(this.fetchPlayerPartyAndPlayerPartyName(gameInfo), () => {
+        this.receivedFullGame(gameInfo)
+      })
+    })
+  }
+
+  handlePartyNameLogic = () => {
     this.state.managingSocket.on('getPartyName', (name) => {
       if(_.isUndefined(this.state.playerPartyName) || !this.state.playerPartyName.includes(name)){
         this.setState({ playerPartyName: name })
@@ -117,7 +135,9 @@ class PoliticalCapitalGame extends Component {
         this.state.dispatch(finalizePartyName(this.state.playerPartyName))
       })
     })
+  }
 
+  handleRoundUpdatingLogic = () => {
     this.state.managingSocket.on('updateRound', (rounds) => {
       this.setState(this.updateAllRounds(rounds))
     })
@@ -130,16 +150,12 @@ class PoliticalCapitalGame extends Component {
       this.setState(Object.assign({}, this.updateAllRounds(gameInfo.rounds), this.updateCurrentRound(gameInfo.currentRound)))
     })
 
-    this.state.managingSocket.on('receiveFullGame', (gameInfo) => {
-      if(this.state.playerName && gameInfo.players && (!this.state.playerParty || !this.state.playerPartyName)){
-        this.setState(this.fetchPlayerPartyAndPlayerPartyName(gameInfo), () => {
-          this.receivedFullGame(gameInfo)
-        })
-      } else {
-        this.receivedFullGame(gameInfo)
-      }
+    this.state.managingSocket.on('allVotingFinalized', (gameInfo) => {
+      this.setState(this.updateAllRounds(gameInfo.rounds))
     })
+  }
 
+  handlePartyCardLogic = () => {
     this.state.managingSocket.on('receivePartyCards', (gameInfo) => {
       this.setState(Object.assign({}, this.updateAllParties(gameInfo.parties), this.updateSelectedPartyCard(gameInfo.selectedPartyCard)))
     })
@@ -155,15 +171,9 @@ class PoliticalCapitalGame extends Component {
     this.state.managingSocket.on('allPartiesSelectedPartyCard', (gameInfo) => {
       this.setState(Object.assign({}, this.updateAllRounds(gameInfo.rounds), this.updateAllPlayers(gameInfo.players), this.updateAllParties(gameInfo.parties), this.updateCurrentRound(gameInfo.currentRound)))
     })
+  }
 
-    this.state.managingSocket.on('allVotingFinalized', (gameInfo) => {
-      this.setState(this.updateAllRounds(gameInfo.rounds))
-    })
-
-    this.state.managingSocket.on('bribeSentOut', (bribeAmount) => {
-      this.changePlaySound(true, bribeAmount)
-    })
-
+  handleStartingAndStoppingGame = () => {
     this.state.managingSocket.on('endGame', (gameInfo) => {
       this.handleEndGame(gameInfo)
     })
@@ -171,33 +181,47 @@ class PoliticalCapitalGame extends Component {
     this.state.managingSocket.on('closeGame', () => {
       this.state.disconnect()
     })
+  }
 
-    this.state.managingSocket.on('disconnect', (reason) => {
-      console.log('Socket disconnected', reason, this.state.managingSocket)
-    })
+  handleDisconnectAndReconnectSockets = () => {
+    this.state.managingSocket.on('disconnect', (reason) => { })
 
     this.state.managingSocket.on('error', (reason) => {
       this.state.managingSocket.open()
-      console.log('Socket encountered error', reason, this.state.managingSocket)
       if(reason === 'Invalid namespace'){
         this.state.disconnect()
       }
     })
 
-    this.state.managingSocket.on('reconnect_error', (reason) => {
-      // console.log('Socket reconnect error', reason, this.state.managingSocket)
-    })
+    this.state.managingSocket.on('reconnect_error', (reason) => { })
 
-    this.state.managingSocket.on('reconnect_failed', () => {
-      console.log('Socket unable to reconnect', this.state.managingSocket)
-    })
+    this.state.managingSocket.on('reconnect_failed', () => { })
 
     this.state.managingSocket.on('reconnect', () => {
-      console.log('Reconnected')
       this.state.managingSocket.emit('identifyPlayer', this.state.playerName, this.state.playerParty, this.state.playerPartyName)
       this.state.managingSocket.emit('getFullGame')
     })
   }
+
+  handleBribingLogic = () => {
+    this.state.managingSocket.on('bribeSentOut', (bribeAmount) => {
+      this.changePlaySound(true, bribeAmount)
+    })
+  }
+
+  handleSocketConnections(){
+    this.handleReceivingFullGameLogic()
+    this.handlePartyNameLogic()
+    this.handleRoundUpdatingLogic()
+    this.handlePartyCardLogic()
+    this.handleStartingAndStoppingGame()
+    this.handleDisconnectAndReconnectSockets()
+    this.handleBribingLogic()
+  }
+
+  /**
+   * State settings components
+   */
 
   handleEndGame = (gameInfo) => {
     this.setState({ endGame: gameInfo })
@@ -223,14 +247,22 @@ class PoliticalCapitalGame extends Component {
     return { currentRound: currentRoundNumber }
   }
 
+  /**
+   * Party name setting logic
+   */
+
+  handleFinalizingPartyName = () => {
+    if(!_.contains(_.map(this.state.parties, _.property('partyName')), this.state.playerPartyName)){
+      this.state.managingSocket.emit('finalizePartyName', this.state.playerPartyName)
+      this.state.dispatch(finalizePartyName(this.state.playerPartyName))
+    } else {
+      this.setState({ errorName: 'That name is already taken' })
+    }
+  }
+
   finalizePartyName = () => {
     if(this.state.playerPartyName){
-      if(!_.contains(_.map(this.state.parties, _.property('partyName')), this.state.playerPartyName)){
-        this.state.managingSocket.emit('finalizePartyName', this.state.playerPartyName)
-        this.state.dispatch(finalizePartyName(this.state.playerPartyName))
-      } else {
-        this.setState({ errorName: 'That name is already taken' })
-      }
+      this.handleFinalizingPartyName()
     } else {
       this.setState({ errorName: 'Cannot be blank' })
     }
@@ -277,45 +309,76 @@ class PoliticalCapitalGame extends Component {
     return !this.state.firstFetchedGame
   }
 
-  resolutionAndChance = () => <ResolutionAndChance managingSocket={ this.state.managingSocket } round={ this.state.rounds[this.state.currentRound] } currentRound={ this.state.currentRound } />
   partyCards = () => <PartyCards id='PartyCards' dispatch={ this.state.dispatch } managingSocket={ this.state.managingSocket } parties={ this.state.parties } round={ this.state.rounds[this.state.currentRound] } playerParty={ this.state.playerParty } playerPartyName={ this.state.playerPartyName } selectedPartyCard={ this.state.selectedPartyCard } />
+
+  renderEndGame = () => {
+    return (
+      <Flexbox key='End Game' flexGrow={ 1 }>
+        <EndGame dispatch={ this.state.dispatch } endGame={ this.state.endGame } disconnect={ this.state.disconnect } hasSeenTabulation={ this.state.hasSeenTabulation } />
+      </Flexbox>
+    )
+  }
+
+  renderEndRoundLogistics = () => {
+    return(
+      <Flexbox key='End Round' flexDirection='column'>
+        <EndRoundLogistics dispatch={ this.state.dispatch } managingSocket={ this.state.managingSocket } rounds={ this.state.rounds } currentRound={ this.state.currentRound }
+          parties={ this.state.parties } players={ this.state.players } changeCurrentlyViewingResults={ this.changeCurrentlyViewingResults }
+          playerName={ this.state.playerName } />
+      </Flexbox>
+    )
+  }
+
+  resolutionAndChance = () => {
+    return (
+      <Flexbox justifyContent='center'>
+        <ResolutionAndChance managingSocket={ this.state.managingSocket } round={ this.state.rounds[this.state.currentRound] } currentRound={ this.state.currentRound } />
+      </Flexbox>
+    )
+  }
+
+  renderPlayerValues = () => {
+    return (this.state.players && this.state.playerName && this.state.playerPartyName) ? <PlayerValues players={ this.state.players } playerName={ this.state.playerName } round={ this.state.rounds[this.state.currentRound] } playerPartyName={ this.state.playerPartyName } /> : <div />
+  }
+
+  renderVoteOrPartyCardSelection = () => {
+    return(
+      <ReactCSSTransitionGroup
+        transitionName='fade-wait'
+        transitionEnterTimeout={ 500 }
+        transitionLeaveTimeout={ 500 }
+      >
+        <Flexbox key={ this.hasPlacedPartyCard() ? 'Vote' : 'PartyCards' } flexGrow={ 1 } justifyContent='center'>
+          { this.hasPlacedPartyCard() ?
+            <Vote id='Vote' players={ this.state.players } playerName={ this.state.playerName } playerPartyName={ this.state.playerPartyName } round={ this.state.rounds[this.state.currentRound] }
+              dispatch={ this.state.dispatch } managingSocket={ this.state.managingSocket } />
+            :
+            this.partyCards()
+          }
+        </Flexbox>
+      </ReactCSSTransitionGroup>
+    )
+  }
+
+  renderCurrentRoundView = () => {
+    return(
+      <div key='Resolution and Chance'>
+        { this.resolutionAndChance() }
+        <Flexbox flexGrow={ 1 } flexDirection='column' alignItems='center'>
+          { this.renderPlayerValues() }
+          { this.renderVoteOrPartyCardSelection() }
+        </Flexbox>
+      </div>
+    )
+  }
 
   currentGameState = () => {
     if(this.state.endGame && this.state.endGame.finalWinners){
-      return (<Flexbox key='End Game' flexGrow={ 1 }> <EndGame dispatch={ this.state.dispatch } endGame={ this.state.endGame } disconnect={ this.state.disconnect } hasSeenTabulation={ this.state.hasSeenTabulation } /> </Flexbox>)
+      return this.renderEndGame()
     } else if (this.handleEndRound()){
-      return (
-        <Flexbox key='End Round' flexDirection='column'>
-          <EndRoundLogistics dispatch={ this.state.dispatch } managingSocket={ this.state.managingSocket } rounds={ this.state.rounds } currentRound={ this.state.currentRound }
-            parties={ this.state.parties } players={ this.state.players } changeCurrentlyViewingResults={ this.changeCurrentlyViewingResults }
-            playerName={ this.state.playerName } />
-        </Flexbox>
-      )
+      return this.renderEndRoundLogistics()
     } else if(this.state.rounds && this.state.currentRound){
-      return (
-        <div key='Resolution and Chance'>
-          <Flexbox justifyContent='center'>
-            { this.resolutionAndChance() }
-          </Flexbox>
-          <Flexbox flexGrow={ 1 } flexDirection='column' alignItems='center'>
-            { (this.state.players && this.state.playerName && this.state.playerPartyName) && <PlayerValues players={ this.state.players } playerName={ this.state.playerName } round={ this.state.rounds[this.state.currentRound] } playerPartyName={ this.state.playerPartyName } /> }
-            <ReactCSSTransitionGroup
-              transitionName='fade-wait'
-              transitionEnterTimeout={ 500 }
-              transitionLeaveTimeout={ 500 }
-            >
-              <Flexbox key={ this.hasPlacedPartyCard() ? 'Vote' : 'PartyCards' } flexGrow={ 1 } justifyContent='center'>
-                { this.hasPlacedPartyCard() ?
-                  <Vote id='Vote' players={ this.state.players } playerName={ this.state.playerName } playerPartyName={ this.state.playerPartyName } round={ this.state.rounds[this.state.currentRound] }
-                    dispatch={ this.state.dispatch } managingSocket={ this.state.managingSocket } />
-                  :
-                  this.partyCards()
-                }
-              </Flexbox>
-            </ReactCSSTransitionGroup>
-          </Flexbox>
-        </div>
-      )
+      return this.renderCurrentRoundView()
     }
   }
 

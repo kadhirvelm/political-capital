@@ -1,14 +1,14 @@
 import React, { Component } from 'react'
 import Flexbox from 'flexbox-react'
 import { _ } from 'underscore'
-import { colors, allColorHexes } from '../styles/colors'
-import { svgIcon } from '../Images/icons'
+import { colors, allColorHexes } from '../../styles/colors'
+import { svgIcon } from '../../Images/icons'
 
-import '../styles/Transitions.css'
+import '../../styles/Transitions.css'
 
-import EndGame from './EndGame'
-import ResolutionAndChance from './ResolutionAndChance'
-import DisplayVotes from './DisplayVotes'
+import EndGame from './Game/EndGame'
+import ResolutionAndChance from './Game/ResolutionAndChance'
+import DisplayVotes from './Game/DisplayVotes'
 
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table'
 import Dialog from 'material-ui/Dialog'
