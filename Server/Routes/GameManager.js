@@ -564,7 +564,7 @@ class GameManager {
     })
   }
 
-  finalizePartyCardLogic = (partyCard) => {
+  finalizePartyCardLogic(partyCard){
     const playerParty = this.players[playerName].party
     const party = this.parties[playerParty]
     party.partyCards[partyCard.type] = _.without(party.partyCards[partyCard.type], partyCard.value)
@@ -700,7 +700,7 @@ class GameManager {
     })
   }
 
-  handleIdentifyingPlayerLogic = (name, partyNumber, partyName) => {
+  handleIdentifyingPlayerLogic(name, partyNumber, partyName){
     if(name){
       playerName = name.toString()
       if(partyNumber && !_.contains(_.keys(socket.rooms), partyNumber)){
@@ -733,7 +733,7 @@ class GameManager {
     })
   }
 
-  omitPlayerFromParty = (socket, playerName) => {
+  omitPlayerFromParty(socket, playerName){
     if(this.players[playerName] && this.players[playerName].party && this.parties && this.parties[this.players[playerName].party] && this.parties[this.players[playerName].party].players){
       if(this.parties[this.players[playerName].party].players.length === 1){
         this.parties = _.omit(this.parties, this.players[playerName].party)
@@ -743,19 +743,19 @@ class GameManager {
     }
   }
 
-  updateAdminIfNeeded = (socket, playerName) => {
+  updateAdminIfNeeded(socket, playerName){
     if(playerName === this.admin && _.keys(this.players).length > 0){
       this.updateAdmin(_.sample(_.values(this.players)).name)
     }
   }
 
-  endGameIfNotEnoughPlayers = (socket, playerName) => {
+  endGameIfNotEnoughPlayers(socket, playerName){
     this.setInGame(false)
     this.roomSocket.emit('closeGame')
     this.deleteRoom(this.roomID)
   }
 
-  updateAllPlayers = (socket, playerName) => {
+  updateAllPlayers(socket, playerName){
     this.emitFullGame()
     this.checkDeleteRoom()
     this.updateRoomDetails()

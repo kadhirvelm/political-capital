@@ -82,14 +82,14 @@ export function setPlayerName(playerName) {
 export const DISCONNECT_ROOM_REQUEST = 'DISCONNECT_ROOM_REQUEST'
 export const DISCONNECT_ROOM_SUCCESS = 'DISCONNECT_ROOM_SUCCESS'
 
-function disconnectRequest(room){
+function disconnectRequest(){
   return {
     type: DISCONNECT_ROOM_REQUEST,
     isFetching: true,
   }
 }
 
-function disconnectSuccess(room, socket){
+function disconnectSuccess(){
   return {
     type: DISCONNECT_ROOM_SUCCESS,
     isFetching: false,
