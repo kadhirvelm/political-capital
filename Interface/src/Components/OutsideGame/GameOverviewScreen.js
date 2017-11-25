@@ -79,29 +79,13 @@ class GameOverview extends Component {
     }
   }
 
-  handleAllSocketConnections = () => {
-    this.state.managingSocket.on('receiveFullGame', (gameInfo) => {
-      if(!_.isEmpty(gameInfo.endGame)){
-        this.setState({ endGame: gameInfo.endGame, gameClosed: false })
-      } else {
-        this.setState(Object.assign({}, this.updateAllRounds(gameInfo.rounds), this.updateAllPlayers(gameInfo.players), this.updateAllParties(gameInfo.parties), this.updateCurrentRound(gameInfo.currentRound), this.updateCurrActionsAgainstPlayer(gameInfo.rounds[gameInfo.currentRound]), { gameClosed: false }))
-      }
-    })
+  /**
+   * Socket connection logic
+   */
 
-    this.state.managingSocket.on('updatePlayers', (players) => {
-      this.setState(this.updateAllPlayers(players))
-    })
-
+  handleRoundChangingLogic = () => {
     this.state.managingSocket.on('updateCurrentRoundDetails', (rounds) => {
       this.setState(Object.assign({}, this.updateAllRounds(rounds.rounds), this.updateCurrentRound(rounds.currentRound), this.updateCurrActionsAgainstPlayer(rounds.rounds[rounds.currentRound])))
-    })
-
-    this.state.managingSocket.on('allPartyNamesSet', (parties) => {
-      this.setState(this.updateAllParties(parties))
-    })
-
-    this.state.managingSocket.on('endGame', (endGame) => {
-      this.setState({ endGame: endGame, gameClosed: false })
     })
 
     this.state.managingSocket.on('nextRound', (gameInfo) => {
@@ -110,6 +94,12 @@ class GameOverview extends Component {
       })
     })
 
+    this.state.managingSocket.on('updateRound', (rounds) => {
+      this.setState(Object.assign({}, this.updateAllRounds(rounds), this.updateCurrActionsAgainstPlayer((rounds && this.state.currentRound) && rounds[this.state.currentRound])))
+    })
+  }
+
+  handleFinalizingActions = () => {
     this.state.managingSocket.on('allPartiesSelectedPartyCard', (gameInfo) => {
       this.setState(Object.assign({}, this.updateAllRounds(gameInfo.rounds), this.updateAllPlayers(gameInfo.players), this.updateAllParties(gameInfo.parties), this.updateCurrentRound(gameInfo.currentRound)))
     })
@@ -117,15 +107,9 @@ class GameOverview extends Component {
     this.state.managingSocket.on('allVotingFinalized', (rounds) => {
       this.setState(Object.assign({}, this.updateAllRounds(rounds.rounds), this.updateCurrActionsAgainstPlayer(rounds.rounds[rounds.currentRound])))
     })
+  }
 
-    this.state.managingSocket.on('updateRound', (rounds) => {
-      this.setState(Object.assign({}, this.updateAllRounds(rounds), this.updateCurrActionsAgainstPlayer((rounds && this.state.currentRound) && rounds[this.state.currentRound])))
-    })
-
-    this.state.managingSocket.on('bribeSentOut', (bribeAmount) => {
-      this.changePlaySound(true, bribeAmount)
-    })
-
+  handleActionAgainstPlayer = () => {
     this.state.managingSocket.on('actionsAgainstPlayers', (actions) => {
       let currActions = this.state.actionsAgainstPlayer || {}
       if(!_.isEmpty(currActions)){
@@ -136,10 +120,49 @@ class GameOverview extends Component {
         this.setState({ actionsAgainstPlayer: currActions })
       }
     })
+  }
+
+  handleEndingAndClosingGame = () => {
+    this.state.managingSocket.on('endGame', (endGame) => {
+      this.setState({ endGame: endGame, gameClosed: false })
+    })
 
     this.state.managingSocket.on('closeGame', () => {
       this.setState({ gameClosed: true })
     })
+  }
+
+  handleUpdatingPlayersAndParties = () => {
+    this.state.managingSocket.on('updatePlayers', (players) => {
+      this.setState(this.updateAllPlayers(players))
+    })
+
+    this.state.managingSocket.on('allPartyNamesSet', (parties) => {
+      this.setState(this.updateAllParties(parties))
+    })
+  }
+
+  handleReceivingFullGame = () => {
+    this.state.managingSocket.on('receiveFullGame', (gameInfo) => {
+      if(!_.isEmpty(gameInfo.endGame)){
+        this.setState({ endGame: gameInfo.endGame, gameClosed: false })
+      } else {
+        this.setState(Object.assign({}, this.updateAllRounds(gameInfo.rounds), this.updateAllPlayers(gameInfo.players), this.updateAllParties(gameInfo.parties), this.updateCurrentRound(gameInfo.currentRound), this.updateCurrActionsAgainstPlayer(gameInfo.rounds[gameInfo.currentRound]), { gameClosed: false }))
+      }
+    })
+  }
+
+  handleAllSocketConnections = () => {
+    this.state.managingSocket.on('bribeSentOut', (bribeAmount) => {
+      this.changePlaySound(true, bribeAmount)
+    })
+
+    this.handleReceivingFullGame()
+    this.handleUpdatingPlayersAndParties()
+    this.handleEndingAndClosingGame()
+    this.handleRoundChangingLogic()
+    this.handleFinalizingActions()
+    this.handleActionAgainstPlayer()
   }
 
   handleEndGame = (gameInfo) => {
@@ -228,7 +251,7 @@ class GameOverview extends Component {
     return(
       <Flexbox flexDirection='column' alignItems='center' justifyContent='space-between' style={ properties.confirmed ? confirmedActionStyle : baseActionStyle }>
         <Flexbox flexDirection='column' alignItems='center'> <font size={ 5 }> { fromPlayer } </font> <font size={ 2 } style={ { marginTop: '10px' } }> &nbsp; will </font> </Flexbox>
-          <Flexbox> <font size={ 6 } color={ properties.card === 'Steal' ? colors.MEDIUM_BLUE : colors.ORANGE }> <b> { properties.card } </b> </font> </Flexbox>
+        <Flexbox> <font size={ 6 } color={ properties.card === 'Steal' ? colors.MEDIUM_BLUE : colors.ORANGE }> <b> { properties.card } </b> </font> </Flexbox>
         <Flexbox flexBasis='50%' flexDirection='column' alignItems='center'> <font size={ 2 }> from &nbsp; </font> <font size={ 5 } style={ { marginTop: '10px' } }> { properties.selectedPlayer || 'Picking...' } </font> </Flexbox>
       </Flexbox>
     )
@@ -239,7 +262,7 @@ class GameOverview extends Component {
       <Flexbox flexWrap='wrap' justifyContent='center'>
         { _.keys(this.state.actionsAgainstPlayer).map((key, index) => (
           <Flexbox key={ index }> { this.renderPlayerAction(key, this.state.actionsAgainstPlayer[key]) } </Flexbox>
-          ))
+        ))
         }
       </Flexbox>
     )
@@ -248,7 +271,6 @@ class GameOverview extends Component {
   closeActionsDialog = () => {
     _.delay(() => {
       if(this.state.indicator === 0){
-        //eslint-disable-next-line
         this.setState({ indicator: '', openActions: false, isClosing: false, actionsAgainstPlayer: undefined })
       } else {
         const newIndicator = (_.isNumber(this.state.indicator) ? this.state.indicator : 8) - 1
@@ -292,107 +314,128 @@ class GameOverview extends Component {
     return _.contains(_.keys(this.state.rounds[this.state.currentRound].individualVotes), player)
   }
 
+  renderPlayersAssemblingList = () => {
+    return(
+      <Flexbox flexGrow={ 1 } justifyContent='space-around'>
+        { _.map(this.state.players, (value, key) => (
+          <font key={ key } color={ value.isReady ? allColorHexes[value.party - 1] : colors.DARK_BLUE } style={ { margin: '10px' } }> { value.name } </font>
+        ))
+        }
+      </Flexbox>
+    )
+  }
+
+  renderPartiesAssembled = () => {
+    return(
+      <Flexbox flexGrow={ 1 } flexDirection='row' justifyContent='space-around'>
+        { _.map(this.state.parties, (value, key) => (
+          <Flexbox key={ key + this.currentRoundPartyCardsContainsParty(value.partyName).toString() } flexDirection='column' alignItems='center'>
+            <Flexbox alignItems='baseline'>
+              <font size={ 5 } color={ allColorHexes[key - 1] }> { value.partyName } </font>
+              <div style={ { marginLeft: '7px' } }> { this.currentRoundPartyCardsContainsParty(value.partyName) && svgIcon('smallCheckmark') } </div>
+            </Flexbox>
+            <Flexbox flexDirection='column' style={ { marginTop: '10px' } }>
+              { value.players.map((entry, index) => (
+                <Flexbox key={ index + this.currentRoundVotesContainsPlayer(entry).toString() }>
+                  <font size={ 3 } key={ index }> { entry } </font>
+                  <div style={ { marginLeft: '7px' } }> { this.currentRoundVotesContainsPlayer(entry) && svgIcon('singleCheck') } </div>
+                </Flexbox>
+              ))
+              }
+            </Flexbox>
+          </Flexbox>
+        ))
+        }
+      </Flexbox>
+    )
+  }
+
+  renderResolutionAndChance = () => {
+    return !_.isEmpty(this.state.rounds) ?
+      <Flexbox id='Show rounds here' justifyContent='center' flexGrow={ 1 } style={ Object.assign({}, { marginTop: '15px' }, individualBox) } flexDirection='column'>
+        <Flexbox flexShrink={ 1 } justifyContent='flex-start' alignItems='flex-start' style={ { marginTop: '-3px' } }> <font size={ 3 } color={ colors.DARK_GRAY }> Round <b> { this.state.currentRound } </b> </font> </Flexbox>
+        <Flexbox flexGrow={ 1 } justifyContent='space-around' alignItems='baseline'>
+          <Flexbox alignItems='center' style={ { marginTop: '25px' } }>
+            { this.displayFinalTally(true) }
+            { _.keys(this.state.players).length > 4 && this.displayFinalTally(false) }
+          </Flexbox>
+          <Flexbox alignItems='center'>
+            { (this.state.rounds && this.state.currentRound && this.state.rounds[this.state.currentRound] && this.state.rounds[this.state.currentRound].resolution) ?
+              <ResolutionAndChance isOverview={ true } managingSocket={ this.state.managingSocket } round={ this.state.rounds[this.state.currentRound] } currentRound={ this.state.currentRound } horizontal={ true } />
+              :
+              <Flexbox />
+            }
+          </Flexbox>
+        </Flexbox>
+      </Flexbox>
+      :
+      <Flexbox />
+  }
+
+  renderVotingDisplay = () => {
+    return this.state.currentRound > 1 ?
+      <Flexbox id='Show votes here' style={ Object.assign({}, individualBox, { marginTop: '15px', background: '#E5E8E8' }) } flexDirection='column'>
+        <Flexbox flexShrink={ 1 } justifyContent='flex-start' alignItems='flex-start' style={ { marginTop: '-3px' } }> <font color={ colors.DARK_GRAY }> Previous Round </font> </Flexbox>
+        { (this.state.rounds && this.state.currentRound - 1 >= 0 && this.state.rounds[this.state.currentRound - 1]) &&
+          <Flexbox flexGrow={ 1 } justifyContent='space-around'>
+            <DisplayVotes round={ this.state.rounds[this.state.currentRound] } previousRound={ this.state.rounds[this.state.currentRound - 1] } />
+            <ResolutionAndChance isOverview={ true } managingSocket={ this.state.managingSocket } round={ this.state.rounds[this.state.currentRound - 1] } currentRound={ this.state.currentRound - 1 } horizontal={ true } />
+          </Flexbox>
+        }
+      </Flexbox>
+      :
+      <Flexbox />
+  }
+
+  renderOpenActions = () => {
+    return this.state.openActions ?
+      <Flexbox>
+        <Dialog title={ 'Player Actions Round ' + this.state.currentRound } open={ this.state.openActions } modal={ true }>
+          <Flexbox flexDirection='column' flexGrow={ 1 }>
+            <Flexbox alignItems='center' flexDirection='column' flexGrow={ 1 }>
+              { this.displayPlayerActions() }
+            </Flexbox>
+            <Flexbox flexGrow={ 1 } justifyContent='flex-end'>
+              <font> { this.state.indicator < 11 ? this.state.indicator : '' } </font>
+            </Flexbox>
+          </Flexbox>
+        </Dialog>
+      </Flexbox>
+      :
+      <Flexbox />
+  }
+
+  renderGameInProgressDisplay = () => {
+    return(
+      <Flexbox flexGrow={ 1 } flexDirection='column'>
+        <Flexbox flexGrow={ 1 } flexDirection='column' alignItems='center'>
+          <font size={ 6 }> { this.state.roomName } Overview </font>
+        </Flexbox>
+        <Flexbox id='Show players and parties' flexDirection='row' justifyContent='center' style={ Object.assign({}, { marginTop: '15px' }, individualBox) }>
+          <Flexbox flexShrink={ 1 } justifyContent='flex-start' alignItems='flex-start' style={ { marginTop: '-3px' } }> <font size={ 2 } color={ colors.DARK_GRAY }> Players </font> </Flexbox>
+          { this.state.currentRound === 0 ? this.renderPlayersAssemblingList() : this.renderPartiesAssembled() }
+        </Flexbox>
+        { this.renderResolutionAndChance() }
+        { this.renderVotingDisplay() }
+        { this.renderOpenActions() }
+      </Flexbox>
+    )
+  }
+
+  renderGameOverviewScreen = () => {
+    return (this.state.endGame && this.state.endGame.finalWinners) ? <EndGame dispatch={ this.state.dispatch } endGame={ this.state.endGame } isOverviewScreen={ true } /> : this.renderGameInProgressDisplay()
+  }
+
   render() {
     return (
       <Flexbox flexDirection='column'>
-      { this.state.gameClosed ?
-        <Flexbox> Either game session has ended or unable to locate game </Flexbox>
-        :
-        <div>
-          { (this.state.endGame && this.state.endGame.finalWinners) ?
-            <EndGame dispatch={ this.state.dispatch } endGame={ this.state.endGame } isOverviewScreen={ true } />
-            :
-            <Flexbox flexGrow={ 1 } flexDirection='column'>
-              <Flexbox flexGrow={ 1 } flexDirection='column' alignItems='center'>
-                <font size={ 6 }> { this.state.roomName } Overview </font>
-              </Flexbox>
-
-              <Flexbox id='Show players and parties' flexDirection='row' justifyContent='center' style={ Object.assign({}, { marginTop: '15px' }, individualBox) }>
-                <Flexbox flexShrink={ 1 } justifyContent='flex-start' alignItems='flex-start' style={ { marginTop: '-3px' } }> <font size={ 2 } color={ colors.DARK_GRAY }> Players </font> </Flexbox>
-                { this.state.currentRound === 0 ?
-                  <Flexbox flexGrow={ 1 } justifyContent='space-around'>
-                    { _.map(this.state.players, (value, key) => (
-                        <font key={ key } color={ value.isReady ? allColorHexes[value.party - 1] : colors.DARK_BLUE } style={ { margin: '10px' } }> { value.name } </font>
-                      ))
-                    }
-                  </Flexbox>
-                  :
-                  <Flexbox flexGrow={ 1 } flexDirection='row' justifyContent='space-around'>
-                    { _.map(this.state.parties, (value, key) => (
-                      <Flexbox key={ key + this.currentRoundPartyCardsContainsParty(value.partyName).toString() } flexDirection='column' alignItems='center'>
-                        <Flexbox alignItems='baseline'>
-                          <font size={ 5 } color={ allColorHexes[key - 1] }> { value.partyName } </font>
-                          <div style={ { marginLeft: '7px' } }> { this.currentRoundPartyCardsContainsParty(value.partyName) && svgIcon('smallCheckmark') } </div>
-                        </Flexbox>
-                        <Flexbox flexDirection='column' style={ { marginTop: '10px' } }>
-                          { value.players.map((entry, index) => (
-                            <Flexbox key={ index + this.currentRoundVotesContainsPlayer(entry).toString() }>
-                              <font size={ 3 } key={ index }> { entry } </font>
-                              <div style={ { marginLeft: '7px' } }> { this.currentRoundVotesContainsPlayer(entry) && svgIcon('singleCheck') } </div>
-                            </Flexbox>
-                            ))
-                          }
-                        </Flexbox>
-                      </Flexbox>
-                      ))
-                    }
-                  </Flexbox>
-                }
-              </Flexbox>
-
-              { !_.isEmpty(this.state.rounds) &&
-                <Flexbox id='Show rounds here' justifyContent='center' flexGrow={ 1 } style={ Object.assign({}, { marginTop: '15px' }, individualBox) } flexDirection='column'>
-                  <Flexbox flexShrink={ 1 } justifyContent='flex-start' alignItems='flex-start' style={ { marginTop: '-3px' } }> <font size={ 3 } color={ colors.DARK_GRAY }> Round <b> { this.state.currentRound } </b> </font> </Flexbox>
-                  <Flexbox flexGrow={ 1 } justifyContent='space-around' alignItems='baseline'>
-                    <Flexbox alignItems='center' style={ { marginTop: '25px' } }>
-                      { this.displayFinalTally(true) }
-                      { _.keys(this.state.players).length > 4 && this.displayFinalTally(false) }
-                    </Flexbox>
-                    <Flexbox alignItems='center'>
-                      { (this.state.rounds && this.state.currentRound && this.state.rounds[this.state.currentRound] && this.state.rounds[this.state.currentRound].resolution) ?
-                        <ResolutionAndChance isOverview={ true } managingSocket={ this.state.managingSocket } round={ this.state.rounds[this.state.currentRound] } currentRound={ this.state.currentRound } horizontal={ true } />
-                        :
-                        <Flexbox />
-                      }
-                    </Flexbox>
-                  </Flexbox>
-                </Flexbox>
-              }
-
-              { this.state.currentRound > 1 &&
-                <Flexbox id='Show votes here' style={ Object.assign({}, individualBox, { marginTop: '15px', background: '#E5E8E8' }) } flexDirection='column'>
-                  <Flexbox flexShrink={ 1 } justifyContent='flex-start' alignItems='flex-start' style={ { marginTop: '-3px' } }> <font color={ colors.DARK_GRAY }> Previous Round </font> </Flexbox>
-                  { (this.state.rounds && this.state.currentRound - 1 >= 0 && this.state.rounds[this.state.currentRound - 1]) &&
-                    <Flexbox flexGrow={ 1 } justifyContent='space-around'>
-                      <DisplayVotes round={ this.state.rounds[this.state.currentRound] } previousRound={ this.state.rounds[this.state.currentRound - 1] } />
-                      <ResolutionAndChance isOverview={ true } managingSocket={ this.state.managingSocket } round={ this.state.rounds[this.state.currentRound - 1] } currentRound={ this.state.currentRound - 1 } horizontal={ true } />
-                    </Flexbox>
-                  }
-                </Flexbox>
-              }
-
-              { this.state.openActions ?
-                <Flexbox>
-                  <Dialog title={ 'Player Actions Round ' + this.state.currentRound } open={ this.state.openActions } modal={ true }>
-                    <Flexbox flexDirection='column' flexGrow={ 1 }>
-                      <Flexbox alignItems='center' flexDirection='column' flexGrow={ 1 }>
-                        { this.displayPlayerActions() }
-                      </Flexbox>
-                      <Flexbox flexGrow={ 1 } justifyContent='flex-end'>
-                        <font> { this.state.indicator < 11 ? this.state.indicator : '' } </font>
-                      </Flexbox>
-                    </Flexbox>
-                  </Dialog>
-                </Flexbox>
-                :
-                <Flexbox />
-              }
-            </Flexbox>
-          }
-        </div>
-      }
-      { /* this.state.playSound && <Sound url='http://sfxcontent.s3.amazonaws.com/soundfx/cash-register.mp3' playStatus={ 'PLAYING' } onFinishedPlaying={ this.changePlaySound } /> -- Error with Safari 11 */ }
-      <Snackbar open={ this.state.bribeSentOut } message={'Bribe sent out for ' + this.state.bribeAmount + ' political capital'} autoHideDuration={ 20000 } onRequestClose={ this.closeBribeSentOut } />
+        { this.state.gameClosed ?
+          <Flexbox> Either game session has ended or unable to locate game </Flexbox>
+          :
+          this.renderGameOverviewScreen()
+        }
+        { /* this.state.playSound && <Sound url='http://sfxcontent.s3.amazonaws.com/soundfx/cash-register.mp3' playStatus={ 'PLAYING' } onFinishedPlaying={ this.changePlaySound } /> -- Error with Safari 11 */ }
+        <Snackbar open={ this.state.bribeSentOut } message={'Bribe sent out for ' + this.state.bribeAmount + ' political capital'} autoHideDuration={ 20000 } onRequestClose={ this.closeBribeSentOut } />
       </Flexbox>
     )
   }
@@ -402,6 +445,6 @@ export default GameOverview
 
 // eslint-disable-next-line
 String.prototype.replaceAll = function(str1, str2, ignore) {
-	// eslint-disable-next-line
+  // eslint-disable-next-line
   return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g,"\\$&"),(ignore?"gi":"g")),(typeof(str2)=="string")?str2.replace(/\$/g,"$$$$"):str2);
 }
