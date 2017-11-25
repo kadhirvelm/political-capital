@@ -309,7 +309,19 @@ class PoliticalCapitalGame extends Component {
     return !this.state.firstFetchedGame
   }
 
-  partyCards = () => <PartyCards id='PartyCards' dispatch={ this.state.dispatch } managingSocket={ this.state.managingSocket } parties={ this.state.parties } round={ this.state.rounds[this.state.currentRound] } playerParty={ this.state.playerParty } playerPartyName={ this.state.playerPartyName } selectedPartyCard={ this.state.selectedPartyCard } />
+  partyCardProps = () => {
+    return {
+      id: 'PartyCards',
+      dispatch: this.state.dispatch,
+      managingSocket: this.state.managingSocket,
+      parties: this.state.parties,
+      round: this.state.rounds[this.state.currentRound],
+      playerParty: this.state.playerParty,
+      playerPartyName: this.state.playerPartyName,
+      selectedPartyCard: this.state.selectedPartyCard,
+    }
+  }
+  partyCards = () => <PartyCards { ...this.partyCardProps() } />
 
   renderEndGame = () => {
     return (
@@ -474,9 +486,22 @@ class PoliticalCapitalGame extends Component {
     )
   }
 
-  renderToolsComponent = () => <Tools managingSocket={ this.state.managingSocket } rounds={ this.state.rounds } parties={ this.state.parties } players={ this.state.players } playerName={ this.state.playerName } playerParty={ this.state.playerParty }
-    playerPartyName={ this.state.playerPartyName } connectedRoom={ this.state.connectedRoom } currentRound={ this.state.currentRound }
-    openTryingToDisconnect={ this.openTryingToDisconnect } />
+  toolsProps = () => {
+    return {
+      managingSocket: this.state.managingSocket,
+      rounds: this.state.rounds,
+      parties: this.state.parties,
+      players: this.state.players,
+      playerName: this.state.playerName,
+      playerParty: this.state.playerParty,
+      playerPartyName: this.state.playerPartyName,
+      connectedRoom: this.state.connectedRoom,
+      currentRound: this.state.currentRound,
+      openTryingToDisconnect: this.openTryingToDisconnect,
+    }
+  }
+
+  renderToolsComponent = () => <Tools { ...this.toolsProps() } />
 
   renderTools = () => {
     return(

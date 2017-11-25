@@ -48,19 +48,6 @@ class CommonwealthConnect extends PoliticalCapitalConnect {
       </Flexbox>
     )
   }
-
-  render(){
-    return(
-      <Flexbox id='Room Setup' flexDirection='column' flexGrow={ 1 }>
-        { this.renderHeaders() }
-        { this.renderPlayerPartyPicker() }
-        { this.renderPlayers() }
-        { this.renderReadyButton() }
-        { this.renderSettings() }
-        { this.renderSubmitNameDialog() }
-      </Flexbox>
-    )
-  }
 }
 
 export default CommonwealthConnect

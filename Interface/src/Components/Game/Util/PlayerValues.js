@@ -82,30 +82,25 @@ class Vote extends Component {
     return (<div> If it <font color={ this.typeColor(type) }> <b> { type } </b> </font> then you will get <font color={ this.typeColor(type) }> { main } </font> </div>)
   }
 
-  renderPoliticalCapitalCount = () => {
+  renderPlayerValueDisplay = (tooltip, icon, value) => {
     return(
       <Flexbox alignItems='center' justifyContent='center' style={ playerInfo }>
-        <IconButton tooltip='Political Capital'>
-          { svgIcon('coinDollar') }
+        <IconButton tooltip={ tooltip }>
+          { svgIcon(icon) }
         </IconButton>
         <font size={ 5 } color={ colors.DARK_GRAY } style={ { marginLeft: '15px' } }>
-          { this.state.players[this.state.playerName].politicalCapital }
+          { this.state.players[this.state.playerName][value] }
         </font>
       </Flexbox>
     )
   }
 
+  renderPoliticalCapitalCount = () => {
+    return this.renderPlayerValueDisplay('Political Capital', 'coinDollar', 'politicalCapital')
+  }
+
   renderSenatorCount = () => {
-    return(
-      <Flexbox alignItems='center' justifyContent='center' style={ playerInfo }>
-        <IconButton tooltip='Senators'>
-          { svgIcon('senator') }
-        </IconButton>
-        <font size={ 5 } color={ colors.DARK_GRAY } style={ { marginLeft: '15px' } }>
-          { this.state.players[this.state.playerName].senators }
-        </font>
-      </Flexbox>
-    )
+    return this.renderPlayerValueDisplay('Senators', 'senator', 'senators')
   }
 
   render() {

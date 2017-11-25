@@ -8,11 +8,11 @@ import IconButton from 'material-ui/IconButton'
 import TextField from 'material-ui/TextField'
 import Drawer from 'material-ui/Drawer'
 import MenuItem from 'material-ui/MenuItem'
-import SelectField from 'material-ui/SelectField'
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table'
 import Divider from 'material-ui/Divider'
 import Subheader from 'material-ui/Subheader'
 
+import { listOfPlayers } from './util.js'
 import { colors, allColorHexes } from '../../../styles/colors'
 import { _ } from 'underscore'
 import { curry, map, sum, sortWith, descend } from 'ramda'
@@ -48,19 +48,7 @@ class Tools extends Component {
   }
 
   handlePlayerSelection = (event, index, value) => {
-    console.log(this.state)
     this.setState({ selectedPlayer: value })
-  }
-
-  listOfPlayers = () => {
-    return(
-      <SelectField value={ this.state.selectedPlayer } floatingLabelText='Select Player' onChange={ this.handlePlayerSelection }>
-        { _.filter(_.values(this.state.players), (player) => player.name !== this.state.playerName).map((player) => (
-          <MenuItem key={ player.name } value={ player.name } primaryText={ player.name } />
-        ))
-        }
-      </SelectField>
-    )
   }
 
   hasPoliticalCapital = () => {
@@ -143,7 +131,7 @@ class Tools extends Component {
           </Flexbox>
         </Flexbox>
         <Flexbox>
-          { this.listOfPlayers() }
+          { listOfPlayers(this.state, this.handlePlayerSelection) }
           <TextField style={ { width: '75px', marginLeft: '10px' } } value={ this.state.amount || '' } floatingLabelText='Amount' onChange={ this.changeAmount } errorText={ !this.hasPoliticalCapital() ? 'To High' : '' } />
         </Flexbox>
         <RaisedButton label={ this.state.confirmed ? 'Confirm' : 'Transfer' } primary={ this.state.confirmed } onTouchTap={ this.state.confirmed ? this.handleTransferPoliticalCapital : this.changeConfirmed } disabled={ !this.hasPoliticalCapital() } />

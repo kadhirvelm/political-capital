@@ -2,14 +2,14 @@ import React, { Component } from 'react'
 import Flexbox from 'flexbox-react'
 
 import RaisedButton from 'material-ui/RaisedButton'
-import SelectField from 'material-ui/SelectField'
-import MenuItem from 'material-ui/MenuItem'
 import DisplayVotes from './DisplayVotes'
 
 import { svgIcon } from '../../../Images/icons'
 import { colors, allColorHexes } from '../../../styles/colors'
 
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table'
+
+import { listOfPlayers } from './util.js'
 
 import { _ } from 'underscore'
 import { map, curry, sum, sortWith, ascend } from 'ramda'
@@ -78,17 +78,6 @@ class EndRoundLogistics extends Component {
     this.state.managingSocket.emit('recordAction', { selectedPlayer: value, card: this.playerPlayedCard(), confirmed: false })
   }
 
-  listOfPlayers = () => {
-    return(
-      <SelectField value={ this.state.selectedPlayer } floatingLabelText='Select Player' onChange={ this.handlePlayerSelection }>
-        { _.filter(_.values(this.state.players), (player) => player.name !== this.state.playerName).map((player) => (
-          <MenuItem key={ player.name } value={ player.name } primaryText={ player.name } />
-        ))
-        }
-      </SelectField>
-    )
-  }
-
   playerPlayedCard = () => {
     return this.state.round.handleThesePartyCards[this.state.playerName]
   }
@@ -115,7 +104,7 @@ class EndRoundLogistics extends Component {
           <font size={ 4 }> <b> You have to { this.playerPlayedCard() }! </b> </font>
         </Flexbox>
         <Flexbox flexGrow={ 1 } flexDirection='column' alignItems='center'>
-          { this.listOfPlayers() }
+          { listOfPlayers(this.state, this.handlePlayerSelection) }
           <RaisedButton fullWidth={ true } primary={ true } label={ this.playerPlayedCard() } onTouchTap={ this.handlePlayerPartyCard } disabled={ _.isUndefined(this.state.selectedPlayer) } />
         </Flexbox>
       </Flexbox>
@@ -328,14 +317,23 @@ class EndRoundLogistics extends Component {
     )
   }
 
+  renderPlayerItemDisplay = (icon, value) => {
+    return <Flexbox alignItems='center'>
+      { svgIcon(icon, this.color(this.changeAmount(value))) }
+      <font color={ this.color(this.changeAmount(value)) } style={ { marginLeft: '10px' } }>
+        { this.state.players[this.state.playerName][value] }
+      </font>
+    </Flexbox>
+  }
+
   renderShowCalculationsButton = (playerLogic) => {
     return(
       <Flexbox flexDirection='column' flexGrow={ 1 } style={ this.state.showCalculations ? { marginBottom: '15px', borderStyle: 'solid', borderRadius: '10px', borderColor: colors.DARKER_PASTEL, borderWidth: '0.5px', padding: '7px', background: colors.SLIGHTLY_DARKER_PASTEL } : { marginBottom: '15px' } }>
         <Flexbox flexGrow={ 1 } justifyContent='flex-start'>
           <RaisedButton label={ (this.state.showCalculations ? 'Close' : 'Show') + ' Calculations' } secondary={ this.state.showCalculations } onTouchTap={ this.showCalculations } />
           <Flexbox flexGrow={ 1 } justifyContent='space-around'>
-            <Flexbox alignItems='center'> { svgIcon('coinDollar', this.color(this.changeAmount('politicalCapital'))) } <font color={ this.color(this.changeAmount('politicalCapital')) } style={ { marginLeft: '10px' } }> { this.state.players[this.state.playerName].politicalCapital } </font> </Flexbox>
-            <Flexbox alignItems='center'> { svgIcon('senator', this.color(this.changeAmount('senators'))) } <font color={ this.color(this.changeAmount('senators')) } style={ { marginLeft: '10px' } }> { this.state.players[this.state.playerName].senators } </font> </Flexbox>
+            { this.renderPlayerItemDisplay('coinDollar', 'politicalCapital') }
+            { this.renderPlayerItemDisplay('senator', 'senators') }
           </Flexbox>
         </Flexbox>
         { (this.state.showCalculations && playerLogic) && this.renderIsDiplayingCalculationLogic(playerLogic) }
