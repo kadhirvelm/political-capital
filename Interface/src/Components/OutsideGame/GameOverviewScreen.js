@@ -7,15 +7,15 @@ import { svgIcon } from '../../Images/icons'
 import '../../styles/Transitions.css'
 
 import EndGame from './EndGame'
-import ResolutionAndChance from './Game/ResolutionAndChance'
-import DisplayVotes from './Game/DisplayVotes'
+import ResolutionAndChance from '../Game/ResolutionAndChance'
+import DisplayVotes from '../Game/Util/DisplayVotes'
 
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table'
 import Dialog from 'material-ui/Dialog'
 import Snackbar from 'material-ui/Snackbar'
 
 // import Sound from 'react-sound'
-import { totalPartyAverageWorth, selectedPartyStyle, baseActionStyle } from '../Game/Util/util.js'
+import { totalPartyAverageWorth, selectedPartyStyle, basePartyStyle } from '../Game/Util/util.js'
 
 import { map, sortWith, descend, ascend } from 'ramda'
 
@@ -226,7 +226,7 @@ class GameOverview extends Component {
 
   renderPlayerAction = (fromPlayer, properties) => {
     return(
-      <Flexbox flexDirection='column' alignItems='center' justifyContent='space-between' style={ properties.confirmed ? selectedPartyStyle : baseActionStyle }>
+      <Flexbox flexDirection='column' alignItems='center' justifyContent='space-between' style={ properties.confirmed ? selectedPartyStyle : basePartyStyle }>
         <Flexbox flexDirection='column' alignItems='center'> <font size={ 5 }> { fromPlayer } </font> <font size={ 2 } style={ { marginTop: '10px' } }> &nbsp; will </font> </Flexbox>
         <Flexbox> <font size={ 6 } color={ properties.card === 'Steal' ? colors.MEDIUM_BLUE : colors.ORANGE }> <b> { properties.card } </b> </font> </Flexbox>
         <Flexbox flexBasis='50%' flexDirection='column' alignItems='center'> <font size={ 2 }> from &nbsp; </font> <font size={ 5 } style={ { marginTop: '10px' } }> { properties.selectedPlayer || 'Picking...' } </font> </Flexbox>
