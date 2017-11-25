@@ -9,8 +9,7 @@ import CommonwealthTools from './Tools'
 import { commonwealthAllColors, commonwealthAllColorHexes } from '../../../styles/colors'
 
 class CommonwealthGame extends PoliticalCapitalGame {
-
-  resolutionAndChance = () => <CommonwealthResolutionAndChance playerParty={ this.state.playerParty } managingSocket={ this.state.managingSocket } round={ this.state.rounds[this.state.currentRound] } currentRound={ this.state.currentRound } />
+  resolutionAndChance = () => <CommonwealthResolutionAndChance playerParty={ this.state.playerParty } { ...this.renderResolutionAndChangeProps() } />
   partyCards = () => <CommonwealthPartyCards { ...this.partyCardProps() } />
 
   renderNameAndParty = () => {

@@ -15,36 +15,13 @@ import Dialog from 'material-ui/Dialog'
 import Snackbar from 'material-ui/Snackbar'
 
 // import Sound from 'react-sound'
-import { totalPartyAverageWorth } from '../Game/Util/util.js'
+import { totalPartyAverageWorth, selectedPartyStyle, baseActionStyle } from '../Game/Util/util.js'
 
 import { map, sortWith, descend, ascend } from 'ramda'
 
 const io = require('socket.io-client')
 
 const individualBox = { borderColor: colors.DARKER_PASTEL, borderStyle: 'solid', borderWidth: '1px', padding: '10px', backgroundColor: colors.SLIGHTLY_DARKER_PASTEL }
-
-const baseActionStyle = {
-  background: '#FFFFFF',
-  borderRadius: '10px',
-  borderColor: colors.LIGHT_GRAY,
-  borderStyle: 'solid',
-  borderWidth: '1px',
-  margin: '10px',
-  padding: '10px',
-  height: 250,
-  minWidth: '125px',
-  width: '30%',
-}
-
-const confirmedActionStyle = _.extend(_.clone(baseActionStyle), {
-  borderColor: '#F2BD1E',
-  background: '#FFECB5',
-  borderStyle: 'solid',
-  borderWidth: '3px',
-  height: 250,
-  minWidth: '125px',
-  width: '30%',
-})
 
 class GameOverview extends Component {
   constructor(props){
@@ -249,7 +226,7 @@ class GameOverview extends Component {
 
   renderPlayerAction = (fromPlayer, properties) => {
     return(
-      <Flexbox flexDirection='column' alignItems='center' justifyContent='space-between' style={ properties.confirmed ? confirmedActionStyle : baseActionStyle }>
+      <Flexbox flexDirection='column' alignItems='center' justifyContent='space-between' style={ properties.confirmed ? selectedPartyStyle : baseActionStyle }>
         <Flexbox flexDirection='column' alignItems='center'> <font size={ 5 }> { fromPlayer } </font> <font size={ 2 } style={ { marginTop: '10px' } }> &nbsp; will </font> </Flexbox>
         <Flexbox> <font size={ 6 } color={ properties.card === 'Steal' ? colors.MEDIUM_BLUE : colors.ORANGE }> <b> { properties.card } </b> </font> </Flexbox>
         <Flexbox flexBasis='50%' flexDirection='column' alignItems='center'> <font size={ 2 }> from &nbsp; </font> <font size={ 5 } style={ { marginTop: '10px' } }> { properties.selectedPlayer || 'Picking...' } </font> </Flexbox>
@@ -306,12 +283,16 @@ class GameOverview extends Component {
     this.setState({ bribeSentOut: false, bribeAmount: '' })
   }
 
+  currentRoundContais = (key, value) => {
+    return _.contains(_.keys(this.state.rounds[this.state.currentRound][key]), value)
+  }
+
   currentRoundPartyCardsContainsParty = (party) => {
-    return _.contains(_.keys(this.state.rounds[this.state.currentRound].partyCards), party)
+    return this.currentRoundContais('partyCards', party)
   }
 
   currentRoundVotesContainsPlayer = (player) => {
-    return _.contains(_.keys(this.state.rounds[this.state.currentRound].individualVotes), player)
+    return this.currentRoundContais('individualVotes', player)
   }
 
   renderPlayersAssemblingList = () => {

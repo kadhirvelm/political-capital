@@ -8,31 +8,9 @@ import RaisedButton from 'material-ui/RaisedButton'
 import { colors } from '../../styles/colors'
 
 import { _ } from 'underscore'
+import { selectedPartyStyle, basePartyStyle } from './Util/util.js'
 
 import { keys, filter, length, map, curry, flatten } from 'ramda'
-
-const basePartyStyle = {
-  background: '#FFFFFF',
-  borderRadius: '10px',
-  borderColor: colors.LIGHT_GRAY,
-  borderStyle: 'solid',
-  borderWidth: '1px',
-  margin: '10px',
-  padding: '10px',
-  height: 250,
-  minWidth: '125px',
-  width: '30%',
-}
-
-const selectedPartyStyle = _.extend(_.clone(basePartyStyle), {
-  borderColor: '#F2BD1E',
-  background: '#FFECB5',
-  borderStyle: 'solid',
-  borderWidth: '3px',
-  height: 250,
-  minWidth: '125px',
-  width: '30%',
-})
 
 class PartyCards extends Component {
   constructor(props){

@@ -76,9 +76,13 @@ class PoliticalCapitalGame extends Component {
     }
   }
 
+  identifyPlayer = () => {
+    this.state.managingSocket.emit('identifyPlayer', this.state.playerName, this.state.playerParty, this.state.playerPartyName)
+  }
+
   componentDidMount(){
     this.handleSocketConnections()
-    this.state.managingSocket.emit('identifyPlayer', this.state.playerName, this.state.playerParty, this.state.playerPartyName)
+    this.identifyPlayer()
   }
 
   componentWillUnmount(){
@@ -202,7 +206,7 @@ class PoliticalCapitalGame extends Component {
     this.state.managingSocket.on('reconnect_failed', () => { })
 
     this.state.managingSocket.on('reconnect', () => {
-      this.state.managingSocket.emit('identifyPlayer', this.state.playerName, this.state.playerParty, this.state.playerPartyName)
+      this.identifyPlayer()
       this.state.managingSocket.emit('getFullGame')
     })
   }
@@ -345,10 +349,18 @@ class PoliticalCapitalGame extends Component {
     )
   }
 
+  renderResolutionAndChangeProps = () => {
+    return {
+      managingSocket: this.state.managingSocket,
+      round: this.state.rounds[this.state.currentRound],
+      currentRound: this.state.currentRound,
+    }
+  }
+
   resolutionAndChance = () => {
     return (
       <Flexbox justifyContent='center'>
-        <ResolutionAndChance managingSocket={ this.state.managingSocket } round={ this.state.rounds[this.state.currentRound] } currentRound={ this.state.currentRound } />
+        <ResolutionAndChance { ...this.renderResolutionAndChangeProps() } />
       </Flexbox>
     )
   }

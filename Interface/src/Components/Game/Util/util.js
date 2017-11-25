@@ -24,3 +24,26 @@ export function returnWinner(state) {
 export function totalPartyAverageWorth(party){
   return sum(_.map(party.players, (player) => this.state.rounds[this.state.currentRound].currentRoundStats[player].politicalCapital)) / party.players.length
 }
+
+export const basePartyStyle = {
+  background: '#FFFFFF',
+  borderRadius: '10px',
+  borderColor: colors.LIGHT_GRAY,
+  borderStyle: 'solid',
+  borderWidth: '1px',
+  margin: '10px',
+  padding: '10px',
+  height: 250,
+  minWidth: '125px',
+  width: '30%',
+}
+
+export const selectedPartyStyle = _.extend(_.clone(basePartyStyle), {
+  borderColor: '#F2BD1E',
+  background: '#FFECB5',
+  borderStyle: 'solid',
+  borderWidth: '3px',
+  height: 250,
+  minWidth: '125px',
+  width: '30%',
+})
