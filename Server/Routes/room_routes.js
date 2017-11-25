@@ -18,20 +18,24 @@ module.exports = function(app, io, db) {
 		}
 	}
 
+	function createNewRoom(req, res){
+		var gameManager = createGameManager(req.body.gameType || 'Vanilla', gameName, undefined, req.body.admin);
+		var newRoom = { gameType: req.body.gameType || 'Vanilla', roomName: gameName, password: req.body.password, admin: req.body.admin, gameManager: reduceGamemanager(gameManager), inGame: false, players: {}, settings: {} };
+		db.collection('rooms').insert(newRoom, (err, result) => {
+			if (err) {
+				res.send({ 'error': err });
+			} else {
+				gameManager.updateRoomID(result.ops[0]._id.toString())
+				currentGameManagers.push(gameManager);
+				res.send(result.ops[0]);
+			}
+		})
+	}
+
 	app.post('/rooms', (req, res) => {
 		const gameName = req.body.roomName.replaceAll(' ', '%20');
 		if (!R.contains(gameName.hashCode(), currentGameManagers)) {
-			var gameManager = createGameManager(req.body.gameType || 'Vanilla', gameName, undefined, req.body.admin);
-			const newRoom = { gameType: req.body.gameType || 'Vanilla', roomName: gameName, password: req.body.password, admin: req.body.admin, gameManager: reduceGamemanager(gameManager), inGame: false, players: {}, settings: {} };
-			db.collection('rooms').insert(newRoom, (err, result) => {
-				if (err) {
-					res.send({ 'error': err });
-				} else {
-					gameManager.updateRoomID(result.ops[0]._id.toString())
-					currentGameManagers.push(gameManager);
-					res.send(result.ops[0]);
-				}
-			})
+			createNewRoom(req, res)
 		} else {
 			res.status(400).send({ 'error': 'Duplicate game name not allowed.' })
 		}
@@ -111,7 +115,6 @@ module.exports = function(app, io, db) {
 			default:
 				return new GameManager(io, gameManagerName, roomID || 'PENDING', deleteRoom, db, admin, settings);
 		}
-		
 	}
 
 	deleteRoom = (roomID, callback) => {
