@@ -259,18 +259,24 @@ class PoliticalCapital extends Component {
     )
   }
 
+  renderChangeArrow = (changePlayerParty, icon) => {
+    return !this.state.playerReady ? <IconButton onTouchTap={ this.curryChangePlayerParty(changePlayerParty) }> { svgIcon(icon) } </IconButton> : <div />
+  }
+
+  renderPartySelectButtonIcon = () => undefined
+
   renderPlayerPartyPicker = () => {
     return(
       <Flexbox flexDirection='column'>
         <Flexbox alignItems='center' justifyContent='center'>
           <Flexbox>
-            { !this.state.playerReady && <IconButton onTouchTap={ this.curryChangePlayerParty(false) }> { svgIcon('arrow_left') } </IconButton> }
+            { this.renderChangeArrow(false, 'arrow_left') }
           </Flexbox>
           <Flexbox flexBasis='75%'>
-            <RaisedButton fullWidth={ true } label={ this.allColors[this.state.playerParty - 1] } backgroundColor={ this.allColorHexes[this.state.playerParty - 1] } onTouchTap={ !this.state.playerReady && this.curryChangePlayerParty(true) } style={ { width: '20%', margin: '3px' } } />
+            <RaisedButton fullWidth={ true } label={ this.allColors[this.state.playerParty - 1] } icon={ this.renderPartySelectButtonIcon } backgroundColor={ this.allColorHexes[this.state.playerParty - 1] } onTouchTap={ !this.state.playerReady && this.curryChangePlayerParty(true) } style={ { width: '20%', margin: '3px' } } />
           </Flexbox>
           <Flexbox>
-            { !this.state.playerReady && <IconButton onTouchTap={ this.curryChangePlayerParty(true) }> { svgIcon('arrow_right') } </IconButton> }
+            { this.renderChangeArrow(true, 'arrow_right') }
           </Flexbox>
         </Flexbox>
       </Flexbox>
@@ -415,9 +421,3 @@ class PoliticalCapital extends Component {
 }
 
 export default PoliticalCapital
-
-// eslint-disable-next-line
-String.prototype.replaceAll = function(str1, str2, ignore) {
-  // eslint-disable-next-line
-  return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g,"\\$&"),(ignore?"gi":"g")),(typeof(str2)=="string")?str2.replace(/\$/g,"$$$$"):str2);
-}

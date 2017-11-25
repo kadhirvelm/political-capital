@@ -15,8 +15,9 @@ import Dialog from 'material-ui/Dialog'
 import Snackbar from 'material-ui/Snackbar'
 
 // import Sound from 'react-sound'
+import { totalPartyAverageWorth } from '../Game/Util/util.js'
 
-import { map, sum, sortWith, descend, ascend } from 'ramda'
+import { map, sortWith, descend, ascend } from 'ramda'
 
 const io = require('socket.io-client')
 
@@ -196,8 +197,7 @@ class GameOverview extends Component {
     return {}
   }
 
-  totalPartyAverageWorth = (party) => sum(_.map(party.players, (player) => this.state.rounds[this.state.currentRound].currentRoundStats[player].politicalCapital)) / party.players.length
-  sortParties = sortWith([ descend(this.totalPartyAverageWorth) ])
+  sortParties = sortWith([ descend(totalPartyAverageWorth) ])
 
   playerPoliticalCapital = (player) => this.state.rounds[this.state.currentRound].currentRoundStats[player.name].politicalCapital
   sortPlayers = sortWith([ descend(this.playerPoliticalCapital) ])
@@ -442,9 +442,3 @@ class GameOverview extends Component {
 }
 
 export default GameOverview
-
-// eslint-disable-next-line
-String.prototype.replaceAll = function(str1, str2, ignore) {
-  // eslint-disable-next-line
-  return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g,"\\$&"),(ignore?"gi":"g")),(typeof(str2)=="string")?str2.replace(/\$/g,"$$$$"):str2);
-}

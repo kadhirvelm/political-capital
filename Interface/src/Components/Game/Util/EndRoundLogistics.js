@@ -9,10 +9,10 @@ import { colors, allColorHexes } from '../../../styles/colors'
 
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table'
 
-import { listOfPlayers } from './util.js'
+import { listOfPlayers, returnWinner, totalPartyAverageWorth } from './util.js'
 
 import { _ } from 'underscore'
-import { map, curry, sum, sortWith, ascend } from 'ramda'
+import { map, curry, sortWith, ascend } from 'ramda'
 
 class EndRoundLogistics extends Component {
   constructor(props){
@@ -197,7 +197,7 @@ class EndRoundLogistics extends Component {
     return(
       <Flexbox flexDirection='column' flexBasis='auto'>
         <Flexbox flexDirection='column' alignItems='center' style={ { marginBottom: '15px' } }>
-          <font size={ 6 }> <b> { this.returnWinner() } </b> </font>
+          <font size={ 6 }> <b> { returnWinner(this.state) } </b> </font>
           <font size={ 2 }> Yes: { this.state.round.totalVotes.yes }, No: { this.state.round.totalVotes.no } </font>
         </Flexbox>
         <Flexbox flexGrow={ 1 } justifyContent='center' style={ { marginBottom: '15px' } }>
@@ -212,8 +212,7 @@ class EndRoundLogistics extends Component {
     )
   }
 
-  totalPartyAverageWorth = (party) => sum(_.map(party.players, (player) => this.state.rounds[this.state.currentRound].currentRoundStats[player].politicalCapital)) / party.players.length
-  sortParties = sortWith([ ascend(this.totalPartyAverageWorth) ])
+  sortParties = sortWith([ ascend(totalPartyAverageWorth) ])
 
   returnIndividualPlayers = (allParties) => {
     const allPartyEntries = this.sortParties(_.values(allParties))

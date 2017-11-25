@@ -1,7 +1,10 @@
 import SelectField from 'material-ui/SelectField'
 import MenuItem from 'material-ui/MenuItem'
 
+import { colors } from '../../../styles/colors'
+
 import { _ } from 'underscore'
+import { sum } from 'ramda'
 
 export function listOfPlayers(state, handlePlayerSelection){
   return(
@@ -12,4 +15,12 @@ export function listOfPlayers(state, handlePlayerSelection){
       }
     </SelectField>
   )
+}
+
+export function returnWinner(state) {
+  return state.previousRound.roundWinner === 'yes' ? <font color={ colors.GREEN }> Passes </font> : <font color={ colors.RED }> Fails </font>
+}
+
+export function totalPartyAverageWorth(party){
+  return sum(_.map(party.players, (player) => this.state.rounds[this.state.currentRound].currentRoundStats[player].politicalCapital)) / party.players.length
 }

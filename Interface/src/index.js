@@ -68,3 +68,9 @@ ReactDOM.render((
   </Provider>),
 document.getElementById('root')
 )
+
+// eslint-disable-next-line
+String.prototype.replaceAll = function(str1, str2, ignore) {
+  // eslint-disable-next-line
+  return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g,"\\$&"),(ignore?"gi":"g")),(typeof(str2)=="string")?str2.replace(/\$/g,"$$$$"):str2);
+}

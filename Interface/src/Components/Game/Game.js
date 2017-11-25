@@ -137,13 +137,17 @@ class PoliticalCapitalGame extends Component {
     })
   }
 
+  updateCurrentRoundDetailsWithGameInfo = (gameInfo) => {
+    this.setState(Object.assign({}, this.updateAllRounds(gameInfo.rounds), this.updateAllPlayers(gameInfo.players), this.updateAllParties(gameInfo.parties), this.updateCurrentRound(gameInfo.currentRound)))
+  }
+
   handleRoundUpdatingLogic = () => {
     this.state.managingSocket.on('updateRound', (rounds) => {
       this.setState(this.updateAllRounds(rounds))
     })
 
     this.state.managingSocket.on('nextRound', (gameInfo) => {
-      this.setState(Object.assign({}, this.updateAllRounds(gameInfo.rounds), this.updateAllPlayers(gameInfo.players), this.updateAllParties(gameInfo.parties), this.updateCurrentRound(gameInfo.currentRound)))
+      this.updateCurrentRoundDetailsWithGameInfo(gameInfo)
     })
 
     this.state.managingSocket.on('updateCurrentRoundDetails', (gameInfo) => {
@@ -169,7 +173,7 @@ class PoliticalCapitalGame extends Component {
     })
 
     this.state.managingSocket.on('allPartiesSelectedPartyCard', (gameInfo) => {
-      this.setState(Object.assign({}, this.updateAllRounds(gameInfo.rounds), this.updateAllPlayers(gameInfo.players), this.updateAllParties(gameInfo.parties), this.updateCurrentRound(gameInfo.currentRound)))
+      this.updateCurrentRoundDetailsWithGameInfo(gameInfo)
     })
   }
 

@@ -4,9 +4,6 @@ import Flexbox from 'flexbox-react'
 import PoliticalCapitalConnect from '../Connect'
 import { commonwealthAllColors, commonwealthAllColorHexes, colors } from '../../../styles/colors'
 
-import RaisedButton from 'material-ui/RaisedButton'
-import IconButton from 'material-ui/IconButton'
-
 import { svgIcon } from '../../../Images/icons'
 import { _ } from 'underscore'
 
@@ -23,22 +20,8 @@ class CommonwealthConnect extends PoliticalCapitalConnect {
     })
   }
 
-  renderPlayerPartyPicker = () => {
-    return(
-      <Flexbox flexDirection='column'>
-        <Flexbox alignItems='center' justifyContent='center'>
-          <Flexbox>
-            { !this.state.playerReady && <IconButton onTouchTap={ this.curryChangePlayerParty(false) }> { svgIcon('arrow_left') } </IconButton> }
-          </Flexbox>
-          <Flexbox flexBasis='75%'>
-            <RaisedButton fullWidth={ true } label={ this.allColors[this.state.playerParty - 1] } icon={ svgIcon(this.allColors[this.state.playerParty - 1]) } backgroundColor={ this.allColorHexes[this.state.playerParty - 1] } onTouchTap={ !this.state.playerReady && this.curryChangePlayerParty(true) } style={ { width: '20%', margin: '3px' } } />
-          </Flexbox>
-          <Flexbox>
-            { !this.state.playerReady && <IconButton onTouchTap={ this.curryChangePlayerParty(true) }> { svgIcon('arrow_right') } </IconButton> }
-          </Flexbox>
-        </Flexbox>
-      </Flexbox>
-    )
+  renderPartySelectButtonIcon = () => {
+    return svgIcon(this.allColors[this.state.playerParty - 1])
   }
 
   renderReadyPlayer = (entry) => {

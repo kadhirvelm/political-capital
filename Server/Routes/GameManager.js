@@ -208,8 +208,8 @@ class GameManager {
     this.roomSocket.emit('allPlayersReady', R.isEmpty(R.filter( (player) => player.isReady === false, this.players)))
   }
 
-  emitFullGame(){
-    this.roomSocket.emit('receiveFullGame', { parties: this.parties, players: this.players, currentRound: this.currentRound, rounds: this.rounds, settings: this.settings, inGame: this.inGame, endGame: this.endGame })
+  emitFullGame(socket = this.roomSocket){
+    socket.emit('receiveFullGame', { parties: this.parties, players: this.players, currentRound: this.currentRound, rounds: this.rounds, settings: this.settings, inGame: this.inGame, endGame: this.endGame })
   }
 
   checkIfAllPartyNamesSet(){
@@ -769,7 +769,7 @@ class GameManager {
 
   handleSocketCallback(socket){
     socket.on('getFullGame', () =>  {
-      socket.emit('receiveFullGame', { parties: this.parties, players: this.players, currentRound: this.currentRound, rounds: this.rounds, settings: this.settings, inGame: this.inGame, endGame: this.endGame })
+      emitFullGame(socket)
     })
 
     var playerName = ''
