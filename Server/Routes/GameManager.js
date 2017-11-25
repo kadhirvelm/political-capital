@@ -397,11 +397,15 @@ class GameManager {
     }
   }
 
+  determineTiedWinner = () => {
+    this.roundWinner = Math.random() > 0.5 ? 'yes' : 'no'
+  }
+
   determineCurrentRoundWinner(yesTotal, noTotal){
     if(yesTotal !== noTotal){
       this.roundWinner = (yesTotal > noTotal) ? 'yes' : 'no'
     } else {
-      this.roundWinner = Math.random() > 0.5 ? 'yes' : 'no'
+      this.determineTiedWinner()
     }
   }
 
@@ -560,6 +564,16 @@ class GameManager {
     })
   }
 
+  finalizePartyCardLogic = (partyCard) => {
+    const playerParty = this.players[playerName].party
+    const party = this.parties[playerParty]
+    party.partyCards[partyCard.type] = _.without(party.partyCards[partyCard.type], partyCard.value)
+    this.rounds[this.currentRound].partyCards[party.partyName] = partyCard
+    this.roomSocket.to(playerParty).emit('finalizePartyCard', this.rounds)
+    this.emitFullGame()
+    this.checkIfAllPartyCardsSet()
+  }
+
   handlePartyCards(socket, playerName){
     socket.on('getPartyCards', () => {
       if(this.catchObjectErrors(this.players, playerName)){
@@ -571,23 +585,15 @@ class GameManager {
         }
       }
     })
-
     socket.on('selectPartyCard', (partyCard) => {
       if(this.catchObjectErrors(this.players, playerName)){
         const playerParty = this.players[playerName].party
         this.roomSocket.to(playerParty).emit('selectPartyCard', partyCard)
       }
     })
-
     socket.on('finalizePartyCard', (partyCard) => {
       if(this.catchObjectErrors(this.players, playerName)){
-        const playerParty = this.players[playerName].party
-        const party = this.parties[playerParty]
-        party.partyCards[partyCard.type] = _.without(party.partyCards[partyCard.type], partyCard.value)
-        this.rounds[this.currentRound].partyCards[party.partyName] = partyCard
-        this.roomSocket.to(playerParty).emit('finalizePartyCard', this.rounds)
-        this.emitFullGame()
-        this.checkIfAllPartyCardsSet()
+        finalizePartyCardLogic(partyCard)
       }
     })
   }
@@ -686,25 +692,27 @@ class GameManager {
     })
   }
 
-  handleIndividualPlayerSettings(socket, playerName){
-    function clearSocketRooms(socket, partyNumber){ // needs to be an independent context in order to properly remove from rooms
-      _.each(_.values(socket.rooms), (room) => {
-        if(room !== socket.id && room !== partyNumber) {
-          socket.leave(room)
-        }
-      })
-    }
-
-    socket.on('identifyPlayer', (name, partyNumber, partyName) => {
-      if(name){
-        playerName = name.toString()
-        if(partyNumber && !_.contains(_.keys(socket.rooms), partyNumber)){
-          clearSocketRooms(socket, partyNumber)
-          socket.join(partyNumber)
-        }
+  clearSocketRooms(socket, partyNumber){ // needs to be an independent context in order to properly remove from rooms
+    _.each(_.values(socket.rooms), (room) => {
+      if(room !== socket.id && room !== partyNumber) {
+        socket.leave(room)
       }
-      this.emitFullGame()
     })
+  }
+
+  handleIdentifyingPlayerLogic = (name, partyNumber, partyName) => {
+    if(name){
+      playerName = name.toString()
+      if(partyNumber && !_.contains(_.keys(socket.rooms), partyNumber)){
+        clearSocketRooms(socket, partyNumber)
+        socket.join(partyNumber)
+      }
+    }
+    this.emitFullGame()
+  }
+
+  handleIndividualPlayerSettings(socket, playerName){
+    socket.on('identifyPlayer', handleIdentifyingPlayerLogic)
 
     socket.on('adjustSettings', (settings) => {
       if(playerName === this.admin){
@@ -725,28 +733,43 @@ class GameManager {
     })
   }
 
+  omitPlayerFromParty = (socket, playerName) => {
+    if(this.players[playerName] && this.players[playerName].party && this.parties && this.parties[this.players[playerName].party] && this.parties[this.players[playerName].party].players){
+      if(this.parties[this.players[playerName].party].players.length === 1){
+        this.parties = _.omit(this.parties, this.players[playerName].party)
+      } else {
+        this.parties = _.reject(this.parties[this.players[playerName].party].players, (player) => player === playerName)
+      }
+    }
+  }
+
+  updateAdminIfNeeded = (socket, playerName) => {
+    if(playerName === this.admin && _.keys(this.players).length > 0){
+      this.updateAdmin(_.sample(_.values(this.players)).name)
+    }
+  }
+
+  endGameIfNotEnoughPlayers = (socket, playerName) => {
+    this.setInGame(false)
+    this.roomSocket.emit('closeGame')
+    this.deleteRoom(this.roomID)
+  }
+
+  updateAllPlayers = (socket, playerName) => {
+    this.emitFullGame()
+    this.checkDeleteRoom()
+    this.updateRoomDetails()
+  }
+
   handlePlayerLeavingRoom(socket, playerName){
     socket.on('leaveRoom', () => {
-      if(this.players[playerName] && this.players[playerName].party && this.parties && this.parties[this.players[playerName].party] && this.parties[this.players[playerName].party].players){
-        if(this.parties[this.players[playerName].party].players.length === 1){
-          this.parties = _.omit(this.parties, this.players[playerName].party)
-        } else {
-          this.parties = _.reject(this.parties[this.players[playerName].party].players, (player) => player === playerName)
-        }
-      }
+      omitPlayerFromParty(socket, playerName)
       this.players = _.omit(this.players, playerName)
-      if(playerName === this.admin && _.keys(this.players).length > 0){
-        this.updateAdmin(_.sample(_.values(this.players)).name)
-      }
-
+      updateAdminIfNeeded(socket, playerName)
       if (_.keys(this.players).length <= 1 && this.inGame){
-        this.setInGame(false)
-        this.roomSocket.emit('closeGame')
-        this.deleteRoom(this.roomID)
+        endGameIfNotEnoughPlayers(socket, playerName)
       } else {
-        this.emitFullGame()
-        this.checkDeleteRoom()
-        this.updateRoomDetails()
+        updateAllPlayers(socket, playerName)
       }
     })
   }
