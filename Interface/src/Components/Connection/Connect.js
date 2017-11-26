@@ -181,7 +181,6 @@ class PoliticalCapital extends Component {
         this.state.managingSocket.emit('startGame')
       }
       this.setState({ inGame: true }, () => {
-        console.log('Reaching', true)
         this.state.dispatch(inGame(true))
       })
     }
@@ -392,13 +391,13 @@ class PoliticalCapital extends Component {
   }
 
   renderSubmitNameDialog = () => {
-    const actions = [ <RaisedButton key='Cancel' label='Cancel' secondary={ true } onTouchTap={ this.disconnect } style={ { marginRight: '10px' } } />, <RaisedButton key='Join' label='Join!' primary={ true } onTouchTap={ this.joinLobby } /> ]
+    const actions = [ <RaisedButton key='Cancel' label='Cancel' secondary={ true } onTouchTap={ this.disconnect } style={ { marginRight: '10px' } } />, <RaisedButton id='Join' key='Join' label='Join!' primary={ true } onTouchTap={ this.joinLobby } /> ]
     return(
       <Flexbox>
         { this.state.submitName &&
-          <Dialog title='Player Name' actions={ actions } modal={ true } open={ this.state.submitName } autoDetectWindowHeight={ false } repositionOnUpdate={ false }>
+          <Dialog title='Player Name' id='Name' actions={ actions } modal={ true } open={ this.state.submitName } autoDetectWindowHeight={ false } repositionOnUpdate={ false }>
             <font> Type in your name so others can see you. Note: this cannot be changed once set. </font>
-            <TextField hintText='Player Name' fullWidth={ true } onChange={ this.handleSetPlayerName } value={ this.state.playerName || '' } />
+            <TextField id='Name Field' hintText='Player Name' fullWidth={ true } onChange={ this.handleSetPlayerName } value={ this.state.playerName || '' } />
             <Flexbox justifyContent='center'> <font color='red'> { this.state.error || '' } </font> </Flexbox>
           </Dialog>
         }

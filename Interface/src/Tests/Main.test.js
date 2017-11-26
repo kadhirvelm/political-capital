@@ -109,6 +109,27 @@ describe('Register components', () => {
     })
   })
 
+  describe('Testing commonwealth game', () => {
+    let application
+
+    beforeEach(() => {
+      application = mountApplication([ '/game' ], {
+        serverActions: {
+          connectedRoom: { _id: 'TEST ROOM 1', roomName: 'Sample%20Room', gameType: 'Commonwealth', players: [ { TestPlayer: {} } ] },
+          playerName: 'Test Player',
+          playerParty: 0,
+          inGame: true,
+          playerReady: true,
+          gameType: 'Commonwealth',
+        },
+      })
+    })
+
+    test('Rendering in game', () => {
+      expect(application).not.toBeUndefined()
+    })
+  })
+
   describe('Testing rooms', () => {
     let application
 
@@ -145,6 +166,27 @@ describe('Register components', () => {
           playerParty: 0,
           inGame: false,
           playerReady: false,
+        },
+      })
+    })
+
+    test('Rendering connected room', () => {
+      expect(application).not.toBeUndefined()
+    })
+  })
+
+  describe('Testing commonwealth connect', () => {
+    let application
+
+    beforeEach(() => {
+      application = mountApplication([ '/connect' ], {
+        serverActions: {
+          connectedRoom: { _id: 'TEST ROOM 1', roomName: 'Sample%20Room', gameType: 'Commonwealth', players: [ { TestPlayer: {} } ] },
+          playerName: 'Test Player',
+          playerParty: 0,
+          inGame: false,
+          playerReady: false,
+          gameType: 'Commonwealth',
         },
       })
     })
