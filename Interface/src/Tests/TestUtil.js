@@ -1,5 +1,5 @@
 import { _ } from 'underscore'
-export const CONNECT = 'connection'
+export const CONNECT = 'connect'
 
 import sinon from 'sinon'
 

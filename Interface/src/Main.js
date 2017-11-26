@@ -59,7 +59,7 @@ export class Main extends Component {
   }
 
   componentWillUnmount(){
-    this.state.managingSocket.disconnect()
+    this.state.socketManager.disconnect()
   }
 
   // renderRoomConnect = (props) => <Async load={ import('./Components/RoomConnection') } componentProps={ props } />

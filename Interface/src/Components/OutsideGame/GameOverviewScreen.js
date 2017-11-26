@@ -15,7 +15,7 @@ import Dialog from 'material-ui/Dialog'
 import Snackbar from 'material-ui/Snackbar'
 
 // import Sound from 'react-sound'
-import { totalPartyAverageWorth, selectedPartyStyle, basePartyStyle } from '../Game/Util/util.js'
+import { selectedPartyStyle, basePartyStyle } from '../Game/Util/util.js'
 
 import { map, sortWith, descend, ascend } from 'ramda'
 
@@ -173,8 +173,6 @@ class GameOverview extends Component {
     }
     return {}
   }
-
-  sortParties = sortWith([ descend(totalPartyAverageWorth) ])
 
   playerPoliticalCapital = (player) => this.state.rounds[this.state.currentRound].currentRoundStats[player.name].politicalCapital
   sortPlayers = sortWith([ descend(this.playerPoliticalCapital) ])

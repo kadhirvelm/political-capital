@@ -12,7 +12,7 @@ import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowCol
 import Divider from 'material-ui/Divider'
 import Subheader from 'material-ui/Subheader'
 
-import { listOfPlayers, totalPartyAverageWorth } from './util.js'
+import { listOfPlayers, sortPartiesOnAveragePartyWorth } from './util.js'
 import { colors, allColorHexes } from '../../../styles/colors'
 import { _ } from 'underscore'
 import { curry, map, sortWith, descend } from 'ramda'
@@ -71,10 +71,9 @@ class Tools extends Component {
   openDialog = (title, event) => this.setState({ changeDrawer: false, openDialog: true, title: title })
   curryOpenDialog = curry(this.openDialog)
   changeConfirmed = () => this.setState({ confirmed: !this.state.confirmed })
-  sortParties = sortWith([ descend(totalPartyAverageWorth) ])
 
   returnIndividualPlayers = (allParties) => {
-    const allPartyEntries = this.sortParties(_.values(allParties))
+    const allPartyEntries = sortPartiesOnAveragePartyWorth(this.state, _.values(allParties))
 
     const singlePlayer = (party, playerName) => {
       return (

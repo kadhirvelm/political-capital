@@ -6,7 +6,7 @@ import MenuItem from 'material-ui/MenuItem'
 import { colors } from '../../../styles/colors'
 
 import { _ } from 'underscore'
-import { sum } from 'ramda'
+import { sum, curry, sortWith, descend } from 'ramda'
 
 export function listOfPlayers(state, handlePlayerSelection){
   return(
@@ -20,12 +20,15 @@ export function listOfPlayers(state, handlePlayerSelection){
 }
 
 export function returnWinner(state) {
-  return state.previousRound.roundWinner === 'yes' ? <font color={ colors.GREEN }> Passes </font> : <font color={ colors.RED }> Fails </font>
+  return (state.previousRound || state.round).roundWinner === 'yes' ? <font color={ colors.GREEN }> Passes </font> : <font color={ colors.RED }> Fails </font>
 }
 
-export function totalPartyAverageWorth(party){
-  return sum(_.map(party.players, (player) => this.state.rounds[this.state.currentRound].currentRoundStats[player].politicalCapital)) / party.players.length
+function totalPartyAverageWorth(state, party){
+  console.log(state)
+  return sum(_.map(party.players, (player) => state.rounds[state.currentRound].currentRoundStats[player].politicalCapital)) / party.players.length
 }
+const curryTotalPartyAverageWorth = curry(totalPartyAverageWorth)
+export const sortPartiesOnAveragePartyWorth = (state, values) => sortWith([ descend(curryTotalPartyAverageWorth(state)) ])(values)
 
 export const basePartyStyle = {
   background: '#FFFFFF',

@@ -473,7 +473,7 @@ class PoliticalCapitalGame extends Component {
   }
 
   cut = (string) => {
-    return string.length > 20 ? string.substring(0, 20) + '...' : string
+    return !_.isEmpty(string) ? (string.length > 20 ? string.substring(0, 20) + '...' : string) : 0
   }
 
   currentGameStateText = () => {

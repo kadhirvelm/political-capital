@@ -9,10 +9,10 @@ import { colors, allColorHexes } from '../../../styles/colors'
 
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table'
 
-import { listOfPlayers, returnWinner, totalPartyAverageWorth } from './util.js'
+import { listOfPlayers, returnWinner, sortPartiesOnAveragePartyWorth } from './util.js'
 
 import { _ } from 'underscore'
-import { map, curry, sortWith, ascend } from 'ramda'
+import { map, curry } from 'ramda'
 
 class EndRoundLogistics extends Component {
   constructor(props){
@@ -212,10 +212,8 @@ class EndRoundLogistics extends Component {
     )
   }
 
-  sortParties = sortWith([ ascend(totalPartyAverageWorth) ])
-
   returnIndividualPlayers = (allParties) => {
-    const allPartyEntries = this.sortParties(_.values(allParties))
+    const allPartyEntries = sortPartiesOnAveragePartyWorth(this.state, _.values(allParties))
 
     const singlePlayer = (party, playerName) => {
       return (
