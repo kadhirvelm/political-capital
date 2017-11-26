@@ -159,7 +159,6 @@ class PoliticalCapital extends Component {
       this.state.managingSocket.emit('playerColorSelected', { player: this.state.playerName, color: this.state.playerParty })
     })
   }
-
   curryChangePlayerParty = curry(this.changePlayerParty)
 
   readyUp = () => {
@@ -258,15 +257,15 @@ class PoliticalCapital extends Component {
   }
 
   renderChangeArrow = (changePlayerParty, icon) => {
-    return !this.state.playerReady ? <IconButton onTouchTap={ this.curryChangePlayerParty(changePlayerParty) }> { svgIcon(icon) } </IconButton> : <div />
+    return !this.state.playerReady ? <IconButton id={ icon } onTouchTap={ this.curryChangePlayerParty(changePlayerParty) }> { svgIcon(icon) } </IconButton> : <div />
   }
 
   renderPartySelectButtonIcon = () => undefined
 
   renderPlayerPartyPicker = () => {
     return(
-      <Flexbox flexDirection='column'>
-        <Flexbox alignItems='center' justifyContent='center'>
+      <Flexbox id='Party Picker' flexDirection='column'>
+        <Flexbox id='Container' alignItems='center' justifyContent='center'>
           <Flexbox>
             { this.renderChangeArrow(false, 'arrow_left') }
           </Flexbox>
@@ -317,7 +316,7 @@ class PoliticalCapital extends Component {
     return(
       <div>
         { this.state.players.map((entry, index) => (
-          <Flexbox key={ index } flexGrow={ 1 }>
+          <Flexbox id={ entry.name } key={ index } flexGrow={ 1 }>
             { this.renderReadyPlayer(entry) }
             <Flexbox flexBasis='50%' flexWrap='wrap' justifyContent='center' alignItems='center'>
               <font size={ 4 } color={ colors.DARK_GRAY }> { entry.name } </font>
@@ -355,7 +354,7 @@ class PoliticalCapital extends Component {
           { (this.state.startGame && this.state.isAdmin) ?
             <RaisedButton fullWidth={ true } primary={ true } label='Proceed To Game' onTouchTap={ this.startGame } disabled={ this.state.players.length <= 1 } style={ { width: '50%', margin: '10px' } } />
             :
-            <RaisedButton fullWidth={ true } primary={ true } label={ this.state.playerReady ? (this.state.startGame ? 'Waiting on ' + this.state.admin : 'Waiting on Players') : 'Ready' } disabled={ this.state.playerReady } onTouchTap={ this.readyUp } style={ { width: '20%', margin: '3px' } } />
+            <RaisedButton id='Ready Up' fullWidth={ true } primary={ true } label={ this.state.playerReady ? (this.state.startGame ? 'Waiting on ' + this.state.admin : 'Waiting on Players') : 'Ready' } disabled={ this.state.playerReady } onTouchTap={ this.readyUp } style={ { width: '20%', margin: '3px' } } />
           }
         </Flexbox>
       </Flexbox>

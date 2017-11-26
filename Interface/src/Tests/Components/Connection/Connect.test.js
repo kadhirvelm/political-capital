@@ -64,6 +64,22 @@ describe('Register components', () => {
     expect(application.find({ id: 'Room Setup' }).hostNodes().length).toBe(1)
   })
 
+  test('Rendering ready and unready players', () => {
+    const readyPlayer = {
+      name: 'Sample Ready Player',
+      isReady: true,
+      party: 1,
+    }
+    const unreadyPlayer = {
+      name: 'Sample Unready Player',
+      isReady: false,
+      party: 2,
+    }
+    application.setState({ players: [ readyPlayer, unreadyPlayer ], connectedRoom: { roomName: 'Test%20Room', admin: 'Sample Ready Player' } })
+    expect(application.find('Flexbox').find({ id: 'Sample Ready Player' })).not.toBeUndefined()
+    expect(application.find('Flexbox').find({ id: 'Sample Unready Player' })).not.toBeUndefined()
+  })
+
   describe('Testing socket connection', () => {
     let managingSocketManager
     let managingSocket
@@ -110,6 +126,25 @@ describe('Register components', () => {
       expect(dispatch.getCall(0).args[0].toString()).toEqual(serverActions.setPlayerName('New Name').toString())
       expect(managingSocket.emit.getCall(0).args).toEqual([ 'newPlayer', 'New Name' ])
       expect(managingSocket.emit.getCall(1).args).toEqual([ 'playerColorSelected', { player: 'New Name', color: application.state('playerParty') } ])
+    })
+
+    test('Changing party', () => {
+      managingSocket.emit.resetHistory()
+      application.setState({ submitName: false, playerNames: [ 'Other Player', 'This Player' ], playerName: 'This Player' })
+      const leftArrowButton = application.find('IconButton').find({ id: 'arrow_left' }).get(0)
+      const currentPartyNumber = application.state('playerParty')
+      leftArrowButton.props.onTouchTap({})
+      expect(application.state('playerParty')).toEqual(currentPartyNumber - 1 || 6)
+      expect(managingSocket.emit.getCall(0).args).toEqual([ 'playerColorSelected', { color: application.state('playerParty'), player: 'This Player' } ])
+
+      const rightArrowButton = application.find('IconButton').find({ id: 'arrow_right' }).get(0)
+      rightArrowButton.props.onTouchTap({})
+      expect(application.state('playerParty')).toEqual(currentPartyNumber)
+      expect(managingSocket.emit.getCall(1).args).toEqual([ 'playerColorSelected', { color: application.state('playerParty'), player: 'This Player' } ])
+
+      const readyUp = application.find('RaisedButton').find({ id: 'Ready Up' }).get(0)
+      readyUp.props.onTouchTap()
+      expect(managingSocket.emit.getCall(2).args).toEqual([ 'playerReady', 'This Player', application.state('playerParty') ])
     })
   })
 })
