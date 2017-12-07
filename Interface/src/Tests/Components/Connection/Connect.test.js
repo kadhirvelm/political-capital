@@ -1,4 +1,4 @@
-/* global describe, beforeAll, beforeEach, jest, test, expect */
+/* global describe, beforeAll, beforeEach, test, expect */
 
 import React from 'react'
 import PropTypes from 'prop-types'
@@ -12,6 +12,9 @@ import configureMockStore from 'redux-mock-store'
 import thunk from 'redux-thunk'
 import { getMuiTheme } from 'material-ui/styles'
 import sinon from 'sinon'
+
+import { assoc } from 'ramda'
+import { _ } from 'underscore'
 
 import { DEBUG_SOCKET_MANAGER, selectIdFromChildren } from '../../TestUtil'
 import * as serverActions from '../../../State/ServerActions'
@@ -145,6 +148,19 @@ describe('Register components', () => {
       const readyUp = application.find('RaisedButton').find({ id: 'Ready Up' }).get(0)
       readyUp.props.onTouchTap()
       expect(managingSocket.emit.getCall(2).args).toEqual([ 'playerReady', 'This Player', application.state('playerParty') ])
+    })
+
+    test('Adjusting the settings as an admin', () => {
+      managingSocket.emit.resetHistory()
+      application.setState({ playerParty: 1, playerName: 'ADMIN', connectedRoom: { roomName: 'Sample Room', admin: 'ADMIN' }, isAdmin: true, inGame: false, showSettings: true })
+      expect(application.find({ id: 'Settings' }).hostNodes().length).toBe(1)
+      expect(application.instance().settings()).not.toBeUndefined()
+      const firstSetting = application.instance().settings()[0]
+      application.setState({ settings: assoc(firstSetting.key, 0, {}) })
+      application.instance().adjustSettings(firstSetting.key, false, firstSetting.max, firstSetting.min)
+      expect(application.state('settings')[firstSetting.key]).toEqual(firstSetting.min)
+      application.instance().adjustSettings(firstSetting.key, true, firstSetting.max, firstSetting.min)
+      expect(application.state('settings')[firstSetting.key]).toEqual(firstSetting.min + 1)
     })
   })
 })

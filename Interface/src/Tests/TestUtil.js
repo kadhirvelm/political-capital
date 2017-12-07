@@ -1,5 +1,6 @@
 import { _ } from 'underscore'
 export const CONNECT = 'connect'
+export const DISCONNECT = 'disconnect'
 
 import sinon from 'sinon'
 
@@ -9,6 +10,7 @@ export class DEBUG_SOCKET {
     this.properties = properties
     this.onCommands = {}
     this.emit = sinon.stub()
+    this.disconnect = sinon.stub()
   }
 
   connect(){
@@ -30,10 +32,17 @@ export class DEBUG_SOCKET_MANAGER {
   constructor(url, properties){
     this.url = url
     this.properties = properties
+    this.sockets = {}
+  }
+
+  totalKeys(){
+    return (_.keys(this.sockets) || []).length
   }
 
   socket(namespace){
-    return new DEBUG_SOCKET(namespace)
+    const currentKey = this.totalKeys()
+    this.sockets[currentKey] = new DEBUG_SOCKET(namespace)
+    return this.sockets[currentKey]
   }
 }
 

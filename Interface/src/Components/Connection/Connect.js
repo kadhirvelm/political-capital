@@ -363,11 +363,11 @@ class PoliticalCapital extends Component {
 
   renderDetailedSettingsView = () => {
     return this.state.showSettings ?
-      <Flexbox style={ { backgroundColor: this.colors.LIGHTEST_GRAY, padding: '5px', borderColor: this.colors.LIGHT_GRAY, borderStyle: 'solid', borderWidth: '1px', borderRadius: '10px' } } flexDirection='column'>
+      <Flexbox id='Settings' style={ { backgroundColor: this.colors.LIGHTEST_GRAY, padding: '5px', borderColor: this.colors.LIGHT_GRAY, borderStyle: 'solid', borderWidth: '1px', borderRadius: '10px' } } flexDirection='column'>
         <Flexbox justifyContent='flex-start' flexGrow={ 1 } style={ { marginBottom: '10px' } }> <font size='2'> Settings </font> </Flexbox>
-        <Flexbox flexGrow={ 1 } flexWrap='wrap' justifyContent='space-around' alignItems='flex-end'>
+        <Flexbox id='Settings Holder' flexGrow={ 1 } flexWrap='wrap' justifyContent='space-around' alignItems='flex-end'>
           { this.settings().map((settings, index) => (
-            <div key={ index }> { this.adjustItem(settings.name, settings.key, settings.max, settings.min) } </div>
+            <div id={ index } key={ index }> { this.adjustItem(settings.name, settings.key, settings.max, settings.min) } </div>
           ))
           }
         </Flexbox>
