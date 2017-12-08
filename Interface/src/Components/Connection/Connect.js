@@ -76,7 +76,7 @@ class PoliticalCapital extends Component {
 
     this.state.managingSocket.on('receiveFullGame', (roundInfo) => {
       this.setState(Object.assign({}, !_.isEmpty(roundInfo.players) && getPlayers(roundInfo.players), getPlayerNames(roundInfo.players), getSettings(roundInfo.settings)), () => {
-        if(this.state.playerName && !_.contains(this.state.playerNames, this.state.playerNames)){
+        if(this.state.playerName && !_.contains(this.state.playerNames, this.state.playerName)){
           this.joinLobby()
         }
         if(roundInfo.inGame){
