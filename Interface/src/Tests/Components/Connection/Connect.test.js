@@ -162,5 +162,41 @@ describe('Register components', () => {
       application.instance().adjustSettings(firstSetting.key, true, firstSetting.max, firstSetting.min)
       expect(application.state('settings')[firstSetting.key]).toEqual(firstSetting.min + 1)
     })
+
+    test('Starting a game', () => {
+      application.state('managingSocket').emit.resetHistory()
+      const inGameStub = sinon.stub(serverActions, 'inGame')
+      application.setState({ inGame: false, isAdmin: true })
+      application.instance().startGame()
+      expect(application.state('managingSocket').emit.callCount).toBe(1)
+      expect(application.state('inGame')).toBeTruthy()
+      expect(inGameStub.callCount).toBe(1)
+      inGameStub.restore()
+    })
+
+    test('Disconnecting', () => {
+      application.state('managingSocket').emit.resetHistory()
+      const disconnect = sinon.stub()
+      application.setState({ disconnect: disconnect })
+      application.instance().disconnect()
+      expect(application.state('managingSocket').emit.callCount).toBe(1)
+      expect(application.state('managingSocket').disconnect.callCount).toBe(1)
+    })
+
+    test('Proper emitting events', () => {
+      application.setState({ playerNames: [], playerName: 'Test Name' })
+      application.state('managingSocket').onCommands.receiveFullGame({ players: [ { name: 'Test Name', party: 0, politicalCapital: 120, senators: 3 } ] })
+      expect(_.contains(application.state('playerNames'), 'Test Name')).toBeTruthy()
+      
+      application.state('managingSocket').onCommands.updateAdmin('NEW ADMIN')
+      expect(application.state('connectedRoom').admin).toEqual('NEW ADMIN')
+
+      application.state('managingSocket').onCommands.updatedSettings({ testSetting: 'New Setting' })
+      expect(application.state('settings')).toEqual({ testSetting: 'New Setting' })
+      expect(application.state('settingsChangeIndicator')).toBeTruthy()
+
+      application.state('managingSocket').onCommands.playerColorSelected({ player: 'Test', color: 'Red' })
+      expect(application.state('playerColors')).toEqual({ Test: 'Red' })
+    })
   })
 })

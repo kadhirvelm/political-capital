@@ -64,8 +64,38 @@ describe('Register components', () => {
     expect(application).not.toBeUndefined()
   })
 
-  test('Creating a new room', () => {
+  describe('Creating a new room', () => {
+    test('Creating a new room with no errors', () => {
+      const setPlayerNameStub = sinon.stub(serverActions, 'setPlayerName')
+      const createNewRoomStub = sinon.stub(serverActions, 'createNewRoom').callsFake((roomName, password, admin, gameType, callback) => {
+        callback({
+          roomName,
+          password,
+          admin,
+          gameType,
+        })
+      })
+      const getCurrentRoomsStub = sinon.stub(serverActions, 'getCurrentRooms').callsFake((callback) => {
+        callback([ { roomName: 'Sample Room', password: 'Test Password', admin: 'Sample Player', gameType: 'Tutorial' } ])
+      })
+      const getSpecificRoomStub = sinon.stub(serverActions, 'getSpecificRoom').callsFake((roomId, callback) => {
+        callback({ exists: true, inGame: false })
+      })
+      const joinRoom = sinon.stub()
+      application.setState({ joinRoom: joinRoom })
+      application.instance().handleRoomDetails('roomName', { target: { value: 'Sample Room' } })
+      application.instance().handleRoomDetails('password', { target: { value: 'Test Password' } })
+      application.instance().handleRoomDetails('admin', { target: { value: 'Sample Player' } })
+      application.instance().handleSelectFieldRoomDetails('gameType', {}, 0, 'Tutorial')
+      application.instance().submitNewRoom()
+      application.state('socketManager').sockets['0'].onCommands.connect()
+      expect(joinRoom.callCount).toBe(1)
 
+      createNewRoomStub.restore()
+      setPlayerNameStub.restore()
+      getCurrentRoomsStub.restore()
+      getSpecificRoomStub.restore()
+    })
   })
 
   describe('Joining a room', () => {
