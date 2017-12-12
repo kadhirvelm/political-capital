@@ -130,14 +130,14 @@ class PoliticalCapitalGame extends Component {
       }
     })
 
-    this.state.managingSocket.on('allPartyNamesSet', (parties) => {
-      this.setState(this.updateAllParties(parties))
-    })
-
     this.state.managingSocket.on('finalizePartyName', (partyName) => {
       this.setState({ playerPartyName: partyName }, () => {
         this.state.dispatch(finalizePartyName(this.state.playerPartyName))
       })
+    })
+
+    this.state.managingSocket.on('allPartyNamesSet', (parties) => {
+      this.setState(this.updateAllParties(parties))
     })
   }
 
@@ -412,7 +412,7 @@ class PoliticalCapitalGame extends Component {
 
   renderPartyNameSetDialog = () => {
     return (
-      <Dialog title='Set Party Name' modal={ true } open={ !this.allPartiesSubmitted() } autoDetectWindowHeight={ false } repositionOnUpdate={ false } style={ { zIndex: 3 } } contentStyle={ { zIndex: 3 } } overlayStyle={ { zIndex: 2 } }>
+      <Dialog id='Party Name Dialog' title='Set Party Name' modal={ true } open={ !this.allPartiesSubmitted() } autoDetectWindowHeight={ false } repositionOnUpdate={ false } style={ { zIndex: 3 } } contentStyle={ { zIndex: 3 } } overlayStyle={ { zIndex: 2 } }>
         <Flexbox flexDirection='column'>
           <Flexbox flexBasis='auto' justifyContent='center' style={ { margin: '7px' } }>
             <TextField id='PartyName' value={ this.state.playerPartyName || '' } label='Party Name' floatingLabelText='Party Name'

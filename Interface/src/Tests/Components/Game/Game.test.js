@@ -56,26 +56,97 @@ describe('Register components', () => {
 
     process.env.REACT_APP_POLITICAL_CAPITAL = process.env.REACT_APP_POLITICAL_CAPITAL || 'http://ec2-54-193-47-210.us-west-1.compute.amazonaws.com:3000'
 
-    application = mount(<Game { ...props } />, {
-      context: { store: mockStore(political_capital), muiTheme: muiTheme, router: router },
-      childContextTypes: { store: PropTypes.object, muiTheme: PropTypes.object, router: PropTypes.object },
-    })
+    application = () => {
+      return mount(<Game { ...props } />, {
+        context: { store: mockStore(political_capital), muiTheme: muiTheme, router: router },
+        childContextTypes: { store: PropTypes.object, muiTheme: PropTypes.object, router: PropTypes.object },
+      })
+    }
   })
 
   test('Renders connect by default', () => {
-    expect(application).not.toBeUndefined()
-    expect(application.find({ id: 'Political Capital Game' }).hostNodes().length).toBe(1)
+    expect(application()).not.toBeUndefined()
+    expect(application().find({ id: 'Political Capital Game' }).hostNodes().length).toBe(1)
   })
 
-  describe('Testing socket connection', () => {
+  describe('Running the game with 10 players and 5 parties', () => {
+    let allPlayers
     let managingSocketManager
-    let managingSocket
 
-    beforeEach(() => {
+    beforeAll(() => {
       managingSocketManager = new DEBUG_SOCKET_MANAGER()
-      managingSocket = managingSocketManager.socket('/default')
-      application.setState({ managingSocket: managingSocket })
-      application.instance().componentWillMount()
+      allPlayers = _.map(_.range(0, 10), () => application())
+      let playerName = 0
+      _.each(allPlayers, (individualPlayer) => {
+        individualPlayer.setState({
+          managingSocket: managingSocketManager.socket('/default'),
+          connectedRoom: {
+            _id: 'CONNECTED ROOM',
+            roomName: 'Sample Room',
+            admin: 'Test0',
+            gameType: 'Vanilla',
+            inGame: true,
+          },
+          currentRound: 0,
+          parties: {},
+          playerName: 'Test' + playerName,
+          playerParty: playerName % 5,
+          playerPartyName: '',
+          players: {},
+        })
+        playerName += 1
+        individualPlayer.instance().componentDidMount()
+      })
+    })
+
+    const checkCustomConditionAllPlayers = (condition) => {
+      _.each(allPlayers, condition)
+    }
+
+    const checkForSomeCustomCondition = (party, condition) => {
+      _.each(allPlayers, (singlePlayer) => {
+        if(singlePlayer.state('playerParty') === party){
+          condition(singlePlayer)
+        }
+      })
+    }
+
+    const checkStateForAllPlayers = (key, value) => {
+      checkCustomConditionAllPlayers((singlePlayer) => expect(singlePlayer.state(key)).toEqual(value))
+    }
+
+    const checkStateForSomePlayers = (party, key, value) => {
+      checkCustomConditionAllPlayers((singlePlayer) => expect(singlePlayer.state(key)).toEqual(value))
+    }
+
+    test('Setting party names', () => {
+      checkStateForAllPlayers('currentRound', 0)
+      checkCustomConditionAllPlayers((singlePlayer) => expect(singlePlayer.find({ id: 'Party Name Dialog' }).length).toEqual(1))
+      const firstPlayerSocket = allPlayers[0].state('managingSocket')
+      firstPlayerSocket.emit.resetHistory()
+      allPlayers[0].instance().adjustPartyName({ target: { value: '   sample name' } })
+      expect(firstPlayerSocket.emit.callCount).toBe(1)
+      expect(firstPlayerSocket.emit.getCall(0).args).toEqual([ 'setPartyName', 'sample name' ])
+    })
+
+    test.skip('Selecting party card', () => {
+
+    })
+
+    test.skip('Voting', () => {
+
+    })
+
+    test.skip('Viewing results', () => {
+
+    })
+
+    test.skip('Selecting and stealing party cards', () => {
+
+    })
+
+    test.skip('Ending the game', () => {
+
     })
   })
 })

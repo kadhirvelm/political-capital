@@ -9,8 +9,18 @@ export class DEBUG_SOCKET {
     this.namespace = namespace
     this.properties = properties
     this.onCommands = {}
-    this.emit = sinon.stub()
+    this.emit = sinon.stub().callsFake((key, ...message) => {
+      if(key === 'identifyPlayer'){
+        this.playerName = message[0]
+        this.playerParty = message[1]
+        this.playerPartyName = message[2]
+      }
+    })
     this.disconnect = sinon.stub()
+  }
+
+  join(party){
+    this.party = party
   }
 
   connect(){
@@ -33,6 +43,18 @@ export class DEBUG_SOCKET_MANAGER {
     this.url = url
     this.properties = properties
     this.sockets = {}
+    this.emit = sinon.stub().callsFake((key, message) => {
+      _.each(this.sockets, (socket) => {
+        socket.on(key, message)
+      })
+    })
+    this.emitToParty = sinon.stub().callsFake((party, key, message) => {
+      _.each(this.sockets, (socket) => {
+        if(socket.party === party){
+          socket.on(key, message)
+        }
+      })
+    })
   }
 
   totalKeys(){
