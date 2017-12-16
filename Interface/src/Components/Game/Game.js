@@ -333,7 +333,7 @@ class PoliticalCapitalGame extends Component {
 
   renderEndGame = () => {
     return (
-      <Flexbox key='End Game' flexGrow={ 1 }>
+      <Flexbox id='End Game' key='End Game' flexGrow={ 1 }>
         <EndGame dispatch={ this.state.dispatch } endGame={ this.state.endGame } disconnect={ this.state.disconnect } hasSeenTabulation={ this.state.hasSeenTabulation } />
       </Flexbox>
     )
@@ -341,7 +341,7 @@ class PoliticalCapitalGame extends Component {
 
   renderEndRoundLogistics = () => {
     return(
-      <Flexbox key='End Round' flexDirection='column'>
+      <Flexbox id='End round' key='End Round' flexDirection='column'>
         <EndRoundLogistics dispatch={ this.state.dispatch } managingSocket={ this.state.managingSocket } rounds={ this.state.rounds } currentRound={ this.state.currentRound }
           parties={ this.state.parties } players={ this.state.players } changeCurrentlyViewingResults={ this.changeCurrentlyViewingResults }
           playerName={ this.state.playerName } />
@@ -366,17 +366,18 @@ class PoliticalCapitalGame extends Component {
   }
 
   renderPlayerValues = () => {
-    return (this.state.players && this.state.playerName && this.state.playerPartyName) ? <PlayerValues players={ this.state.players } playerName={ this.state.playerName } round={ this.state.rounds[this.state.currentRound] } playerPartyName={ this.state.playerPartyName } /> : <div />
+    return (this.state.players && this.state.playerName && this.state.playerPartyName) ? <PlayerValues id='Player Values' players={ this.state.players } playerName={ this.state.playerName } round={ this.state.rounds[this.state.currentRound] } playerPartyName={ this.state.playerPartyName } /> : <div />
   }
 
   renderVoteOrPartyCardSelection = () => {
     return(
       <ReactCSSTransitionGroup
+        id='CSS Transition'
         transitionName='fade-wait'
         transitionEnterTimeout={ 500 }
         transitionLeaveTimeout={ 500 }
       >
-        <Flexbox key={ this.hasPlacedPartyCard() ? 'Vote' : 'PartyCards' } flexGrow={ 1 } justifyContent='center'>
+        <Flexbox id='Container' key={ this.hasPlacedPartyCard() ? 'Vote' : 'PartyCards' } flexGrow={ 1 } justifyContent='center'>
           { this.hasPlacedPartyCard() ?
             <Vote id='Vote' players={ this.state.players } playerName={ this.state.playerName } playerPartyName={ this.state.playerPartyName } round={ this.state.rounds[this.state.currentRound] }
               dispatch={ this.state.dispatch } managingSocket={ this.state.managingSocket } />
@@ -392,7 +393,7 @@ class PoliticalCapitalGame extends Component {
     return(
       <div id='Resolution and Chance' key='Resolution and Chance'>
         { this.resolutionAndChance() }
-        <Flexbox flexGrow={ 1 } flexDirection='column' alignItems='center'>
+        <Flexbox id='Player Values and Vote/PartyCard' flexGrow={ 1 } flexDirection='column' alignItems='center'>
           { this.renderPlayerValues() }
           { this.renderVoteOrPartyCardSelection() }
         </Flexbox>
@@ -536,7 +537,7 @@ class PoliticalCapitalGame extends Component {
       <Flexbox id='Game State' flexDirection='column' alignItems='center' flexGrow={ 1 }>
         { (this.state.firstFetchedGame && !_.isUndefined(this.state.playerName) && !_.isUndefined(this.state.playerParty) && !_.isUndefined(this.state.playerPartyName)) ?
           <ReactCSSTransitionGroup
-            id='0'
+            id='CSS Transition'
             transitionName='fade-fast'
             transitionEnterTimeout={ 500 }
             transitionLeaveTimeout={ 500 }

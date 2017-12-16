@@ -1,4 +1,4 @@
-/* global describe, beforeAll, afterAll, beforeEach, test, expect */
+/* global describe, beforeAll, jest, beforeEach, test, expect */
 
 import React from 'react'
 import PropTypes from 'prop-types'
@@ -16,7 +16,7 @@ import sinon from 'sinon'
 import { assoc, mergeAll } from 'ramda'
 import { _ } from 'underscore'
 
-import { DEBUG_SOCKET_MANAGER, selectIdFromChildren } from '../../TestUtil'
+import { DEBUG_SOCKET_MANAGER, selectCascadingIdFromChildren } from '../../TestUtil'
 import * as serverActions from '../../../State/ServerActions'
 
 const middlewares = [ thunk ]
@@ -123,7 +123,7 @@ describe('Register components', () => {
       performCallbackOnParty((singlePlayer) => expect(singlePlayer.state(key)).toEqual(value))
     }
 
-    test.skip('Setting party names', () => {
+    test('Setting party names', () => {
       checkStateForAllPlayers('currentRound', 0)
       performCallbackOnEachPlayer((singlePlayer) => expect(singlePlayer.find({ id: 'Party Name Dialog' }).length).toEqual(1))
       
@@ -167,7 +167,7 @@ describe('Register components', () => {
         firstFetchedGame: true,
         playerPartyName: 'sample party names',
         parties: mergeAll(_.map(_.range(0, TOTAL_PLAYERS), (index) => {
-          return assoc(index, { partyCards: { yes: [ '2x', 'Steal', 'Senator' ] }, partyName: 'Test Party ' + index, players: [] }, {})
+          return assoc(index, { partyCards: { neutral: [ 'Get', 'Take', 'None', 'Nullify' ], no: [ '2x', 'Steal', 'Senator' ], yes: [ '2x', 'Steal', 'Senator' ] }, partyName: 'Test Party ' + index, players: [] }, {})
         })),
         players: mergeAll(_.map(_.range(0, TOTAL_PLAYERS), (index) => {
           return assoc('Test' + index, { isReady: true, name: 'Test' + index, party: index % TOTAL_PARTIES, politicalCapital: 60, senators: 3 }, {})
@@ -192,23 +192,196 @@ describe('Register components', () => {
         singlePlayer.setState(newState)
         singlePlayer.update()
       })
-      performCallbackOnEachPlayer((singlePlayer) => expect(singlePlayer.find({ id: 'Game State' }).hostNodes().props().children.props.children.props.id).toEqual('Resolution and Chance'))
+      performCallbackOnEachPlayer((singlePlayer) => expect(typeof selectCascadingIdFromChildren(singlePlayer.find({ id: 'Game State' }).hostNodes().props().children, 'CSS Transition', 'Resolution and Chance')).not.toEqual('string'))
     })
 
-    test.skip('Voting', () => {
-
+    test('Voting', () => {
+      const newState = {
+        currentRound: 1,
+        firstFetchedGame: true,
+        playerPartyName: 'sample party names',
+        parties: mergeAll(_.map(_.range(0, TOTAL_PARTIES), (index) => {
+          return assoc(index, { partyCards: { neutral: [ 'Get', 'Take', 'None', 'Nullify' ], no: [ '2x', 'Steal', 'Senator' ], yes: [ '2x', 'Steal', 'Senator' ] }, partyName: 'Test Party ' + index, players: [] }, {})
+        })),
+        players: mergeAll(_.map(_.range(0, TOTAL_PLAYERS), (index) => {
+          return assoc('Test' + index, { isReady: true, name: 'Test' + index, party: index % TOTAL_PARTIES, politicalCapital: 60, senators: 3 }, {})
+        })),
+        rounds: {
+          1: {
+            chance: {
+              effect: [ '0.5x Everything' ],
+              flavorText: 'SAMPLE TEXT CHANCE',
+            },
+            individualVotes: {},
+            partyCards: mergeAll(_.map(_.range(0, TOTAL_PARTIES), (index) => {
+              return assoc('Test Party' + index, { type: index % 2 ? 'yes' : 'no', value: '2x' }, {})
+            })),
+            resolution: {
+              no: { inFavor: 20, against: 10 },
+              yes: { inFavor: 'Sen', against: '-Sen' },
+              flavorText: 'SAMPLE TEXT RESOLUTION',
+            },
+          },
+        },
+      }
+      performCallbackOnEachPlayer((singlePlayer) => {
+        singlePlayer.setState(newState)
+        singlePlayer.update()
+      })
+      performCallbackOnEachPlayer((singlePlayer) => expect(typeof selectCascadingIdFromChildren(singlePlayer.find({ id: 'Game State' }).hostNodes().props().children, 'CSS Transition', 'Resolution and Chance', 'Player Values and Vote/PartyCard', 'CSS Transition', 'Container', 'Vote')).toEqual('object'))
     })
 
-    test.skip('Viewing results', () => {
-
+    test('Viewing results', () => {
+      const newState = {
+        currentRound: 1,
+        firstFetchedGame: true,
+        playerPartyName: 'sample party names',
+        parties: mergeAll(_.map(_.range(0, TOTAL_PARTIES), (index) => {
+          return assoc(index, { partyCards: { neutral: [ 'Get', 'Take', 'None', 'Nullify' ], no: [ '2x', 'Steal', 'Senator' ], yes: [ '2x', 'Steal', 'Senator' ] }, partyName: 'Test Party ' + index, players: [] }, {})
+        })),
+        players: mergeAll(_.map(_.range(0, TOTAL_PLAYERS), (index) => {
+          return assoc('Test' + index, { isReady: true, name: 'Test' + index, party: index % TOTAL_PARTIES, politicalCapital: 60, senators: 3 }, {})
+        })),
+        rounds: {
+          1: {
+            partyCards: mergeAll(_.map(_.range(0, TOTAL_PARTIES), (index) => {
+              return assoc('Test Party' + index, { type: index % 2 ? 'yes' : 'no', value: '2x' }, {})
+            })),
+            currentRoundStats: mergeAll(_.map(_.range(0, TOTAL_PARTIES), (index) => {
+              return assoc('Test Party' + index, { party: index, politicalCapital: 60 * (TOTAL_PLAYERS / TOTAL_PARTIES), senators: 3 * (TOTAL_PLAYERS / TOTAL_PARTIES) }, {})
+            })),
+            individualPlayerBonuses: mergeAll(_.map(_.range(0, TOTAL_PLAYERS), (index) => {
+              return assoc('Test' + index, { roundBonus: index % 2 ? 2 : 1, newSenators: 0, rounFlatBonus: 0 }, {})
+            })),
+            individualVotes: mergeAll(_.map(_.range(0, TOTAL_PLAYERS), (index) => {
+              return assoc('Test' + index, { yes: 3, no: 0 }, {})
+            })),
+            roundWinner: 'yes',
+            handleThesePartyCards: {},
+            totalVotes: { yes: TOTAL_PLAYERS * 3, no: 0 },
+            resolution: {
+              no: { inFavor: 20, against: 10 },
+              yes: { inFavor: 'Sen', against: '-Sen' },
+              flavorText: 'SAMPLE TEXT RESOLUTION',
+            },
+            chance: {
+              effect: [ '0.5x Everything' ],
+              flavorText: 'SAMPLE TEXT CHANCE',
+            },
+          },
+        },
+      }
+      performCallbackOnEachPlayer((singlePlayer) => {
+        singlePlayer.setState(newState)
+        singlePlayer.update()
+      })
+      performCallbackOnEachPlayer((singlePlayer) => expect(typeof selectCascadingIdFromChildren(singlePlayer.find({ id: 'Game State' }).hostNodes().props().children, 'CSS Transition', 'End round')).toEqual('object'))
     })
 
-    test.skip('Selecting and stealing party cards', () => {
-
+    test('Selecting and stealing party cards', () => {
+      const newState = {
+        currentRound: 1,
+        firstFetchedGame: true,
+        playerPartyName: 'sample party names',
+        parties: mergeAll(_.map(_.range(0, TOTAL_PARTIES), (index) => {
+          return assoc(index, { partyCards: { neutral: [ 'Get', 'Take', 'None', 'Nullify' ], no: [ '2x', 'Steal', 'Senator' ], yes: [ '2x', 'Steal', 'Senator' ] }, partyName: 'Test Party ' + index, players: [] }, {})
+        })),
+        players: mergeAll(_.map(_.range(0, TOTAL_PLAYERS), (index) => {
+          return assoc('Test' + index, { isReady: true, name: 'Test' + index, party: index % TOTAL_PARTIES, politicalCapital: 60, senators: 3 }, {})
+        })),
+        rounds: {
+          1: {
+            partyCards: mergeAll(_.map(_.range(0, TOTAL_PARTIES), (index) => {
+              return assoc('Test Party' + index, { type: index % 2 ? 'yes' : 'no', value: '2x' }, {})
+            })),
+            currentRoundStats: mergeAll(_.map(_.range(0, TOTAL_PARTIES), (index) => {
+              return assoc('Test Party' + index, { party: index, politicalCapital: 60 * (TOTAL_PLAYERS / TOTAL_PARTIES), senators: 3 * (TOTAL_PLAYERS / TOTAL_PARTIES) }, {})
+            })),
+            individualPlayerBonuses: mergeAll(_.map(_.range(0, TOTAL_PLAYERS), (index) => {
+              return assoc('Test' + index, { roundBonus: index % 2 ? 2 : 1, newSenators: 0, rounFlatBonus: 0 }, {})
+            })),
+            individualVotes: mergeAll(_.map(_.range(0, TOTAL_PLAYERS), (index) => {
+              return assoc('Test' + index, { yes: 3, no: 0 }, {})
+            })),
+            roundWinner: 'yes',
+            handleThesePartyCards: { 'Test Party 0': 'Steal', 'Test Party 1': 'Take' },
+            totalVotes: { yes: TOTAL_PLAYERS * 3, no: 0 },
+            resolution: {
+              no: { inFavor: 20, against: 10 },
+              yes: { inFavor: 'Sen', against: '-Sen' },
+              flavorText: 'SAMPLE TEXT RESOLUTION',
+            },
+            chance: {
+              effect: [ '0.5x Everything' ],
+              flavorText: 'SAMPLE TEXT CHANCE',
+            },
+          },
+        },
+      }
+      performCallbackOnEachPlayer((singlePlayer) => {
+        singlePlayer.setState(newState)
+        singlePlayer.update()
+      })
+      performCallbackOnEachPlayer((singlePlayer) => expect(typeof selectCascadingIdFromChildren(singlePlayer.find({ id: 'Game State' }).hostNodes().props().children, 'CSS Transition', 'End round')).toEqual('object'))
     })
 
-    test.skip('Ending the game', () => {
-
+    test('Ending the game', () => {
+      const newState = {
+        currentRound: 1,
+        firstFetchedGame: true,
+        playerPartyName: 'sample party names',
+        endGame: {
+          finalWinners: {
+            sortedParties: _.map(_.range(0, TOTAL_PARTIES), (index) => {
+              return { partyName: 'Test Party' + index, totalPoliticalCapital: 100 - index, partyCards: { neutral: [ 'Get', 'Take', 'None', 'Nullify' ], no: [ '2x', 'Steal', 'Senator' ], yes: [ '2x', 'Steal', 'Senator' ] }, players: _.map(_.range(index, TOTAL_PLAYERS / TOTAL_PARTIES, TOTAL_PLAYERS % TOTAL_PARTIES), (playerIndex) => 'Test' + playerIndex) }
+            }),
+            sortedPlayers: _.map(_.range(0, TOTAL_PLAYERS), (index) => {
+              return { isReady: true, name: 'Test' + index, party: index % TOTAL_PARTIES, politicalCapital: 100 - index, senators: 3 }
+            }),
+          },
+          parties: mergeAll(_.map(_.range(0, TOTAL_PARTIES), (index) => {
+            return assoc(index, { partyCards: { neutral: [ 'Get', 'Take', 'None', 'Nullify' ], no: [ '2x', 'Steal', 'Senator' ], yes: [ '2x', 'Steal', 'Senator' ] }, partyName: 'Test Party ' + index, players: [] }, {})
+          })),
+          players: mergeAll(_.map(_.range(0, TOTAL_PLAYERS), (index) => {
+            return assoc('Test' + index, { isReady: true, name: 'Test' + index, party: index % TOTAL_PARTIES, politicalCapital: 60, senators: 3 }, {})
+          })),
+          rounds: {
+            1: {
+              partyCards: mergeAll(_.map(_.range(0, TOTAL_PARTIES), (index) => {
+                return assoc('Test Party' + index, { type: index % 2 ? 'yes' : 'no', value: '2x' }, {})
+              })),
+              currentRoundStats: mergeAll(_.map(_.range(0, TOTAL_PARTIES), (index) => {
+                return assoc('Test Party' + index, { party: index, politicalCapital: 60 * (TOTAL_PLAYERS / TOTAL_PARTIES), senators: 3 * (TOTAL_PLAYERS / TOTAL_PARTIES) }, {})
+              })),
+              individualPlayerBonuses: mergeAll(_.map(_.range(0, TOTAL_PLAYERS), (index) => {
+                return assoc('Test' + index, { roundBonus: index % 2 ? 2 : 1, newSenators: 0, rounFlatBonus: 0 }, {})
+              })),
+              individualVotes: mergeAll(_.map(_.range(0, TOTAL_PLAYERS), (index) => {
+                return assoc('Test' + index, { yes: 3, no: 0 }, {})
+              })),
+              roundWinner: 'yes',
+              handleThesePartyCards: { 'Test Party 0': 'Steal', 'Test Party 1': 'Take' },
+              totalVotes: { yes: TOTAL_PLAYERS * 3, no: 0 },
+              resolution: {
+                no: { inFavor: 20, against: 10 },
+                yes: { inFavor: 'Sen', against: '-Sen' },
+                flavorText: 'SAMPLE TEXT RESOLUTION',
+              },
+              chance: {
+                effect: [ '0.5x Everything' ],
+                flavorText: 'SAMPLE TEXT CHANCE',
+              },
+            },
+          },
+        },
+      }
+      jest.useFakeTimers()
+      performCallbackOnEachPlayer((singlePlayer) => {
+        singlePlayer.setState(newState)
+        singlePlayer.update()
+      })
+      jest.runAllTimers()
+      performCallbackOnEachPlayer((singlePlayer) => expect(typeof selectCascadingIdFromChildren(singlePlayer.find({ id: 'Game State' }).hostNodes().props().children, 'CSS Transition', 'End Game')).toEqual('object'))
     })
   })
 })

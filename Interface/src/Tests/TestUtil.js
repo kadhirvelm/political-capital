@@ -75,3 +75,18 @@ export class DEBUG_SOCKET_MANAGER {
 export function selectIdFromChildren(parent, id){
   return _.head(_.values(_.pick(parent, (child) => child.props.id === id)))
 }
+
+function returnParentChildWithId(parent, id){
+  if (!_.isUndefined(parent.length)){
+    return _.head(_.values(_.pick(parent, (child) => child.props.id === id))).props.children
+  }
+  return parent.props.id === id ? parent.props.children : 'CANNOT FIND'
+}
+
+export function selectCascadingIdFromChildren(parent, ...id){
+  if(id.length === 1){
+    const finalParent = _.isUndefined(_.head(parent)) ? parent : _.head(parent)
+    return finalParent.props.id === _.head(id) ? finalParent : finalParent.props.id
+  }
+  return selectCascadingIdFromChildren(returnParentChildWithId(parent, id.shift()), ...id)
+}
