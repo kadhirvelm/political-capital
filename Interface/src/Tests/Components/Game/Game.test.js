@@ -1,4 +1,4 @@
-/* global describe, beforeAll, beforeEach, test, expect */
+/* global describe, beforeAll, afterAll, beforeEach, test, expect */
 
 import React from 'react'
 import PropTypes from 'prop-types'
@@ -13,7 +13,7 @@ import thunk from 'redux-thunk'
 import { getMuiTheme } from 'material-ui/styles'
 import sinon from 'sinon'
 
-import { assoc } from 'ramda'
+import { assoc, mergeAll } from 'ramda'
 import { _ } from 'underscore'
 
 import { DEBUG_SOCKET_MANAGER, selectIdFromChildren } from '../../TestUtil'
@@ -72,10 +72,12 @@ describe('Register components', () => {
   describe('Running the game with 10 players and 5 parties', () => {
     let allPlayers
     let managingSocketManager
+    const TOTAL_PLAYERS = 10
+    const TOTAL_PARTIES = 5
 
     beforeAll(() => {
       managingSocketManager = new DEBUG_SOCKET_MANAGER()
-      allPlayers = _.map(_.range(0, 10), () => application())
+      allPlayers = _.map(_.range(0, TOTAL_PLAYERS), () => application())
       let playerName = 0
       _.each(allPlayers, (individualPlayer) => {
         individualPlayer.setState({
@@ -87,50 +89,110 @@ describe('Register components', () => {
             gameType: 'Vanilla',
             inGame: true,
           },
+          dispatch: sinon.stub(),
           currentRound: 0,
           parties: {},
           playerName: 'Test' + playerName,
-          playerParty: playerName % 5,
+          playerParty: playerName % TOTAL_PARTIES,
           playerPartyName: '',
           players: {},
+          rounds: {},
         })
         playerName += 1
         individualPlayer.instance().componentDidMount()
       })
     })
 
-    const checkCustomConditionAllPlayers = (condition) => {
-      _.each(allPlayers, condition)
+    const performCallbackOnEachPlayer = (callback) => {
+      _.each(allPlayers, callback)
     }
 
-    const checkForSomeCustomCondition = (party, condition) => {
+    const performCallbackOnParty = (party, callback) => {
       _.each(allPlayers, (singlePlayer) => {
         if(singlePlayer.state('playerParty') === party){
-          condition(singlePlayer)
+          callback(singlePlayer)
         }
       })
     }
 
     const checkStateForAllPlayers = (key, value) => {
-      checkCustomConditionAllPlayers((singlePlayer) => expect(singlePlayer.state(key)).toEqual(value))
+      performCallbackOnEachPlayer((singlePlayer) => expect(singlePlayer.state(key)).toEqual(value))
     }
 
     const checkStateForSomePlayers = (party, key, value) => {
-      checkCustomConditionAllPlayers((singlePlayer) => expect(singlePlayer.state(key)).toEqual(value))
+      performCallbackOnParty((singlePlayer) => expect(singlePlayer.state(key)).toEqual(value))
     }
 
-    test('Setting party names', () => {
+    test.skip('Setting party names', () => {
       checkStateForAllPlayers('currentRound', 0)
-      checkCustomConditionAllPlayers((singlePlayer) => expect(singlePlayer.find({ id: 'Party Name Dialog' }).length).toEqual(1))
+      performCallbackOnEachPlayer((singlePlayer) => expect(singlePlayer.find({ id: 'Party Name Dialog' }).length).toEqual(1))
+      
       const firstPlayerSocket = allPlayers[0].state('managingSocket')
       firstPlayerSocket.emit.resetHistory()
       allPlayers[0].instance().adjustPartyName({ target: { value: '   sample name' } })
       expect(firstPlayerSocket.emit.callCount).toBe(1)
       expect(firstPlayerSocket.emit.getCall(0).args).toEqual([ 'setPartyName', 'sample name' ])
+      expect(allPlayers[0].state('playerPartyName')).toEqual('sample name')
+
+      managingSocketManager.emitToParty(allPlayers[0].state('playerParty'), 'getPartyName', 'sample name')
+      checkStateForSomePlayers(allPlayers[0].state('playerParty'), 'playerPartyName', 'sample name')
+
+      const finalizePartyNameStub = sinon.stub(serverActions, 'finalizePartyName')
+      allPlayers[0].instance().finalizePartyName()
+      expect(firstPlayerSocket.emit.callCount).toBe(2)
+      expect(firstPlayerSocket.emit.getCall(1).args).toEqual([ 'finalizePartyName', 'sample name' ])
+      expect(finalizePartyNameStub.callCount).toBe(1)
+      expect(finalizePartyNameStub.getCall(0).args).toEqual([ 'sample name' ])
+    
+      finalizePartyNameStub.resetHistory()
+      managingSocketManager.emitToParty(allPlayers[0].state('playerParty'), 'finalizePartyName', 'sample name')
+      checkStateForSomePlayers(allPlayers[0].state('playerParty'), 'playerPartyName', 'sample name')
+      expect(finalizePartyNameStub.callCount).toBe(TOTAL_PLAYERS / TOTAL_PARTIES)
+
+      const parties = {}
+      const players = _.map(_.filter(allPlayers, (singlePlayer) => singlePlayer.state('playerParty') === allPlayers[0].state('playerParty')), (singlePartyPlayer) => singlePartyPlayer.state('playerName'))
+      parties[allPlayers[0].state('playerParty')] = { partyCards: {}, partyName: 'sample name', players: players }
+      performCallbackOnEachPlayer((singlePlayer) => singlePlayer.setState({ parties: parties }))
+      
+      const secondPlayerSocket = allPlayers[1].state('managingSocket')
+      secondPlayerSocket.emit.resetHistory()
+      allPlayers[1].instance().adjustPartyName({ target: { value: '   sample name' } })
+      allPlayers[1].instance().finalizePartyName()
+      expect(allPlayers[1].state('errorName')).toEqual('That name is already taken')
     })
 
-    test.skip('Selecting party card', () => {
-
+    test('Viewing resolution and chance, then selecting party card', () => {
+      const newState = {
+        currentRound: 1,
+        firstFetchedGame: true,
+        playerPartyName: 'sample party names',
+        parties: mergeAll(_.map(_.range(0, TOTAL_PLAYERS), (index) => {
+          return assoc(index, { partyCards: { yes: [ '2x', 'Steal', 'Senator' ] }, partyName: 'Test Party ' + index, players: [] }, {})
+        })),
+        players: mergeAll(_.map(_.range(0, TOTAL_PLAYERS), (index) => {
+          return assoc('Test' + index, { isReady: true, name: 'Test' + index, party: index % TOTAL_PARTIES, politicalCapital: 60, senators: 3 }, {})
+        })),
+        rounds: {
+          1: {
+            chance: {
+              effect: [ '0.5x Everything' ],
+              flavorText: 'SAMPLE TEXT CHANCE',
+            },
+            individualVotes: {},
+            partyCards: {},
+            resolution: {
+              no: { inFavor: 20, against: 10 },
+              yes: { inFavor: 'Sen', against: '-Sen' },
+              flavorText: 'SAMPLE TEXT RESOLUTION',
+            },
+          },
+        },
+      }
+      performCallbackOnEachPlayer((singlePlayer) => {
+        singlePlayer.setState(newState)
+        singlePlayer.update()
+      })
+      performCallbackOnEachPlayer((singlePlayer) => expect(singlePlayer.find({ id: 'Game State' }).hostNodes().props().children.props.children.props.id).toEqual('Resolution and Chance'))
     })
 
     test.skip('Voting', () => {

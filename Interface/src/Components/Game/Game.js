@@ -390,7 +390,7 @@ class PoliticalCapitalGame extends Component {
 
   renderCurrentRoundView = () => {
     return(
-      <div key='Resolution and Chance'>
+      <div id='Resolution and Chance' key='Resolution and Chance'>
         { this.resolutionAndChance() }
         <Flexbox flexGrow={ 1 } flexDirection='column' alignItems='center'>
           { this.renderPlayerValues() }
@@ -420,7 +420,7 @@ class PoliticalCapitalGame extends Component {
           </Flexbox>
           <Flexbox alignItems='center'>
             <Flexbox flexGrow={ 1 } alignItems='center'>
-              <RaisedButton primary={ true } label='Submit' disabled={ !this.hasNotSubmittedPartyName() } onTouchTap={ this.finalizePartyName } fullWidth={ true } />
+              <RaisedButton primary={ true } label='Submit' disabled={ !this.hasNotSubmittedPartyName() } onClick={ this.finalizePartyName } fullWidth={ true } />
             </Flexbox>
             <Flexbox alignItems='center' justifyContent='flex-end'>
               <IconButton tooltip='Disconnect' onTouchTap={ this.openTryingToDisconnect }>
@@ -533,9 +533,10 @@ class PoliticalCapitalGame extends Component {
 
   renderCurrentGameState = () => {
     return(
-      <Flexbox flexDirection='column' alignItems='center' flexGrow={ 1 }>
-        { (this.state.firstFetchedGame && this.state.playerName && this.state.playerParty && this.state.playerPartyName) ?
+      <Flexbox id='Game State' flexDirection='column' alignItems='center' flexGrow={ 1 }>
+        { (this.state.firstFetchedGame && !_.isUndefined(this.state.playerName) && !_.isUndefined(this.state.playerParty) && !_.isUndefined(this.state.playerPartyName)) ?
           <ReactCSSTransitionGroup
+            id='0'
             transitionName='fade-fast'
             transitionEnterTimeout={ 500 }
             transitionLeaveTimeout={ 500 }
@@ -543,7 +544,7 @@ class PoliticalCapitalGame extends Component {
             { this.currentGameState() }
           </ReactCSSTransitionGroup>
           :
-          <Flexbox flexDirection='column' justifyContent='center' alignItems='center' flexGrow={ 1 } style={ { height: '200px' } }>
+          <Flexbox id='1' flexDirection='column' justifyContent='center' alignItems='center' flexGrow={ 1 } style={ { height: '200px' } }>
             { (this.state.playerPartyName || this.allPartiesSubmitted()) && <CircularProgress color={ colors.DARK_BLUE } style={ { marginBottom: '15px' } } /> }
             { (this.state.playerName && this.allPartiesSubmitted() && (!this.state.playerParty || !this.state.playerPartyName)) && <RaisedButton label='Refresh' primary={ true } onTouchTap={ this.askForFullGame } /> }
           </Flexbox>

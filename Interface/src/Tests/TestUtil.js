@@ -9,6 +9,10 @@ export class DEBUG_SOCKET {
     this.namespace = namespace
     this.properties = properties
     this.onCommands = {}
+    this.playerName = ''
+    this.playerParty = ''
+    this.playerPartyName = ''
+
     this.emit = sinon.stub().callsFake((key, ...message) => {
       if(key === 'identifyPlayer'){
         this.playerName = message[0]
@@ -29,7 +33,7 @@ export class DEBUG_SOCKET {
 
   on(message, ...secondPart){
     if(message in this.onCommands) {
-      this.onCommands[message](secondPart)
+      this.onCommands[message](secondPart.length === 1 ? _.head(secondPart) : secondPart)
     } else if (_.isFunction(_.head(secondPart)) && secondPart.length === 1) {
       this.onCommands[message] = _.head(secondPart)
     } else {
@@ -50,7 +54,7 @@ export class DEBUG_SOCKET_MANAGER {
     })
     this.emitToParty = sinon.stub().callsFake((party, key, message) => {
       _.each(this.sockets, (socket) => {
-        if(socket.party === party){
+        if(socket.playerParty === party){
           socket.on(key, message)
         }
       })
