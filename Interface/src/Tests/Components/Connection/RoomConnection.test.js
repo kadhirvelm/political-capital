@@ -13,9 +13,8 @@ import thunk from 'redux-thunk'
 import { getMuiTheme } from 'material-ui/styles'
 import sinon from 'sinon'
 
-import { DEBUG_SOCKET_MANAGER, selectIdFromChildren } from '../../TestUtil'
+import { DEBUG_SOCKET_MANAGER } from '../../TestUtil'
 import * as serverActions from '../../../State/ServerActions'
-import { getSpecificRoom } from '../../../State/ServerActions';
 
 const middlewares = [ thunk ]
 const mockStore = configureMockStore(middlewares, political_capital)

@@ -16,6 +16,7 @@ import { values, sortWith, ascend, prop, match, curry, assoc } from 'ramda'
 import { _ } from 'underscore'
 
 import { setPlayerName, readyUp, inGame, setRooms } from '../../State/ServerActions'
+import { NameGeneratorContext } from './Catalog.js'
 
 const io = require('socket.io-client')
 
@@ -27,13 +28,14 @@ class PoliticalCapital extends Component {
     this.allColorHexes = allColorHexes
     this.partyType = 'Party'
     this.gameType = 'Tutorial'
+    this.nameGeneratorContext = new NameGeneratorContext(this, this.resetNameFieldOnEmpty)
     this.state = {
       dispatch: props.dispatch,
       connectedRoom: props.connectedRoom,
       managingSocket: io(process.env.REACT_APP_POLITICAL_CAPITAL + '/' + props.connectedRoom.roomName),
       disconnect: props.disconnect,
       playerParty: props.playerParty ? props.playerParty : Math.floor(Math.random() * (this.allColors.length)) + 1,
-      playerName: props.playerName,
+      playerName: props.playerName || this.nameGeneratorContext.randomName,
       admin: props.connectedRoom.admin,
       isAdmin: props.playerName === props.connectedRoom.admin,
       inGame: props.inGame,
@@ -46,6 +48,10 @@ class PoliticalCapital extends Component {
       hasSeenTabulation: props.hasSeenTabulation,
       showSettings: false,
     }
+  }
+
+  resetNameFieldOnEmpty = () => {
+    this.setState({ playerName: this.nameGeneratorContext.randomName })
   }
 
   componentWillMount(){
@@ -77,7 +83,7 @@ class PoliticalCapital extends Component {
     this.state.managingSocket.on('receiveFullGame', (roundInfo) => {
       this.setState(Object.assign({}, !_.isEmpty(roundInfo.players) && getPlayers(roundInfo.players), getPlayerNames(roundInfo.players), getSettings(roundInfo.settings)), () => {
         if(this.state.playerName && !_.contains(this.state.playerNames, this.state.playerName)){
-          this.joinLobby()
+          this.joinLobby(this.state.isAdmin)
         }
         if(roundInfo.inGame){
           this.startGame(true)
@@ -125,25 +131,37 @@ class PoliticalCapital extends Component {
     if(match(/(?:[\u2700-\u27bf]|(?:\ud83c[\udde6-\uddff]){2}|[\ud800-\udbff][\udc00-\udfff]|[\u0023-\u0039]\ufe0f?\u20e3|\u3299|\u3297|\u303d|\u3030|\u24c2|\ud83c[\udd70-\udd71]|\ud83c[\udd7e-\udd7f]|\ud83c\udd8e|\ud83c[\udd91-\udd9a]|\ud83c[\udde6-\uddff]|[\ud83c[\ude01-\ude02]|\ud83c\ude1a|\ud83c\ude2f|[\ud83c[\ude32-\ude3a]|[\ud83c[\ude50-\ude51]|\u203c|\u2049|[\u25aa-\u25ab]|\u25b6|\u25c0|[\u25fb-\u25fe]|\u00a9|\u00ae|\u2122|\u2139|\ud83c\udc04|[\u2600-\u26FF]|\u2b05|\u2b06|\u2b07|\u2b1b|\u2b1c|\u2b50|\u2b55|\u231a|\u231b|\u2328|\u23cf|[\u23e9-\u23f3]|[\u23f8-\u23fa]|\ud83c\udccf|\u2934|\u2935|[\u2190-\u21ff])/g, event.target.value).length === 0){
       this.setState({ playerName: event.target.value.trimLeft(), error: '' })
     } else {
-      this.setState({ error: 'Cannot contain emojis' })
+      this.setState({ error: 'Name cannot contain emojis.' })
     }
   }
 
-  joinLobby = () => {
-    if (this.state.playerName) {
-      if(this.state.playerNames){
-        if (!_.contains(this.state.playerNames, this.state.playerName)) {
-          this.setState({ submitName: false }, () => {
-            this.state.dispatch(setPlayerName(this.state.playerName))
-            this.state.managingSocket.emit('newPlayer', this.state.playerName)
-            this.identifySelectedPlayerColor()
-          })
-        } else {
-          this.setState({ error: 'This name is already taken, please select a different one.' })
-        }
-      } else {
-        this.setState({ error: 'Hang tight, fetching current player names.' })
-      }
+  finalizeJoiningLobby = () => {
+    this.state.dispatch(setPlayerName(this.state.playerName))
+    this.state.managingSocket.emit('newPlayer', this.state.playerName)
+    this.identifySelectedPlayerColor()
+  }
+
+  checkForNameUniqueness = () => {
+    if (!_.contains(this.state.playerNames, this.state.playerName)) {
+      this.setState({ submitName: false }, this.finalizeJoiningLobby)
+    } else {
+      this.setState({ error: 'This name is already taken, please select a different one.' })
+    }
+  }
+
+  ableToJoinLobby = () => {
+    if(this.state.playerNames){
+      this.checkForNameUniqueness()
+    } else {
+      this.setState({ error: 'Hang tight, fetching current player names.' })
+    }
+  }
+
+  joinLobby = (playerSubmitted = true) => {
+    if (playerSubmitted && this.state.playerName !== this.nameGeneratorContext.randomName) {
+      this.ableToJoinLobby(playerSubmitted)
+    } else if (playerSubmitted) {
+      this.setState({ error: 'Please enter a name, a title is not enough.' })
     }
   }
 
@@ -395,7 +413,7 @@ class PoliticalCapital extends Component {
         { this.state.submitName &&
           <Dialog title='Player Name' id='Name' actions={ actions } modal={ true } open={ this.state.submitName } autoDetectWindowHeight={ false } repositionOnUpdate={ false }>
             <font> Type in your name so others can see you. Note: this cannot be changed once set. </font>
-            <TextField id='Name Field' hintText='Player Name' fullWidth={ true } onChange={ this.handleSetPlayerName } value={ this.state.playerName || '' } />
+            <TextField id='Name Field' hintText='Player Name' fullWidth={ true } onChange={ this.handleSetPlayerName } onFocus={ this.nameGeneratorContext.removeDefaultName } onBlur={ this.nameGeneratorContext.onFocusHandler } value={ this.state.playerName } />
             <Flexbox justifyContent='center'> <font color='red'> { this.state.error || '' } </font> </Flexbox>
           </Dialog>
         }

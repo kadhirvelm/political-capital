@@ -1,6 +1,8 @@
 var R = require('ramda');
 var _ = require('underscore');
 
+var returnRandomPartyName = require('./Catalog').returnRandomPartyName;
+
 class GameManager {
 
   constructor(io, namespace, roomID, deleteRoom, db, admin, settings){
@@ -663,7 +665,19 @@ class GameManager {
     this.handleVoteAndActionRecording(socket);
   }
 
+  returnPartyName(party){
+    if (this.parties && this.parties[party] && this.parties[party].partyName){
+      return this.parties[party].partyName;
+    }
+    this.parties[party] = returnRandomPartyName();
+    return this.parties[party];
+  }
+
   handlePartyNameLogic(socket){
+    socket.on('getInitialPartyName', (party) => {
+      this.roomSocket.to(party).emit('getPartyName', this.returnPartyName(party));
+    });
+
     socket.on('setPartyName', (name) => {
       if (this.catchObjectErrors(this.players, this.playerNames[socket.id])){
         const playerParty = this.players[this.playerNames[socket.id]].party;
@@ -725,7 +739,7 @@ class GameManager {
   }
 
   omitPlayerFromParty(socket){
-    const playerName = this.playerNames[socket.id]
+    const playerName = this.playerNames[socket.id];
     if (this.players[playerName] && this.players[playerName].party && this.parties && this.parties[this.players[playerName].party] && this.parties[this.players[playerName].party].players){
       if (this.parties[this.players[playerName].party].players.length === 1){
         this.parties = _.omit(this.parties, this.players[playerName].party);

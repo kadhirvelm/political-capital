@@ -64,7 +64,7 @@ class PoliticalCapitalGame extends Component {
 
       playerName: props.playerName,
       playerParty: props.playerParty,
-      playerPartyName: props.playerPartyName,
+      playerPartyName: (this.state && this.state.playerPartyName) || props.playerPartyName || '',
       hasSeenTabulation: props.hasSeenTabulation,
     })
   }
@@ -78,6 +78,9 @@ class PoliticalCapitalGame extends Component {
 
   identifyPlayer = () => {
     this.state.managingSocket.emit('identifyPlayer', this.state.playerName, this.state.playerParty, this.state.playerPartyName)
+    if(_.isEmpty(this.state.playerPartyName)){
+      this.state.managingSocket.emit('getInitialPartyName', this.state.playerParty)
+    }
   }
 
   componentDidMount(){
@@ -99,7 +102,7 @@ class PoliticalCapitalGame extends Component {
 
   fetchPlayerPartyAndPlayerPartyName = (gameInfo) => {
     const playerParty = gameInfo.players[this.state.playerName].party
-    const playerPartyName = !_.isUndefined(gameInfo.parties[playerParty]) ? gameInfo.parties[playerParty].partyName : ''
+    const playerPartyName = this.state.playerPartyName || (!_.isUndefined(gameInfo.parties[playerParty]) && gameInfo.parties[playerParty].partyName) || ''
     if(playerParty && playerPartyName){
       this.state.dispatch(readyUp(this.state.playerName, playerParty))
       this.state.dispatch(finalizePartyName(playerPartyName))
@@ -411,6 +414,10 @@ class PoliticalCapitalGame extends Component {
     }
   }
 
+  returnRegisteredParties = () => {
+    return _.keys(_.filter(this.state.parties, (party) => party.players)).length
+  }
+
   renderPartyNameSetDialog = () => {
     return (
       <Dialog id='Party Name Dialog' title='Set Party Name' modal={ true } open={ !this.allPartiesSubmitted() } autoDetectWindowHeight={ false } repositionOnUpdate={ false } style={ { zIndex: 3 } } contentStyle={ { zIndex: 3 } } overlayStyle={ { zIndex: 2 } }>
@@ -430,7 +437,7 @@ class PoliticalCapitalGame extends Component {
             </Flexbox>
           </Flexbox>
           <Flexbox flexGrow={ 1 } justifyContent='center' style={ { marginTop: '10px' } }>
-            <font> { (_.keys(this.state.parties) || []).length } Parties Registered </font>
+            <font> { this.returnRegisteredParties() } Parties Registered </font>
           </Flexbox>
         </Flexbox>
       </Dialog>

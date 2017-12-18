@@ -24,13 +24,18 @@ import { curry } from 'ramda'
 import { _ } from 'underscore'
 import { match, assoc } from 'ramda'
 
+import { NameGeneratorContext } from './Catalog.js'
+
 class RoomConnection extends Component {
   constructor(props){
     super(props)
+    this.nameGeneratorContext = new NameGeneratorContext(this, this.resetNameFieldOnEmpty)
     this.state = Object.assign({}, this.propsConst(props), {
       newRoomDialog: false,
       enterPassword: false,
-      newRoomEntry: {},
+      newRoomEntry: {
+        admin: this.nameGeneratorContext.randomName,
+      },
       managingSocket: {},
       error: '',
       attemptingToConnect: false,
@@ -46,6 +51,10 @@ class RoomConnection extends Component {
       errorMessage: props.errorMessage,
       socketManager: props.socketManager,
     })
+  }
+
+  resetNameFieldOnEmpty = () => {
+    this.setState({ newRoomEntry: _.extend(_.clone(this.state.newRoomEntry), { admin: this.nameGeneratorContext.randomName }) })
   }
 
   setCurrentRooms = (rooms, callback) => {
@@ -127,12 +136,19 @@ class RoomConnection extends Component {
   }
   curryHandleSelectFieldRoomDetails = curry(this.handleSelectFieldRoomDetails)
 
-  submitNewRoom = () => {
-    if(this.state.newRoomEntry.admin && this.state.newRoomEntry.roomName){
+  allFieldsPresentCheckName = () => {
+    if(this.state.newRoomEntry.admin !== this.nameGeneratorContext.randomName){
       this.state.dispatch(setPlayerName(this.state.newRoomEntry.admin))
       this.setState({ enteredPassword: this.state.newRoomEntry.password }, () => {
         this.state.dispatch(createNewRoom(this.state.newRoomEntry.roomName, this.state.newRoomEntry.password, this.state.newRoomEntry.admin || '', this.state.newRoomEntry.gameType, this.handleNewRoomCallback))
       })
+    } else {
+      this.setState({ errorMessage: { error: 'Please enter a player name, a title is not enough' }, stepIndex: 0 })
+    }
+  }
+  submitNewRoom = () => {
+    if(this.state.newRoomEntry.admin && this.state.newRoomEntry.roomName){
+      this.allFieldsPresentCheckName()
     } else {
       this.setState({ errorMessage: { error: 'Missing Fields' } })
     }
@@ -172,7 +188,7 @@ class RoomConnection extends Component {
         return(
           <Flexbox flexDirection='column'>
             <TextField floatingLabelText='Room Name' errorText=' ' id='roomName' onChange={ this.curryHandleRoomDetails('roomName') } value={ this.state.newRoomEntry.roomName || '' } style={ { width: '85%' } } />
-            <TextField floatingLabelText='Player Name' errorText=' ' id='Admin' onChange={ this.curryHandleRoomDetails('admin') } value={ this.state.newRoomEntry.admin || '' } style={ { width: '85%' } } />
+            <TextField floatingLabelText='Player Name' errorText=' ' id='Admin' onChange={ this.curryHandleRoomDetails('admin') } value={ this.state.newRoomEntry.admin } onBlur={ this.nameGeneratorContext.onFocusHandler } style={ { width: '85%' } } />
             { this.renderForwardBackAndDoneButtons() }
           </Flexbox>
         )
@@ -284,7 +300,7 @@ class RoomConnection extends Component {
         <Flexbox flexDirection='column' alignItems='center'>
           <TextField floatingLabelText='Password' id='password' onChange={ this.changeEnteredPassword } value={ this.state.enteredPassword || '' } style={ { width: '85%' } } />
           <RaisedButton key='Join' label='Join' primary={ true } onTouchTap={this.curryConnectToRoom(this.state.attemptingToConnectToRoom) } />
-          <font color='red'> { this.state.error || '' } </font>
+          <font color='red' style={ { marginTop: '7px' } }> { this.state.error || '' } </font>
         </Flexbox>
       </Dialog>
     )
