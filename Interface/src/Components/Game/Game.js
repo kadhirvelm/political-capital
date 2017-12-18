@@ -263,7 +263,7 @@ class PoliticalCapitalGame extends Component {
    */
 
   handleFinalizingPartyName = () => {
-    if(!_.contains(_.map(this.state.parties, _.property('partyName')), this.state.playerPartyName)){
+    if(!_.contains(_.map(_.omit(this.state.parties, this.state.playerParty), _.property('partyName')), this.state.playerPartyName)){
       this.state.managingSocket.emit('finalizePartyName', this.state.playerPartyName)
       this.state.dispatch(finalizePartyName(this.state.playerPartyName))
     } else {
@@ -415,7 +415,7 @@ class PoliticalCapitalGame extends Component {
   }
 
   returnRegisteredParties = () => {
-    return _.keys(_.filter(this.state.parties, (party) => party.players)).length
+    return _.keys(_.filter(this.state.parties, (party) => !_.isEmpty(party.players))).length
   }
 
   renderPartyNameSetDialog = () => {

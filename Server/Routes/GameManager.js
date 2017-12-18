@@ -218,7 +218,7 @@ class GameManager {
   }
 
   checkIfAllPartyNamesSet(){
-    if ( R.length(R.keys(this.parties)) === this.numUniqueParties()) {
+    if ( R.length(R.keys(_.filter(this.parties, (party) => !_.isEmpty(party.players)))) === this.numUniqueParties()) {
       this.roomSocket.emit('allPartyNamesSet', this.parties);
       this.advanceRound(1);
     } else {
@@ -669,8 +669,8 @@ class GameManager {
     if (this.parties && this.parties[party] && this.parties[party].partyName){
       return this.parties[party].partyName;
     }
-    this.parties[party] = returnRandomPartyName();
-    return this.parties[party];
+    this.parties[party] = {partyName: returnRandomPartyName(), partyCards: this.initialPartyCards(), players:[]};
+    return this.parties[party].partyName;
   }
 
   handlePartyNameLogic(socket){
@@ -688,13 +688,7 @@ class GameManager {
     socket.on('finalizePartyName', (name) => {
       if (this.catchObjectErrors(this.players, this.playerNames[socket.id])){
         const playerParty = this.players[this.playerNames[socket.id]].party;
-
-        if (!(playerParty in this.parties)) {
-          this.parties[playerParty] = {players: [this.playerNames[socket.id]], partyName: name, partyCards: this.initialPartyCards()};
-        } else {
-          this.parties[playerParty].players.push(this.playerNames[socket.id]);
-        }
-
+        this.parties[playerParty].players.push(this.playerNames[socket.id]);
         _.forEach(this.players, (player) => {
           if (player.party === playerParty && (!_.contains(this.parties[playerParty].players, player.name))){
             this.parties[playerParty].players.push(player.name);

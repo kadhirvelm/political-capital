@@ -21,6 +21,7 @@ const titles = [
   'Magistrate',
   'Secretary',
   'Provost',
+  'Chancellor',
 ]
 
 export function NameGeneratorContext(context, putBackDefaulIfStillEmpty){

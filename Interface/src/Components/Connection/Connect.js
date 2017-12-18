@@ -86,6 +86,7 @@ class PoliticalCapital extends Component {
           this.joinLobby(this.state.isAdmin)
         }
         if(roundInfo.inGame){
+          console.log(roundInfo)
           this.startGame(true)
         }
       })
@@ -190,6 +191,7 @@ class PoliticalCapital extends Component {
   startGame = (force) => {
     if(!this.state.inGame){
       if(this.state.isAdmin || force){
+        console.log(this.state.inGame, this.state.isAdmin, force, 'STARTING GAME')
         this.state.managingSocket.emit('startGame')
       }
       this.setState({ inGame: true }, () => {
@@ -370,7 +372,7 @@ class PoliticalCapital extends Component {
       <Flexbox flexGrow={ 1 } justifyContent='center' style={ { marginTop: '15px', marginBottom: '15px' } }>
         <Flexbox flexBasis='85%'>
           { (this.state.startGame && this.state.isAdmin) ?
-            <RaisedButton fullWidth={ true } primary={ true } label='Proceed To Game' onTouchTap={ this.startGame } disabled={ this.state.players.length <= 1 } style={ { width: '50%', margin: '10px' } } />
+            <RaisedButton fullWidth={ true } primary={ true } label='Proceed To Game' onClick={ this.startGame } disabled={ this.state.players.length <= 1 } style={ { width: '50%', margin: '10px' } } />
             :
             <RaisedButton id='Ready Up' fullWidth={ true } primary={ true } label={ this.state.playerReady ? (this.state.startGame ? 'Waiting on ' + this.state.admin : 'Waiting on Players') : 'Ready' } disabled={ this.state.playerReady } onTouchTap={ this.readyUp } style={ { width: '20%', margin: '3px' } } />
           }
