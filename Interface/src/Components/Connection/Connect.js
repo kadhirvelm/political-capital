@@ -86,7 +86,6 @@ class PoliticalCapital extends Component {
           this.joinLobby(this.state.isAdmin)
         }
         if(roundInfo.inGame){
-          console.log(roundInfo)
           this.startGame(true)
         }
       })
@@ -191,7 +190,6 @@ class PoliticalCapital extends Component {
   startGame = (force) => {
     if(!this.state.inGame){
       if(this.state.isAdmin || force){
-        console.log(this.state.inGame, this.state.isAdmin, force, 'STARTING GAME')
         this.state.managingSocket.emit('startGame')
       }
       this.setState({ inGame: true }, () => {
