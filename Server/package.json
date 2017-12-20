@@ -10,7 +10,6 @@
     "build": "babel input.js -o compiled.js"
   },
   "jest": {
-    "collectCoverage": true,
     "collectCoverageFrom": [
       "**/*.js",
       "!**/node_modules/**"

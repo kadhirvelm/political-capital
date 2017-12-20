@@ -220,14 +220,25 @@ class CommonwealthGameManager extends GameManager {
     }
 
     handleNeutralPartyCard(roundPartyCard, partyObject){
-      // rework
       _.each(partyObject.players, (playerName) => {
         if ( this.isPartyCardType(roundPartyCard.value,'Take') || this.isPartyCardType(roundPartyCard.value,'Nullify') || this.isPartyCardType(roundPartyCard.value,'Give')){
           this.handleThesePartyCards[playerName] = roundPartyCard.value;
         } else if (this.isPartyCardType(roundPartyCard.value,'Get') || this.isPartyCardType(roundPartyCard.value,'Lose')){
-          this.individualPlayerBonuses[playerName] = {roundBonusFlat: 20};
-        } else if (this.isPartyCardType(roundPartyCard.value, '2x')){
-          this.individualPlayerBonuses[playerName] = {roundBonus: 1, newSenators: 0, roundBonusFlat: 0};
+          const modifier = this.isPartyCardType(roundPartyCard.value,'Get') ? '' : '-';
+          const value = parseInt(roundPartyCard.value, 10) || 'Sen'; // account for getting 20, losing 20, gaining senators, losing senators
+          this.individualPlayerBonuses[playerName] = {roundBonusFlat: modifier + value};
+        } else if (this.isPartyCardType(roundPartyCard.value, '2x')){ //acount for losing
+          this.individualPlayerBonuses[playerName] = {roundBonus: parseInt(roundPartyCard.value, 10)};
+        }
+      });
+    }
+
+    handlePartyCardActions(socket){
+      super(socket);
+
+      socket.on('Give', (toPlayer) => {
+        if (this.catchObjectErrors(this.players, this.playerNames[socket.id]) && this.catchObjectErrors(this.players, fromPlayer)){
+          this.stealAndTakeLogic(fromPlayer, 20, this.playerNames[socket.id]);
         }
       });
     }

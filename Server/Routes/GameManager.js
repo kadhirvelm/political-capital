@@ -618,12 +618,13 @@ class GameManager {
   }
 
   stealAndTakeLogic(socket, amount, fromPlayer){
-    this.transferFromPlayer(amount, fromPlayer, this.playerNames[socket.id]);
+    const toPlayer = socket.id ? this.playerNames[socket.id] : socket;
+    this.transferFromPlayer(amount, fromPlayer, toPlayer);
 
     this.changePlayerLogic('steal', fromPlayer, -amount);
-    this.changePlayerLogic('steal', this.playerNames[socket.id], amount);
+    this.changePlayerLogic('steal', toPlayer, amount);
 
-    this.removeFromHandleThesePartyCards(this.playerNames[socket.id]);
+    this.removeFromHandleThesePartyCards(toPlayer);
   };
 
   handlePartyCardActions(socket){
