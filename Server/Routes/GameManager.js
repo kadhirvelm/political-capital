@@ -18,6 +18,7 @@ class GameManager {
     this.settings = settings;
     this.playerNames = {};
     this.MINIMUM_SENATORS = 3;
+    this.GAME_TYPE = 'Vanilla';
 
     console.log('Game Manager initiated - ' + namespace);
     this.initialGameSettings();
@@ -810,6 +811,10 @@ class GameManager {
   }
 
   handleSocketCallback(socket){
+    socket.on('getGameType', () => {
+      socket.emit('receiveGameType', this.GAME_TYPE);
+    });
+
     socket.on('newPlayer', (newPlayer) => {
       this.playerNames[socket.id] = newPlayer.toString();
       if (!_.contains(_.keys(this.players), newPlayer)){

@@ -119,8 +119,8 @@ class PartyCards extends Component {
     this.state.managingSocket.emit('finalizePartyCard', this.state.selectedPartyCard)
   }
 
-  color = (type) => {
-    switch(type){
+  color = (partyCard) => {
+    switch(partyCard.type){
       case 'yes':
         return colors.GREEN
       case 'no':
@@ -158,7 +158,7 @@ class PartyCards extends Component {
 
   renderHasSelectedCardAndNotFinalized = () => {
     return(
-      <RaisedButton backgroundColor={ this.color(this.state.selectedPartyCard.type) } style={ { width: '75%', position: 'fixed', right: '10px', bottom: '10px' } }
+      <RaisedButton backgroundColor={ this.color(this.state.selectedPartyCard) } style={ { width: '75%', position: 'fixed', right: '10px', bottom: '10px' } }
         label={'Select: ' + this.translate(this.state.selectedPartyCard.type) + ' - ' + this.state.selectedPartyCard.value } onTouchTap={ this.handleFinalSelection }
         labelColor={ this.state.selectedPartyCard.type === 'neutral' ? '#000000' : '#FFFFFF' } />
     )

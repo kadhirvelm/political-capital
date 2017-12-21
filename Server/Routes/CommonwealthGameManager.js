@@ -8,6 +8,7 @@ class CommonwealthGameManager extends GameManager {
         super(io, namespace, roomID, deleteRoom, db, admin, settings);
         console.log('Commonwealth Deck Manager Initiated');
         this.MINIMUM_SENATORS = 2;
+        this.GAME_TYPE = 'Commonwealth';
     }
 
     deck1(){

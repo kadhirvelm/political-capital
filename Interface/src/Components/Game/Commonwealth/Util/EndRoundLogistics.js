@@ -1,4 +1,4 @@
-import EndRoundLogistics from '../Util/EndRoundLogistics'
+import EndRoundLogistics from '../../Util/EndRoundLogistics'
 
 import { commonwealthListOfPlayers } from './util'
 

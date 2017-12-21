@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import Flexbox from 'flexbox-react'
 import { _ } from 'underscore'
-import { colors, allColorHexes } from '../../styles/colors'
+import * as Colors from '../../styles/colors'
 import { svgIcon } from '../../Images/icons'
 
 import '../../styles/Transitions.css'
@@ -21,7 +21,7 @@ import { map, sortWith, descend, ascend } from 'ramda'
 
 const io = require('socket.io-client')
 
-const individualBox = { borderColor: colors.DARKER_PASTEL, borderStyle: 'solid', borderWidth: '1px', padding: '10px', backgroundColor: colors.SLIGHTLY_DARKER_PASTEL }
+const individualBox = { borderColor: Colors.colors.DARKER_PASTEL, borderStyle: 'solid', borderWidth: '1px', padding: '10px', backgroundColor: Colors.colors.SLIGHTLY_DARKER_PASTEL }
 
 class GameOverview extends Component {
   constructor(props){
@@ -36,6 +36,7 @@ class GameOverview extends Component {
       gameClosed: true,
       bribeSentOut: false,
     }
+    this.allColorHexes = Colors.allColorHexes
   }
 
   componentWillMount(){
@@ -48,7 +49,7 @@ class GameOverview extends Component {
   }
 
   componentDidMount(){
-    this.state.managingSocket.emit('getFullGame')
+    this.state.managingSocket.emit('getGameType')
   }
 
   componentWillUnmount(){
@@ -130,9 +131,26 @@ class GameOverview extends Component {
     })
   }
 
+  setAllColorHexes = () => {
+    switch(this.state.gameType){
+      case 'Commonwealth':
+        this.allColorHexes = Colors.commonwealthAllColorHexes
+        break
+      default:
+        break
+    }
+  }
+
   handleAllSocketConnections = () => {
     this.state.managingSocket.on('bribeSentOut', (bribeAmount) => {
       this.changePlaySound(true, bribeAmount)
+    })
+
+    this.state.managingSocket.on('receiveGameType', (gameType) => {
+      this.setState({ gameType: gameType }, () => {
+        this.setAllColorHexes()
+        this.state.managingSocket.emit('getFullGame')
+      })
     })
 
     this.handleReceivingFullGame()
@@ -226,7 +244,7 @@ class GameOverview extends Component {
     return(
       <Flexbox flexDirection='column' alignItems='center' justifyContent='space-between' style={ properties.confirmed ? selectedPartyStyle : basePartyStyle }>
         <Flexbox flexDirection='column' alignItems='center'> <font size={ 5 }> { fromPlayer } </font> <font size={ 2 } style={ { marginTop: '10px' } }> &nbsp; will </font> </Flexbox>
-        <Flexbox> <font size={ 6 } color={ properties.card === 'Steal' ? colors.MEDIUM_BLUE : colors.ORANGE }> <b> { properties.card } </b> </font> </Flexbox>
+        <Flexbox> <font size={ 6 } color={ properties.card === 'Steal' ? Colors.colors.MEDIUM_BLUE : Colors.colors.ORANGE }> <b> { properties.card } </b> </font> </Flexbox>
         <Flexbox flexBasis='50%' flexDirection='column' alignItems='center'> <font size={ 2 }> from &nbsp; </font> <font size={ 5 } style={ { marginTop: '10px' } }> { properties.selectedPlayer || 'Picking...' } </font> </Flexbox>
       </Flexbox>
     )
@@ -297,11 +315,15 @@ class GameOverview extends Component {
     return(
       <Flexbox flexGrow={ 1 } justifyContent='space-around'>
         { _.map(this.state.players, (value, key) => (
-          <font key={ key } color={ value.isReady ? allColorHexes[value.party - 1] : colors.DARK_BLUE } style={ { margin: '10px' } }> { value.name } </font>
+          <font key={ key } color={ value.isReady ? this.allColorHexes[value.party - 1] : Colors.colors.DARK_BLUE } style={ { margin: '10px' } }> { value.name } </font>
         ))
         }
       </Flexbox>
     )
+  }
+
+  renderPartyAffiliation = (party) => {
+    return svgIcon(Colors.commonwealthAllColors[party - 1])
   }
 
   renderPartiesAssembled = () => {
@@ -310,7 +332,8 @@ class GameOverview extends Component {
         { _.map(this.state.parties, (value, key) => (
           <Flexbox key={ key + this.currentRoundPartyCardsContainsParty(value.partyName).toString() } flexDirection='column' alignItems='center'>
             <Flexbox alignItems='baseline'>
-              <font size={ 5 } color={ allColorHexes[key - 1] }> { value.partyName } </font>
+              <font size={ 5 } color={ this.allColorHexes[key - 1] }> { value.partyName } </font>
+              <div style={ { marginLeft: '6px' } }> { this.state.gameType !== 'Vanilla' && this.renderPartyAffiliation(key) } </div>
               <div style={ { marginLeft: '7px' } }> { this.currentRoundPartyCardsContainsParty(value.partyName) && svgIcon('smallCheckmark') } </div>
             </Flexbox>
             <Flexbox flexDirection='column' style={ { marginTop: '10px' } }>
@@ -332,7 +355,7 @@ class GameOverview extends Component {
   renderResolutionAndChance = () => {
     return !_.isEmpty(this.state.rounds) ?
       <Flexbox id='Show rounds here' justifyContent='center' flexGrow={ 1 } style={ Object.assign({}, { marginTop: '15px' }, individualBox) } flexDirection='column'>
-        <Flexbox flexShrink={ 1 } justifyContent='flex-start' alignItems='flex-start' style={ { marginTop: '-3px' } }> <font size={ 3 } color={ colors.DARK_GRAY }> Round <b> { this.state.currentRound } </b> </font> </Flexbox>
+        <Flexbox flexShrink={ 1 } justifyContent='flex-start' alignItems='flex-start' style={ { marginTop: '-3px' } }> <font size={ 3 } color={ Colors.colors.DARK_GRAY }> Round <b> { this.state.currentRound } </b> </font> </Flexbox>
         <Flexbox flexGrow={ 1 } justifyContent='space-around' alignItems='baseline'>
           <Flexbox alignItems='center' style={ { marginTop: '25px' } }>
             { this.displayFinalTally(true) }
@@ -340,7 +363,7 @@ class GameOverview extends Component {
           </Flexbox>
           <Flexbox alignItems='center'>
             { (this.state.rounds && this.state.currentRound && this.state.rounds[this.state.currentRound] && this.state.rounds[this.state.currentRound].resolution) ?
-              <ResolutionAndChance isOverview={ true } managingSocket={ this.state.managingSocket } round={ this.state.rounds[this.state.currentRound] } currentRound={ this.state.currentRound } horizontal={ true } />
+              <ResolutionAndChance gameType={ this.state.gameType } isOverview={ true } managingSocket={ this.state.managingSocket } round={ this.state.rounds[this.state.currentRound] } currentRound={ this.state.currentRound } horizontal={ true } />
               :
               <Flexbox />
             }
@@ -354,11 +377,11 @@ class GameOverview extends Component {
   renderVotingDisplay = () => {
     return this.state.currentRound > 1 ?
       <Flexbox id='Show votes here' style={ Object.assign({}, individualBox, { marginTop: '15px', background: '#E5E8E8' }) } flexDirection='column'>
-        <Flexbox flexShrink={ 1 } justifyContent='flex-start' alignItems='flex-start' style={ { marginTop: '-3px' } }> <font color={ colors.DARK_GRAY }> Previous Round </font> </Flexbox>
+        <Flexbox flexShrink={ 1 } justifyContent='flex-start' alignItems='flex-start' style={ { marginTop: '-3px' } }> <font color={ Colors.colors.DARK_GRAY }> Previous Round </font> </Flexbox>
         { (this.state.rounds && this.state.currentRound - 1 >= 0 && this.state.rounds[this.state.currentRound - 1]) &&
           <Flexbox flexGrow={ 1 } justifyContent='space-around'>
             <DisplayVotes round={ this.state.rounds[this.state.currentRound] } previousRound={ this.state.rounds[this.state.currentRound - 1] } />
-            <ResolutionAndChance isOverview={ true } managingSocket={ this.state.managingSocket } round={ this.state.rounds[this.state.currentRound - 1] } currentRound={ this.state.currentRound - 1 } horizontal={ true } />
+            <ResolutionAndChance gameType={ this.state.gameType } isOverview={ true } managingSocket={ this.state.managingSocket } round={ this.state.rounds[this.state.currentRound - 1] } currentRound={ this.state.currentRound - 1 } horizontal={ true } />
           </Flexbox>
         }
       </Flexbox>
@@ -391,7 +414,7 @@ class GameOverview extends Component {
           <font size={ 6 }> { this.state.roomName } Overview </font>
         </Flexbox>
         <Flexbox id='Show players and parties' flexDirection='row' justifyContent='center' style={ Object.assign({}, { marginTop: '15px' }, individualBox) }>
-          <Flexbox flexShrink={ 1 } justifyContent='flex-start' alignItems='flex-start' style={ { marginTop: '-3px' } }> <font size={ 2 } color={ colors.DARK_GRAY }> Players </font> </Flexbox>
+          <Flexbox flexShrink={ 1 } justifyContent='flex-start' alignItems='flex-start' style={ { marginTop: '-3px' } }> <font size={ 2 } color={ Colors.colors.DARK_GRAY }> Players </font> </Flexbox>
           { this.state.currentRound === 0 ? this.renderPlayersAssemblingList() : this.renderPartiesAssembled() }
         </Flexbox>
         { this.renderResolutionAndChance() }
@@ -421,3 +444,9 @@ class GameOverview extends Component {
 }
 
 export default GameOverview
+
+// eslint-disable-next-line
+String.prototype.replaceAll = function(str1, str2, ignore) {
+  // eslint-disable-next-line
+  return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g,"\\$&"),(ignore?"gi":"g")),(typeof(str2)=="string")?str2.replace(/\$/g,"$$$$"):str2);
+}
