@@ -212,7 +212,7 @@ class CommonwealthGameManager extends GameManager {
     }
 
     initialPartyCards(){
-      return {neutral: ['Get 20', 'Take 20', 'Get Sen', 'Nullify', '2x', 'Give 20', 'Lose 20', 'Lose Sen']};
+      return {neutral: ['Get 20', 'Take 20', 'Get Sen', 'Nullify', '2x Both', 'Give 20', 'Lose 20', 'Lose Sen']};
     }
 
     isPartyCardType(partyCardValue, type){
@@ -231,7 +231,7 @@ class CommonwealthGameManager extends GameManager {
           const modifier = this.isPartyCardType(roundPartyCard.value,'Get') ? '' : '-';
           const value = parseInt(roundPartyCard.value, 10);
           this.individualPlayerBonuses[playerName] = value ? {roundBonusFlat: modifier + value} : {newSenators: modifier + 1};
-        } else if (this.isPartyCardType(roundPartyCard.value, '2x')){
+        } else if (this.isPartyCardType(roundPartyCard.value, '2x Both')){
           this.individualPlayerBonuses[playerName] = {roundBonus: parseInt(roundPartyCard.value, 10)};
         }
       });

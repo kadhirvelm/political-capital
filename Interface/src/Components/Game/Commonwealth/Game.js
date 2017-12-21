@@ -5,12 +5,14 @@ import Flexbox from 'flexbox-react'
 import CommonwealthResolutionAndChance from './ResolutionAndChance'
 import CommonwealthPartyCards from './PartyCards'
 import CommonwealthTools from './Tools'
+import CommonwealthEndRoundLogistics from './Util/EndRoundLogistics'
 
 import { commonwealthAllColors, commonwealthAllColorHexes } from '../../../styles/colors'
 
 class CommonwealthGame extends PoliticalCapitalGame {
   resolutionAndChance = () => <CommonwealthResolutionAndChance playerParty={ this.state.playerParty } { ...this.renderResolutionAndChangeProps() } />
   partyCards = () => <CommonwealthPartyCards { ...this.partyCardProps() } />
+  endRoundLogistics = () => <CommonwealthEndRoundLogistics { ...this.endRoundLogisticsProps() } />
 
   renderNameAndParty = () => {
     return(

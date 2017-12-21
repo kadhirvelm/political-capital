@@ -342,12 +342,25 @@ class PoliticalCapitalGame extends Component {
     )
   }
 
+  endRoundLogisticsProps = () => {
+    return {
+      dispatch: this.state.dispatch,
+      managingSocket: this.state.managingSocket,
+      rounds: this.state.rounds,
+      currentRound: this.state.currentRound,
+      parties: this.state.parties,
+      players: this.state.players,
+      changeCurrentlyViewingResults: this.changeCurrentlyViewingResults,
+      playerName: this.state.playerName,
+    }
+  }
+
+  endRoundLogistics = () => <EndRoundLogistics { ...this.endRoundLogisticsProps() } />
+
   renderEndRoundLogistics = () => {
     return(
       <Flexbox id='End round' key='End Round' flexDirection='column'>
-        <EndRoundLogistics dispatch={ this.state.dispatch } managingSocket={ this.state.managingSocket } rounds={ this.state.rounds } currentRound={ this.state.currentRound }
-          parties={ this.state.parties } players={ this.state.players } changeCurrentlyViewingResults={ this.changeCurrentlyViewingResults }
-          playerName={ this.state.playerName } />
+        { this.endRoundLogistics() }
       </Flexbox>
     )
   }

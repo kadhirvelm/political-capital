@@ -8,15 +8,20 @@ import { colors } from '../../../styles/colors'
 import { _ } from 'underscore'
 import { sum, curry, sortWith, descend } from 'ramda'
 
-export function listOfPlayers(state, handlePlayerSelection){
+export function renderSelectFieldAndMenu(state, handlePlayerSelection, players){
   return(
     <SelectField value={ state.selectedPlayer } floatingLabelText='Select Player' onChange={ handlePlayerSelection }>
-      { _.filter(_.values(state.players), (player) => player.name !== state.playerName).map((player) => (
+      { players.map((player) => (
         <MenuItem key={ player.name } value={ player.name } primaryText={ player.name } />
       ))
       }
     </SelectField>
   )
+}
+
+export function listOfPlayers(state, handlePlayerSelection){
+  const playerListWithoutSelf = _.filter(_.values(state.players), (player) => player.name !== state.playerName)
+  return renderSelectFieldAndMenu(state, handlePlayerSelection, playerListWithoutSelf)
 }
 
 export function returnWinner(state) {

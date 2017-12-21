@@ -97,6 +97,8 @@ class EndRoundLogistics extends Component {
     }
   }
 
+  renderListOfPlayerOptions = () => listOfPlayers(this.state, this.handlePlayerSelection)
+
   showPlayerOptions = () => {
     return(
       <Flexbox flexGrow={ 1 } flexDirection='column' justifyContent='center' alignItems='center' style={ { marginTop: '10px' } }>
@@ -104,7 +106,7 @@ class EndRoundLogistics extends Component {
           <font size={ 4 }> <b> You have to { this.playerPlayedCard() }! </b> </font>
         </Flexbox>
         <Flexbox flexGrow={ 1 } flexDirection='column' alignItems='center'>
-          { listOfPlayers(this.state, this.handlePlayerSelection) }
+          { this.renderListOfPlayerOptions() }
           <RaisedButton fullWidth={ true } primary={ true } label={ this.playerPlayedCard() } onTouchTap={ this.handlePlayerPartyCard } disabled={ _.isUndefined(this.state.selectedPlayer) } />
         </Flexbox>
       </Flexbox>
@@ -123,13 +125,15 @@ class EndRoundLogistics extends Component {
     )
   }
 
+  renderTakeStealMessage = () => 'Waiting for players to steal.'
+
   renderTakeAndSteal = () => {
     return(
       <Flexbox flexGrow={ 1 } justifyContent='center'>
         { this.hasPlayerStealTakeCard() ?
           <div> { this.showPlayerOptions() } </div>
           :
-          <div style={ { marginTop: '10px' } }> Waiting for players to steal. </div>
+          <div style={ { marginTop: '10px' } }> { this.renderTakeStealMessage() } </div>
         }
       </Flexbox>
     )
