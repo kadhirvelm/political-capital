@@ -72,7 +72,6 @@ const adjectives = [
 const nouns = [
     'Monkies',
     'Farming',
-    'Street',
     'Dragons',
     'Rabbits',
     'Motherhood',
@@ -91,7 +90,6 @@ const nouns = [
     'Jesters',
     'Grandmas',
     'Grandpas',
-    'Chairs',
     'Dogs',
     'Cats',
     'Pixies',
@@ -107,7 +105,6 @@ const nouns = [
     'Heroes',
     'Socks',
     'Books',
-    'Oldies',
     'Meat',
     'Nature',
     'Student',

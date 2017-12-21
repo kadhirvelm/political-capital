@@ -17,6 +17,7 @@ class GameManager {
     this.admin = admin;
     this.settings = settings;
     this.playerNames = {};
+    this.MINIMUM_SENATORS = 3;
 
     console.log('Game Manager initiated - ' + namespace);
     this.initialGameSettings();
@@ -457,12 +458,16 @@ class GameManager {
   }
 
   currentResolutionPayout(resolution) {
-    return resolution[this.roundWinner];
+    return resolution;
+  }
+
+  calculatedRoundBonus(bonus, favor, changePlayerName){
+    return bonus * ((favor === 'inFavor' && this.individualPlayerBonuses && this.individualPlayerBonuses[changePlayerName] && this.individualPlayerBonuses[changePlayerName].roundBonus) || 1);
   }
 
   handlePoliticalCapitalDistribution(votes, changePlayerName, finalResolutionPayout, yesFavor, noFavor){
-    const politicalCapitalYes = votes.yes * (_.isString(finalResolutionPayout[yesFavor]) ? 0 : finalResolutionPayout[yesFavor]) * this.passesBonus * ( yesFavor === 'inFavor' ? ((this.individualPlayerBonuses[changePlayerName] && this.individualPlayerBonuses[changePlayerName].roundBonus) || 1) : 1);
-    const politicalCapitalNo = votes.no * (_.isString(finalResolutionPayout[noFavor]) ? 0 : finalResolutionPayout[noFavor]) * this.failsBonus * ( noFavor === 'inFavor' ? (this.individualPlayerBonuses[changePlayerName].roundBonus || 1) : 1);
+    const politicalCapitalYes = votes.yes * (_.isString(finalResolutionPayout[yesFavor]) ? 0 : finalResolutionPayout[yesFavor]) * this.calculatedRoundBonus(this.passesBonus, yesFavor, changePlayerName);
+    const politicalCapitalNo = votes.no * (_.isString(finalResolutionPayout[noFavor]) ? 0 : finalResolutionPayout[noFavor]) * this.calculatedRoundBonus(this.failsBonus, noFavor, changePlayerName);
     const politicalCapitalOther = ((this.individualPlayerBonuses[changePlayerName] && this.individualPlayerBonuses[changePlayerName].roundBonusFlat) || 0);
 
     this.players[changePlayerName].politicalCapital += politicalCapitalYes + politicalCapitalNo + politicalCapitalOther;
@@ -479,7 +484,7 @@ class GameManager {
     const senatorOther = ((this.individualPlayerBonuses[changePlayerName] && this.individualPlayerBonuses[changePlayerName].newSenators) || 0);
 
     this.players[changePlayerName].senators += senatorResolution + senatorOther;
-    this.players[changePlayerName].senators = Math.max(Math.round(this.players[changePlayerName].senators), this.settings.START_SENATORS);
+    this.players[changePlayerName].senators = Math.max(Math.round(this.players[changePlayerName].senators), this.MINIMUM_SENATORS);
 
     this.changePlayerLogic('senatorResolution', changePlayerName, Math.round(senatorResolution));
     this.changePlayerLogic('senatorOther', changePlayerName, Math.round(senatorOther));
@@ -489,10 +494,10 @@ class GameManager {
     if (this.currentRound % 2 === 0){
       const numSenatorsPaidOff = (this.players[changePlayerName].politicalCapital - (this.players[changePlayerName].politicalCapital % this.settings.SENATE_TAX))/this.settings.SENATE_TAX;
 
-      const totalSenatorsForTax = Math.min(this.players[changePlayerName].senators, Math.max(Math.round(numSenatorsPaidOff), 3));
-      const totalSenatorTax = Math.min(this.players[changePlayerName].senators, Math.max(Math.round(numSenatorsPaidOff), 3)) * -this.settings.SENATE_TAX;
+      const totalSenatorsForTax = Math.min(this.players[changePlayerName].senators, Math.max(Math.round(numSenatorsPaidOff), this.MINIMUM_SENATORS));
+      const totalSenatorTax = Math.min(this.players[changePlayerName].senators, Math.max(Math.round(numSenatorsPaidOff), this.MINIMUM_SENATORS)) * -this.settings.SENATE_TAX;
       
-      this.players[changePlayerName].senators = (numSenatorsPaidOff >= this.players[changePlayerName].senators) ? this.players[changePlayerName].senators : Math.max(Math.round(numSenatorsPaidOff), 3);
+      this.players[changePlayerName].senators = (numSenatorsPaidOff >= this.players[changePlayerName].senators) ? this.players[changePlayerName].senators : Math.max(Math.round(numSenatorsPaidOff), this.MINIMUM_SENATORS);
       this.players[changePlayerName].politicalCapital -= this.players[changePlayerName].senators * this.settings.SENATE_TAX;
 
       this.changePlayerLogic('totalSenatorsForTax', changePlayerName, totalSenatorsForTax);
@@ -500,9 +505,13 @@ class GameManager {
     }
   }
 
+  transformFinalResolutionIntoPayout(finalResolution){
+    return {inFavor: finalResolution[this.roundWinner].inFavor, against: finalResolution[this.roundWinner === 'yes' ? 'no' : 'yes'].against};
+  }
+
   beginDistributingCapitalAndSenators(){
     const handleIncreaseAndDecrease = (votes, changePlayerName) => {
-      const finalResolutionPayout = this.currentResolutionPayout(this.rounds[this.currentRound].resolution, changePlayerName);
+      const finalResolutionPayout = this.transformFinalResolutionIntoPayout(this.currentResolutionPayout(this.rounds[this.currentRound].resolution, changePlayerName));
       const yesFavor = this.roundWinner === 'yes' ? 'inFavor' : 'against';
       const noFavor = this.roundWinner === 'no' ? 'inFavor' : 'against';
       this.handlePoliticalCapitalDistribution(votes, changePlayerName, finalResolutionPayout, yesFavor, noFavor);

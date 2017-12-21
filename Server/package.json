@@ -11,7 +11,7 @@
   },
   "jest": {
     "collectCoverageFrom": [
-      "**/*.js",
+      "Routes/*.js",
       "!**/node_modules/**"
     ]
   },
@@ -40,6 +40,6 @@
     "eslint-plugin-promise": "^3.6.0",
     "eslint-plugin-standard": "^3.0.1",
     "nodemon": "^1.11.0",
-    "sinon": "^4.1.2"
+    "sinon": "^4.1.3"
   }
 }
