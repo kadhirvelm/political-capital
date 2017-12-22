@@ -78,9 +78,7 @@ class PoliticalCapitalGame extends Component {
 
   identifyPlayer = () => {
     this.state.managingSocket.emit('identifyPlayer', this.state.playerName, this.state.playerParty, this.state.playerPartyName)
-    if(_.isEmpty(this.state.playerPartyName)){
-      this.state.managingSocket.emit('getInitialPartyName', this.state.playerParty)
-    }
+    this.state.managingSocket.emit('getInitialPartyName')
   }
 
   componentDidMount(){
@@ -381,8 +379,20 @@ class PoliticalCapitalGame extends Component {
     )
   }
 
+  playerValueProps = () => {
+    return {
+      id: 'Player Values',
+      players: this.state.players,
+      playerName: this.state.playerName,
+      round: this.state.rounds[this.state.currentRound],
+      playerPartyName: this.state.playerPartyName,
+    }
+  }
+
+  renderPlayerValueReactComponent = () => <PlayerValues { ...this.playerValueProps() } />
+
   renderPlayerValues = () => {
-    return (this.state.players && this.state.playerName && this.state.playerPartyName) ? <PlayerValues id='Player Values' players={ this.state.players } playerName={ this.state.playerName } round={ this.state.rounds[this.state.currentRound] } playerPartyName={ this.state.playerPartyName } /> : <div />
+    return (this.state.players && this.state.playerName && this.state.playerPartyName) ? this.renderPlayerValueReactComponent() : <div />
   }
 
   renderVoteOrPartyCardSelection = () => {
@@ -431,13 +441,18 @@ class PoliticalCapitalGame extends Component {
     return _.keys(_.filter(this.state.parties, (party) => !_.isEmpty(party.players))).length
   }
 
+  requestNewPartyName = () => {
+    this.state.managingSocket.emit('newPartyName', this.state.playerName)
+  }
+
   renderPartyNameSetDialog = () => {
     return (
       <Dialog id='Party Name Dialog' title='Set Party Name' modal={ true } open={ !this.allPartiesSubmitted() } autoDetectWindowHeight={ false } repositionOnUpdate={ false } style={ { zIndex: 3 } } contentStyle={ { zIndex: 3 } } overlayStyle={ { zIndex: 2 } }>
         <Flexbox flexDirection='column'>
-          <Flexbox flexBasis='auto' justifyContent='center' style={ { margin: '7px' } }>
+          <Flexbox flexBasis='auto' justifyContent='center' alignItems='center' style={ { margin: '7px' } }>
             <TextField id='PartyName' value={ this.state.playerPartyName || '' } label='Party Name' floatingLabelText='Party Name'
               disabled={ !this.hasNotSubmittedPartyName() } onChange={ this.adjustPartyName } errorText={ this.state.errorName || '' } />
+            <IconButton style={ { marginLeft: '10px' } } onClick={ this.requestNewPartyName }> { svgIcon('dice') } </IconButton>
           </Flexbox>
           <Flexbox alignItems='center'>
             <Flexbox flexGrow={ 1 } alignItems='center'>

@@ -307,8 +307,12 @@ class GameManager {
     }
   }
 
+  checkForEndRound(){
+    return !this.hasTypeOfCard('Nullify') && !this.hasTypeOfCard('Steal') && !this.hasTypeOfCard('Take');
+  }
+
   handleDistributingOrActionablePartyCards(){
-    if (!this.hasTypeOfCard('Nullify') && !this.hasTypeOfCard('Steal') && !this.hasTypeOfCard('Take')){
+    if (this.checkForEndRound()){
       this.beginDistributingCapitalAndSenators();
       this.advanceRound();
     } else {
@@ -628,7 +632,7 @@ class GameManager {
   }
 
   stealAndTakeLogic(socket, amount, fromPlayer){
-    const toPlayer = socket.id ? this.playerNames[socket.id] : socket;
+    const toPlayer = this.playerNames[socket.id];
     this.transferFromPlayer(amount, fromPlayer, toPlayer);
 
     this.changePlayerLogic('steal', fromPlayer, -amount);
@@ -676,29 +680,48 @@ class GameManager {
     this.handleVoteAndActionRecording(socket);
   }
 
+  setInitialPartyValue(party, optionalName){
+    this.parties[party] = {partyName: optionalName, partyCards: this.initialPartyCards(), players:[]};
+  }
+
   returnPartyName(party){
     if (this.parties && this.parties[party] && this.parties[party].partyName){
       return this.parties[party].partyName;
     }
-    this.parties[party] = {partyName: returnRandomPartyName(), partyCards: this.initialPartyCards(), players:[]};
+    this.setInitialPartyValue(party, returnRandomPartyName());
     return this.parties[party].partyName;
   }
 
+  emitNewPartyName(socket, name){
+    if (this.catchObjectErrors(this.players, this.playerNames[socket.id])){
+      const playerParty = this.players[this.playerNames[socket.id]].party;
+      if (this.parties && this.parties[playerParty]){
+        this.parties[playerParty].partyName = name;
+        this.roomSocket.to(playerParty).emit('getPartyName', name);
+      }
+    }
+  };
+
   handlePartyNameLogic(socket){
-    socket.on('getInitialPartyName', (party) => {
-      this.roomSocket.to(party).emit('getPartyName', this.returnPartyName(party));
+    socket.on('getInitialPartyName', () => {
+      const playerParty = this.players[this.playerNames[socket.id]].party;
+      this.roomSocket.to(playerParty).emit('getPartyName', this.returnPartyName(playerParty));
+    });
+
+    socket.on('newPartyName', () => {
+      this.emitNewPartyName(socket, returnRandomPartyName());
     });
 
     socket.on('setPartyName', (name) => {
-      if (this.catchObjectErrors(this.players, this.playerNames[socket.id])){
-        const playerParty = this.players[this.playerNames[socket.id]].party;
-        this.roomSocket.to(playerParty).emit('getPartyName', name);
-      }
+      this.emitNewPartyName(socket, name);
     });
 
     socket.on('finalizePartyName', (name) => {
       if (this.catchObjectErrors(this.players, this.playerNames[socket.id])){
         const playerParty = this.players[this.playerNames[socket.id]].party;
+        if (_.isEmpty(this.parties) || _.isEmpty(this.parties[playerParty])){
+          this.setInitialPartyValue(playerParty, name);
+        }
         this.parties[playerParty].players.push(this.playerNames[socket.id]);
         _.forEach(this.players, (player) => {
           if (player.party === playerParty && (!_.contains(this.parties[playerParty].players, player.name))){

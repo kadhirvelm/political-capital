@@ -6,6 +6,7 @@ import CommonwealthResolutionAndChance from './ResolutionAndChance'
 import CommonwealthPartyCards from './PartyCards'
 import CommonwealthTools from './Tools'
 import CommonwealthEndRoundLogistics from './Util/EndRoundLogistics'
+import CommonwealthPlayerValues from './Util/PlayerValues'
 
 import { commonwealthAllColors, commonwealthAllColorHexes } from '../../../styles/colors'
 
@@ -13,6 +14,7 @@ class CommonwealthGame extends PoliticalCapitalGame {
   resolutionAndChance = () => <CommonwealthResolutionAndChance playerParty={ this.state.playerParty } { ...this.renderResolutionAndChangeProps() } />
   partyCards = () => <CommonwealthPartyCards { ...this.partyCardProps() } />
   endRoundLogistics = () => <CommonwealthEndRoundLogistics { ...this.endRoundLogisticsProps() } />
+  renderPlayerValueReactComponent = () => <CommonwealthPlayerValues { ...this.playerValueProps() } />
 
   renderNameAndParty = () => {
     return(

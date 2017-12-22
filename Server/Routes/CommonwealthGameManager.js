@@ -9,6 +9,7 @@ class CommonwealthGameManager extends GameManager {
         console.log('Commonwealth Deck Manager Initiated');
         this.MINIMUM_SENATORS = 2;
         this.GAME_TYPE = 'Commonwealth';
+        this.settings.ROUNDS = 8;
     }
 
     deck1(){
@@ -190,7 +191,7 @@ class CommonwealthGameManager extends GameManager {
           {flavorText: 'All is calm in the Commonwealth.', effect: ['None']},
           {flavorText: 'New campaign funding rules mean more money rolling into your coffers for voter outreach. You can increase your re-election chances if you play your cards right.', effect: ['2x Positives']},
           {flavorText: 'Strength in numbers. The Commonwealth has made a pact with new foreign ally that is lauded by people.', effect: ['Get 20']},
-          {flavorText: 'An ambassador\'s remarks on trade set off an international crisis. The Commonwealth\'s influence declines.', effect: ['Lose 20']},
+          {flavorText: 'An ambassador\'s remarks on trade set off an international crisis. The Commonwealth\'s influence declines.', effect: ['Lose 10']},
           {flavorText: 'The world is captivated with the Commonwealth boat races. No one is paying attention to the government right now.', effect: ['0.5x Everything']},
           {flavorText: 'A big fight is looming. Your parties will clash in the biggest legislative battle of the term...', effect: ['2x Everything']},
           {flavorText: 'Good news! A new poll released shows your incumbent politicians exceeding expectations and more likely to be reelected', effect: ['Get 10 Senator']},
@@ -242,12 +243,22 @@ class CommonwealthGameManager extends GameManager {
       });
     }
 
+    checkForEndRound(){
+      return !this.hasTypeOfCard('Nullify') && !this.hasTypeOfCard('Take 20') && !this.hasTypeOfCard('Give 20');
+    }
+
     handlePartyCardActions(socket){
       super.handlePartyCardActions(socket);
 
-      socket.on('Give', (toPlayer) => {
+      socket.on('Take 20', (fromPlayer) => {
         if (this.catchObjectErrors(this.players, this.playerNames[socket.id]) && this.catchObjectErrors(this.players, fromPlayer)){
-          this.stealAndTakeLogic(fromPlayer, 20, this.playerNames[socket.id]);
+          this.stealAndTakeLogic(socket, 20, fromPlayer);
+        }
+      });
+
+      socket.on('Give 20', (toPlayer) => {
+        if (this.catchObjectErrors(this.players, this.playerNames[socket.id]) && this.catchObjectErrors(this.players, toPlayer)){
+          this.stealAndTakeLogic(socket, -20, toPlayer);
         }
       });
     }

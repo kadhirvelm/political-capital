@@ -147,10 +147,14 @@ class EndRoundLogistics extends Component {
     )
   }
 
+  checkForStealingAndTaking = () => {
+    return this.hasTypeOfCard('Steal') || this.hasTypeOfCard('Take')
+  }
+
   renderPartyCardHandler = () => {
     if(this.hasTypeOfCard('Nullify')){
       return this.renderNullifyPresent()
-    } else if (!this.hasTypeOfCard('Nullify') && (this.hasTypeOfCard('Steal') || this.hasTypeOfCard('Take'))) {
+    } else if (!this.hasTypeOfCard('Nullify') && (this.checkForStealingAndTaking())) {
       return this.renderTakeAndSteal()
     }
     return this.renderFinalTally()

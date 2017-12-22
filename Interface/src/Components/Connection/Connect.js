@@ -397,7 +397,7 @@ class PoliticalCapital extends Component {
   renderSettings = () => {
     return(
       <Flexbox flexDirection='column'>
-        <Flexbox flexGrow={ 1 } justifyContent='flex-start' alignItems='baseline'>
+        <Flexbox flexGrow={ 1 } justifyContent='flex-start' alignItems='baseline' style={ { marginBottom: '10px' } }>
           <RaisedButton label={ this.state.showSettings ? 'Hide' : (this.state.isAdmin ? 'Adjust Settings' : 'Show Settings') } primary={ this.state.showSettings } onTouchTap={ this.changeShowSettings } style={ { marginTop: '15px' } } />
           { (this.state.settingsChangeIndicator && !this.state.isAdmin) && <font color={ this.colors.RED } style={ { marginLeft: '15px' } }> Settings changed! </font> }
         </Flexbox>

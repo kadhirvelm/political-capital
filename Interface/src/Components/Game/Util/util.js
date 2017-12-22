@@ -29,7 +29,6 @@ export function returnWinner(state) {
 }
 
 function totalPartyAverageWorth(state, party){
-  console.log(state)
   return sum(_.map(party.players, (player) => state.rounds[state.currentRound].currentRoundStats[player].politicalCapital)) / party.players.length
 }
 const curryTotalPartyAverageWorth = curry(totalPartyAverageWorth)
