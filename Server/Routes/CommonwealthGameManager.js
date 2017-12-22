@@ -217,11 +217,15 @@ class CommonwealthGameManager extends GameManager {
     }
 
     isPartyCardType(partyCardValue, type){
-      return partyCardValue.includes(types);
+      return partyCardValue.includes(type);
     }
 
     calculatedRoundBonus(bonus, favor, changePlayerName){
       return bonus * (this.individualPlayerBonuses && this.individualPlayerBonuses[changePlayerName] && this.individualPlayerBonuses[changePlayerName].roundBonus || 1);
+    }
+
+    getNumber(stringWithNum){
+      return parseInt(stringWithNum.replace( /^\D+/g, ''), 10);
     }
 
     handleNeutralPartyCard(roundPartyCard, partyObject){
@@ -230,10 +234,10 @@ class CommonwealthGameManager extends GameManager {
           this.handleThesePartyCards[playerName] = roundPartyCard.value;
         } else if (this.isPartyCardType(roundPartyCard.value,'Get') || this.isPartyCardType(roundPartyCard.value,'Lose')){
           const modifier = this.isPartyCardType(roundPartyCard.value,'Get') ? '' : '-';
-          const value = parseInt(roundPartyCard.value, 10);
-          this.individualPlayerBonuses[playerName] = value ? {roundBonusFlat: modifier + value} : {newSenators: modifier + 1};
+          const value = this.getNumber(roundPartyCard.value);
+          this.individualPlayerBonuses[playerName] = value ? {roundBonusFlat: parseInt(modifier + value, 10)} : {newSenators: parseInt(modifier + 1, 10)};
         } else if (this.isPartyCardType(roundPartyCard.value, '2x Both')){
-          this.individualPlayerBonuses[playerName] = {roundBonus: parseInt(roundPartyCard.value, 10)};
+          this.individualPlayerBonuses[playerName] = {roundBonus: this.getNumber(roundPartyCard.value)};
         }
       });
     }

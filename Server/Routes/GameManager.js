@@ -482,9 +482,9 @@ class GameManager {
   handleSenatorDistribution(votes, changePlayerName, finalResolutionPayout, yesFavor, noFavor){
     const senatorResolution = (votes.no === 0 ? (_.isString(finalResolutionPayout[yesFavor]) ? ( finalResolutionPayout[yesFavor].startsWith('-') ? -1 * this.failsBonus : 1 * this.passesBonus * ((this.individualPlayerBonuses[changePlayerName] && this.individualPlayerBonuses[changePlayerName].roundBonus) || 1)) : 0): 0)
     + (votes.yes === 0 ? (_.isString(finalResolutionPayout[noFavor]) ? ( finalResolutionPayout[noFavor].startsWith('-') ? -1 * this.failsBonus : 1 * this.passesBonus * (this.individualPlayerBonuses[changePlayerName].roundBonus || 1)) : 0): 0);
-    const senatorOther = ((this.individualPlayerBonuses[changePlayerName] && this.individualPlayerBonuses[changePlayerName].newSenators) || 0);
+    const senatorOther = parseInt((this.individualPlayerBonuses[changePlayerName] && this.individualPlayerBonuses[changePlayerName].newSenators) || 0, 10);
 
-    this.players[changePlayerName].senators += senatorResolution + senatorOther;
+    this.players[changePlayerName].senators = parseInt(this.players[changePlayerName].senators, 10) + senatorResolution + senatorOther;
     this.players[changePlayerName].senators = Math.max(Math.round(this.players[changePlayerName].senators), this.MINIMUM_SENATORS);
 
     this.changePlayerLogic('senatorResolution', changePlayerName, Math.round(senatorResolution));

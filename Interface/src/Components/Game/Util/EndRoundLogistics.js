@@ -167,13 +167,17 @@ class EndRoundLogistics extends Component {
     this.setState({ showVotes: !this.state.showVotes })
   }
 
+  renderPartyCardType = (entry) => {
+    return <div> { this.renderType(this.state.round.partyCards[entry].type) }, { this.state.round.partyCards[entry].value } </div>
+  }
+
   renderEffectivePartyCardsBody = () => {
     return(
       <TableBody displayRowCheckbox={ false }>
         { _.keys(this.state.round.partyCards).map((entry, index) => (
           <TableRow key={ index }>
             <TableRowColumn style={ { wordWrap: 'break-word', whiteSpace: 'normal' } }> { entry } </TableRowColumn>
-            <TableRowColumn style={ { wordWrap: 'break-word', whiteSpace: 'normal' } }> { this.renderType(this.state.round.partyCards[entry].type) }, { this.state.round.partyCards[entry].value } </TableRowColumn>
+            <TableRowColumn style={ { wordWrap: 'break-word', whiteSpace: 'normal' } }> { this.renderPartyCardType(entry) } </TableRowColumn>
             <TableRowColumn style={ { wordWrap: 'break-word', whiteSpace: 'normal' } }> { this.renderEffective(this.state.round.partyCards[entry]) } </TableRowColumn>
           </TableRow>
         ))
