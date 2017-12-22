@@ -105,7 +105,7 @@ class Vote extends Component {
 
   render() {
     return (
-      <Flexbox flexDirection='column' style={ { marginTop: '10px', width: '90%' } }>
+      <Flexbox id='Player Values' flexDirection='column' style={ { marginTop: '10px', width: '90%' } }>
         <Flexbox flexWrap='wrap' justifyContent='center' alignItems='center' style={ { marginBottom: '15px' } }>
           { this.renderPoliticalCapitalCount() }
           { this.renderSenatorCount() }

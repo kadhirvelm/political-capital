@@ -24,13 +24,18 @@ import { curry } from 'ramda'
 import { _ } from 'underscore'
 import { match, assoc } from 'ramda'
 
+import { NameGeneratorContext } from './Catalog.js'
+
 class RoomConnection extends Component {
   constructor(props){
     super(props)
+    this.nameGeneratorContext = new NameGeneratorContext(this, this.resetNameFieldOnEmpty)
     this.state = Object.assign({}, this.propsConst(props), {
       newRoomDialog: false,
       enterPassword: false,
-      newRoomEntry: {},
+      newRoomEntry: {
+        admin: this.nameGeneratorContext.randomName,
+      },
       managingSocket: {},
       error: '',
       attemptingToConnect: false,
@@ -48,12 +53,17 @@ class RoomConnection extends Component {
     })
   }
 
+  resetNameFieldOnEmpty = () => {
+    this.setState({ newRoomEntry: _.extend(_.clone(this.state.newRoomEntry), { admin: this.nameGeneratorContext.randomName }) })
+  }
+
   setCurrentRooms = (rooms, callback) => {
     this.setState({ currentRooms: rooms }, callback)
   }
 
   refreshRooms = () => {
     this.state.dispatch(getCurrentRooms(this.setCurrentRooms))
+    this.setState({ error: '' })
   }
 
   componentWillMount(){
@@ -64,37 +74,45 @@ class RoomConnection extends Component {
     this.setState(this.propsConst(props))
   }
 
+  handleIfRoomExists = (room, roomExists) => {
+    if(!roomExists.inGame){
+      const socket = this.state.socketManager.socket('/' + room.roomName, { autoConnect: true, reconnection: true })
+      socket.on('connect', () => {
+        socket.disconnect()
+        this.state.joinRoom(room, socket)
+      })
+      this.setState({ managingSocket: socket })
+    } else {
+      this.setState({ connectingErrors: 'Room ' + room.roomName + ' is already in game' }, () => {
+        this.refreshRooms()
+      })
+    }
+  }
+
+  handleCallback = (room, roomExists) => {
+    if(roomExists.exists && _.isEmpty(this.state.managingSocket)){
+      this.handleIfRoomExists(room, roomExists)
+    } else {
+      this.setState({ connectingErrors: 'Room ' + room.roomName + ' no longer exists' }, () => {
+        this.refreshRooms()
+      })
+    }
+  }
+  curryHandleCallback = curry(this.handleCallback)
+
+  ableToJoinRoom = (room) => {
+    this.setState({ enterPassword: false, attemptingToConnect: room._id }, () => {
+      this.state.dispatch(getSpecificRoom(room._id, this.curryHandleCallback(room)))
+    })
+  }
+
   connectToRoom = (room, event) => {
     if(_.isEmpty(room.password) || room.password === this.state.enteredPassword){
-      this.setState({ enterPassword: false }, () => {
-        const handleCallback = (roomExists) => {
-          if(roomExists.exists && _.isEmpty(this.state.managingSocket)){
-            if(!roomExists.inGame){
-              const socket = this.state.socketManager.socket('/' + room.roomName, { autoConnect: true, reconnection: true })
-              socket.on('connect', () => {
-                this.state.joinRoom(room)
-              })
-              this.setState({ managingSocket: socket })
-            } else {
-              this.setState({ connectingErrors: 'Room ' + room.roomName + ' is already in game' }, () => {
-                this.refreshRooms()
-              })
-            }
-          } else {
-            this.setState({ connectingErrors: 'Room ' + room.roomName + ' no longer exists' }, () => {
-              this.refreshRooms()
-            })
-          }
-        }
-        this.setState({ attemptingToConnect: room._id }, () => {
-          this.state.dispatch(getSpecificRoom(room._id, handleCallback))
-        })
-      })
+      this.ableToJoinRoom(room)
     } else {
       this.setState({ attemptingToConnectToRoom: room, enterPassword: true, error: this.state.enteredPassword && 'Incorrect Password', enteredPassword: '' })
     }
   }
-
   curryConnectToRoom = curry(this.connectToRoom)
 
   openNewRoomDialog = () => this.setState({ newRoomDialog: true })
@@ -118,12 +136,19 @@ class RoomConnection extends Component {
   }
   curryHandleSelectFieldRoomDetails = curry(this.handleSelectFieldRoomDetails)
 
-  submitNewRoom = () => {
-    if(this.state.newRoomEntry.admin && this.state.newRoomEntry.roomName){
+  allFieldsPresentCheckName = () => {
+    if(this.state.newRoomEntry.admin !== this.nameGeneratorContext.randomName){
       this.state.dispatch(setPlayerName(this.state.newRoomEntry.admin))
       this.setState({ enteredPassword: this.state.newRoomEntry.password }, () => {
         this.state.dispatch(createNewRoom(this.state.newRoomEntry.roomName, this.state.newRoomEntry.password, this.state.newRoomEntry.admin || '', this.state.newRoomEntry.gameType, this.handleNewRoomCallback))
       })
+    } else {
+      this.setState({ errorMessage: { error: 'Please enter a player name, a title is not enough' }, stepIndex: 0 })
+    }
+  }
+  submitNewRoom = () => {
+    if(this.state.newRoomEntry.admin && this.state.newRoomEntry.roomName){
+      this.allFieldsPresentCheckName()
     } else {
       this.setState({ errorMessage: { error: 'Missing Fields' } })
     }
@@ -163,7 +188,7 @@ class RoomConnection extends Component {
         return(
           <Flexbox flexDirection='column'>
             <TextField floatingLabelText='Room Name' errorText=' ' id='roomName' onChange={ this.curryHandleRoomDetails('roomName') } value={ this.state.newRoomEntry.roomName || '' } style={ { width: '85%' } } />
-            <TextField floatingLabelText='Player Name' errorText=' ' id='Admin' onChange={ this.curryHandleRoomDetails('admin') } value={ this.state.newRoomEntry.admin || '' } style={ { width: '85%' } } />
+            <TextField floatingLabelText='Player Name' errorText=' ' id='Admin' onChange={ this.curryHandleRoomDetails('admin') } value={ this.state.newRoomEntry.admin } onBlur={ this.nameGeneratorContext.onFocusHandler } style={ { width: '85%' } } />
             { this.renderForwardBackAndDoneButtons() }
           </Flexbox>
         )
@@ -190,7 +215,7 @@ class RoomConnection extends Component {
           <Flexbox key={ index } flexDirection='column' style={ { margin: '5px', width: '45%', height: '250px', background: '#FFFFFF', borderColor: colors.LIGHT_GRAY, borderWidth: '1px', borderStyle: 'solid' } }>
             <Flexbox flexDirection='column' justifyContent='space-around' style={ { margin: '10px' } }>
               <Flexbox flexDirection='column' justifyContent='center' alignItems='center' style={ { wordWrap: 'break-word' } }>
-                <font size={ 5 } color={ colors.DARK_BLUE } style={ { width: '95%', wordWrap: 'break-word' } }> { room.roomName.replaceAll('%20', ' ') } </font>
+                <font size={ 5 } color={ colors.DARK_BLUE } style={ { width: '95%', wordWrap: 'break-word' } }> { room.roomName && room.roomName.replaceAll('%20', ' ') } </font>
                 <font size={ 3 } color={ colors.DARK_GRAY }> { room.gameType } </font>
               </Flexbox>
               <Flexbox flexDirection='column' flexGrow={ 1 } alignItems='flex-start' style={ { marginTop: '10px' } }>
@@ -275,7 +300,7 @@ class RoomConnection extends Component {
         <Flexbox flexDirection='column' alignItems='center'>
           <TextField floatingLabelText='Password' id='password' onChange={ this.changeEnteredPassword } value={ this.state.enteredPassword || '' } style={ { width: '85%' } } />
           <RaisedButton key='Join' label='Join' primary={ true } onTouchTap={this.curryConnectToRoom(this.state.attemptingToConnectToRoom) } />
-          <font color='red'> { this.state.error || '' } </font>
+          <font color='red' style={ { marginTop: '7px' } }> { this.state.error || '' } </font>
         </Flexbox>
       </Dialog>
     )

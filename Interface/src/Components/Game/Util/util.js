@@ -6,12 +6,12 @@ import MenuItem from 'material-ui/MenuItem'
 import { colors } from '../../../styles/colors'
 
 import { _ } from 'underscore'
-import { sum } from 'ramda'
+import { sum, curry, sortWith, descend } from 'ramda'
 
-export function listOfPlayers(state, handlePlayerSelection){
+export function renderSelectFieldAndMenu(state, handlePlayerSelection, players){
   return(
     <SelectField value={ state.selectedPlayer } floatingLabelText='Select Player' onChange={ handlePlayerSelection }>
-      { _.filter(_.values(state.players), (player) => player.name !== state.playerName).map((player) => (
+      { players.map((player) => (
         <MenuItem key={ player.name } value={ player.name } primaryText={ player.name } />
       ))
       }
@@ -19,13 +19,20 @@ export function listOfPlayers(state, handlePlayerSelection){
   )
 }
 
-export function returnWinner(state) {
-  return state.previousRound.roundWinner === 'yes' ? <font color={ colors.GREEN }> Passes </font> : <font color={ colors.RED }> Fails </font>
+export function listOfPlayers(state, handlePlayerSelection){
+  const playerListWithoutSelf = _.filter(_.values(state.players), (player) => player.name !== state.playerName)
+  return renderSelectFieldAndMenu(state, handlePlayerSelection, playerListWithoutSelf)
 }
 
-export function totalPartyAverageWorth(party){
-  return sum(_.map(party.players, (player) => this.state.rounds[this.state.currentRound].currentRoundStats[player].politicalCapital)) / party.players.length
+export function returnWinner(state) {
+  return (state.previousRound || state.round).roundWinner === 'yes' ? <font color={ colors.GREEN }> Passes </font> : <font color={ colors.RED }> Fails </font>
 }
+
+function totalPartyAverageWorth(state, party){
+  return sum(_.map(party.players, (player) => state.rounds[state.currentRound].currentRoundStats[player].politicalCapital)) / party.players.length
+}
+const curryTotalPartyAverageWorth = curry(totalPartyAverageWorth)
+export const sortPartiesOnAveragePartyWorth = (state, values) => sortWith([ descend(curryTotalPartyAverageWorth(state)) ])(values)
 
 export const basePartyStyle = {
   background: '#FFFFFF',

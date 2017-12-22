@@ -64,7 +64,7 @@ class PoliticalCapitalGame extends Component {
 
       playerName: props.playerName,
       playerParty: props.playerParty,
-      playerPartyName: props.playerPartyName,
+      playerPartyName: (this.state && this.state.playerPartyName) || props.playerPartyName || '',
       hasSeenTabulation: props.hasSeenTabulation,
     })
   }
@@ -78,6 +78,7 @@ class PoliticalCapitalGame extends Component {
 
   identifyPlayer = () => {
     this.state.managingSocket.emit('identifyPlayer', this.state.playerName, this.state.playerParty, this.state.playerPartyName)
+    this.state.managingSocket.emit('getInitialPartyName')
   }
 
   componentDidMount(){
@@ -99,7 +100,7 @@ class PoliticalCapitalGame extends Component {
 
   fetchPlayerPartyAndPlayerPartyName = (gameInfo) => {
     const playerParty = gameInfo.players[this.state.playerName].party
-    const playerPartyName = !_.isUndefined(gameInfo.parties[playerParty]) ? gameInfo.parties[playerParty].partyName : ''
+    const playerPartyName = this.state.playerPartyName || (!_.isUndefined(gameInfo.parties[playerParty]) && gameInfo.parties[playerParty].partyName) || ''
     if(playerParty && playerPartyName){
       this.state.dispatch(readyUp(this.state.playerName, playerParty))
       this.state.dispatch(finalizePartyName(playerPartyName))
@@ -130,14 +131,14 @@ class PoliticalCapitalGame extends Component {
       }
     })
 
-    this.state.managingSocket.on('allPartyNamesSet', (parties) => {
-      this.setState(this.updateAllParties(parties))
-    })
-
     this.state.managingSocket.on('finalizePartyName', (partyName) => {
       this.setState({ playerPartyName: partyName }, () => {
         this.state.dispatch(finalizePartyName(this.state.playerPartyName))
       })
+    })
+
+    this.state.managingSocket.on('allPartyNamesSet', (parties) => {
+      this.setState(this.updateAllParties(parties))
     })
   }
 
@@ -260,7 +261,7 @@ class PoliticalCapitalGame extends Component {
    */
 
   handleFinalizingPartyName = () => {
-    if(!_.contains(_.map(this.state.parties, _.property('partyName')), this.state.playerPartyName)){
+    if(!_.contains(_.map(_.omit(this.state.parties, this.state.playerParty), _.property('partyName')), this.state.playerPartyName)){
       this.state.managingSocket.emit('finalizePartyName', this.state.playerPartyName)
       this.state.dispatch(finalizePartyName(this.state.playerPartyName))
     } else {
@@ -333,18 +334,31 @@ class PoliticalCapitalGame extends Component {
 
   renderEndGame = () => {
     return (
-      <Flexbox key='End Game' flexGrow={ 1 }>
+      <Flexbox id='End Game' key='End Game' flexGrow={ 1 }>
         <EndGame dispatch={ this.state.dispatch } endGame={ this.state.endGame } disconnect={ this.state.disconnect } hasSeenTabulation={ this.state.hasSeenTabulation } />
       </Flexbox>
     )
   }
 
+  endRoundLogisticsProps = () => {
+    return {
+      dispatch: this.state.dispatch,
+      managingSocket: this.state.managingSocket,
+      rounds: this.state.rounds,
+      currentRound: this.state.currentRound,
+      parties: this.state.parties,
+      players: this.state.players,
+      changeCurrentlyViewingResults: this.changeCurrentlyViewingResults,
+      playerName: this.state.playerName,
+    }
+  }
+
+  endRoundLogistics = () => <EndRoundLogistics { ...this.endRoundLogisticsProps() } />
+
   renderEndRoundLogistics = () => {
     return(
-      <Flexbox key='End Round' flexDirection='column'>
-        <EndRoundLogistics dispatch={ this.state.dispatch } managingSocket={ this.state.managingSocket } rounds={ this.state.rounds } currentRound={ this.state.currentRound }
-          parties={ this.state.parties } players={ this.state.players } changeCurrentlyViewingResults={ this.changeCurrentlyViewingResults }
-          playerName={ this.state.playerName } />
+      <Flexbox id='End round' key='End Round' flexDirection='column'>
+        { this.endRoundLogistics() }
       </Flexbox>
     )
   }
@@ -365,18 +379,31 @@ class PoliticalCapitalGame extends Component {
     )
   }
 
+  playerValueProps = () => {
+    return {
+      id: 'Player Values',
+      players: this.state.players,
+      playerName: this.state.playerName,
+      round: this.state.rounds[this.state.currentRound],
+      playerPartyName: this.state.playerPartyName,
+    }
+  }
+
+  renderPlayerValueReactComponent = () => <PlayerValues { ...this.playerValueProps() } />
+
   renderPlayerValues = () => {
-    return (this.state.players && this.state.playerName && this.state.playerPartyName) ? <PlayerValues players={ this.state.players } playerName={ this.state.playerName } round={ this.state.rounds[this.state.currentRound] } playerPartyName={ this.state.playerPartyName } /> : <div />
+    return (this.state.players && this.state.playerName && this.state.playerPartyName) ? this.renderPlayerValueReactComponent() : <div />
   }
 
   renderVoteOrPartyCardSelection = () => {
     return(
       <ReactCSSTransitionGroup
+        id='CSS Transition'
         transitionName='fade-wait'
         transitionEnterTimeout={ 500 }
         transitionLeaveTimeout={ 500 }
       >
-        <Flexbox key={ this.hasPlacedPartyCard() ? 'Vote' : 'PartyCards' } flexGrow={ 1 } justifyContent='center'>
+        <Flexbox id='Container' key={ this.hasPlacedPartyCard() ? 'Vote' : 'PartyCards' } flexGrow={ 1 } justifyContent='center'>
           { this.hasPlacedPartyCard() ?
             <Vote id='Vote' players={ this.state.players } playerName={ this.state.playerName } playerPartyName={ this.state.playerPartyName } round={ this.state.rounds[this.state.currentRound] }
               dispatch={ this.state.dispatch } managingSocket={ this.state.managingSocket } />
@@ -390,9 +417,9 @@ class PoliticalCapitalGame extends Component {
 
   renderCurrentRoundView = () => {
     return(
-      <div key='Resolution and Chance'>
+      <div id='Resolution and Chance' key='Resolution and Chance'>
         { this.resolutionAndChance() }
-        <Flexbox flexGrow={ 1 } flexDirection='column' alignItems='center'>
+        <Flexbox id='Player Values and Vote/PartyCard' flexGrow={ 1 } flexDirection='column' alignItems='center'>
           { this.renderPlayerValues() }
           { this.renderVoteOrPartyCardSelection() }
         </Flexbox>
@@ -410,17 +437,26 @@ class PoliticalCapitalGame extends Component {
     }
   }
 
+  returnRegisteredParties = () => {
+    return _.keys(_.filter(this.state.parties, (party) => !_.isEmpty(party.players))).length
+  }
+
+  requestNewPartyName = () => {
+    this.state.managingSocket.emit('newPartyName', this.state.playerName)
+  }
+
   renderPartyNameSetDialog = () => {
     return (
-      <Dialog title='Set Party Name' modal={ true } open={ !this.allPartiesSubmitted() } autoDetectWindowHeight={ false } repositionOnUpdate={ false } style={ { zIndex: 3 } } contentStyle={ { zIndex: 3 } } overlayStyle={ { zIndex: 2 } }>
+      <Dialog id='Party Name Dialog' title='Set Party Name' modal={ true } open={ !this.allPartiesSubmitted() } autoDetectWindowHeight={ false } repositionOnUpdate={ false } style={ { zIndex: 3 } } contentStyle={ { zIndex: 3 } } overlayStyle={ { zIndex: 2 } }>
         <Flexbox flexDirection='column'>
-          <Flexbox flexBasis='auto' justifyContent='center' style={ { margin: '7px' } }>
+          <Flexbox flexBasis='auto' justifyContent='center' alignItems='center' style={ { margin: '7px' } }>
             <TextField id='PartyName' value={ this.state.playerPartyName || '' } label='Party Name' floatingLabelText='Party Name'
               disabled={ !this.hasNotSubmittedPartyName() } onChange={ this.adjustPartyName } errorText={ this.state.errorName || '' } />
+            <IconButton style={ { marginLeft: '10px' } } onClick={ this.requestNewPartyName }> { svgIcon('dice') } </IconButton>
           </Flexbox>
           <Flexbox alignItems='center'>
             <Flexbox flexGrow={ 1 } alignItems='center'>
-              <RaisedButton primary={ true } label='Submit' disabled={ !this.hasNotSubmittedPartyName() } onTouchTap={ this.finalizePartyName } fullWidth={ true } />
+              <RaisedButton primary={ true } label='Submit' disabled={ !this.hasNotSubmittedPartyName() } onClick={ this.finalizePartyName } fullWidth={ true } />
             </Flexbox>
             <Flexbox alignItems='center' justifyContent='flex-end'>
               <IconButton tooltip='Disconnect' onTouchTap={ this.openTryingToDisconnect }>
@@ -429,7 +465,7 @@ class PoliticalCapitalGame extends Component {
             </Flexbox>
           </Flexbox>
           <Flexbox flexGrow={ 1 } justifyContent='center' style={ { marginTop: '10px' } }>
-            <font> { (_.keys(this.state.parties) || []).length } Parties Registered </font>
+            <font> { this.returnRegisteredParties() } Parties Registered </font>
           </Flexbox>
         </Flexbox>
       </Dialog>
@@ -473,7 +509,7 @@ class PoliticalCapitalGame extends Component {
   }
 
   cut = (string) => {
-    return string.length > 20 ? string.substring(0, 20) + '...' : string
+    return !_.isEmpty(string) ? (string.length > 20 ? string.substring(0, 20) + '...' : string) : 0
   }
 
   currentGameStateText = () => {
@@ -533,9 +569,10 @@ class PoliticalCapitalGame extends Component {
 
   renderCurrentGameState = () => {
     return(
-      <Flexbox flexDirection='column' alignItems='center' flexGrow={ 1 }>
-        { (this.state.firstFetchedGame && this.state.playerName && this.state.playerParty && this.state.playerPartyName) ?
+      <Flexbox id='Game State' flexDirection='column' alignItems='center' flexGrow={ 1 }>
+        { (this.state.firstFetchedGame && !_.isUndefined(this.state.playerName) && !_.isUndefined(this.state.playerParty) && !_.isUndefined(this.state.playerPartyName)) ?
           <ReactCSSTransitionGroup
+            id='CSS Transition'
             transitionName='fade-fast'
             transitionEnterTimeout={ 500 }
             transitionLeaveTimeout={ 500 }
@@ -543,7 +580,7 @@ class PoliticalCapitalGame extends Component {
             { this.currentGameState() }
           </ReactCSSTransitionGroup>
           :
-          <Flexbox flexDirection='column' justifyContent='center' alignItems='center' flexGrow={ 1 } style={ { height: '200px' } }>
+          <Flexbox id='1' flexDirection='column' justifyContent='center' alignItems='center' flexGrow={ 1 } style={ { height: '200px' } }>
             { (this.state.playerPartyName || this.allPartiesSubmitted()) && <CircularProgress color={ colors.DARK_BLUE } style={ { marginBottom: '15px' } } /> }
             { (this.state.playerName && this.allPartiesSubmitted() && (!this.state.playerParty || !this.state.playerPartyName)) && <RaisedButton label='Refresh' primary={ true } onTouchTap={ this.askForFullGame } /> }
           </Flexbox>

@@ -167,16 +167,16 @@ class EndGame extends Component {
 
   renderPoliticalCapitalValue = (index, name, capital) => {
     return(
-      <div>
+      <Flexbox flexGrow={ 1 } justifyContent='space-around'>
         <Flexbox flexGrow={ 1 } alignItems='center' justifyContent='flex-start'>
           <div> { this.renderPlace(index + 1) } </div>
           <font style={ { marginLeft: '10px' } }> { name } </font>
         </Flexbox>
-        <Flexbox alignItems='center'>
+        <Flexbox alignItems='center' style={ { marginLeft: '15px' } }>
           <div> { svgIcon('coinDollar') } </div>
           <font style={ { marginLeft: '10px' } } color={ capital > 0 ? colors.GREEN : colors.RED }> { capital } </font>
         </Flexbox>
-      </div>
+      </Flexbox>
     )
   }
 

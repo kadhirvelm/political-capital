@@ -16,6 +16,7 @@ import { values, sortWith, ascend, prop, match, curry, assoc } from 'ramda'
 import { _ } from 'underscore'
 
 import { setPlayerName, readyUp, inGame, setRooms } from '../../State/ServerActions'
+import { NameGeneratorContext } from './Catalog.js'
 
 const io = require('socket.io-client')
 
@@ -27,13 +28,15 @@ class PoliticalCapital extends Component {
     this.allColorHexes = allColorHexes
     this.partyType = 'Party'
     this.gameType = 'Tutorial'
+    this.nameGeneratorContext = new NameGeneratorContext(this, this.resetNameFieldOnEmpty)
     this.state = {
       dispatch: props.dispatch,
       connectedRoom: props.connectedRoom,
       managingSocket: io(process.env.REACT_APP_POLITICAL_CAPITAL + '/' + props.connectedRoom.roomName),
       disconnect: props.disconnect,
       playerParty: props.playerParty ? props.playerParty : Math.floor(Math.random() * (this.allColors.length)) + 1,
-      playerName: props.playerName,
+      playerName: props.playerName || this.nameGeneratorContext.randomName,
+      admin: props.connectedRoom.admin,
       isAdmin: props.playerName === props.connectedRoom.admin,
       inGame: props.inGame,
       submitName: props.playerName ? false : true,
@@ -47,13 +50,17 @@ class PoliticalCapital extends Component {
     }
   }
 
+  resetNameFieldOnEmpty = () => {
+    this.setState({ playerName: this.nameGeneratorContext.randomName })
+  }
+
   componentWillMount(){
     this.handleAllSocketConnections()
     this.state.managingSocket.connect()
   }
 
   handleAllSocketConnections = () => {
-    this.state.managingSocket.on('connection', () => {
+    this.state.managingSocket.on('connect', () => {
       this.state.managingSocket.emit('getFullGame')
     })
 
@@ -75,8 +82,8 @@ class PoliticalCapital extends Component {
 
     this.state.managingSocket.on('receiveFullGame', (roundInfo) => {
       this.setState(Object.assign({}, !_.isEmpty(roundInfo.players) && getPlayers(roundInfo.players), getPlayerNames(roundInfo.players), getSettings(roundInfo.settings)), () => {
-        if(this.state.playerName && !_.contains(this.state.playerNames, this.state.playerNames)){
-          this.joinLobby()
+        if(this.state.playerName && !_.contains(this.state.playerNames, this.state.playerName)){
+          this.joinLobby(this.state.isAdmin)
         }
         if(roundInfo.inGame){
           this.startGame(true)
@@ -120,35 +127,41 @@ class PoliticalCapital extends Component {
     this.state.managingSocket.emit('playerColorSelected', { player: this.state.playerName, color: this.state.playerParty })
   }
 
-  componentWillUnmount(){
-    if(this.state.managingSocket.connected){
-      this.state.managingSocket.disconnect()
-    }
-  }
-
   handleSetPlayerName = (event) => {
     if(match(/(?:[\u2700-\u27bf]|(?:\ud83c[\udde6-\uddff]){2}|[\ud800-\udbff][\udc00-\udfff]|[\u0023-\u0039]\ufe0f?\u20e3|\u3299|\u3297|\u303d|\u3030|\u24c2|\ud83c[\udd70-\udd71]|\ud83c[\udd7e-\udd7f]|\ud83c\udd8e|\ud83c[\udd91-\udd9a]|\ud83c[\udde6-\uddff]|[\ud83c[\ude01-\ude02]|\ud83c\ude1a|\ud83c\ude2f|[\ud83c[\ude32-\ude3a]|[\ud83c[\ude50-\ude51]|\u203c|\u2049|[\u25aa-\u25ab]|\u25b6|\u25c0|[\u25fb-\u25fe]|\u00a9|\u00ae|\u2122|\u2139|\ud83c\udc04|[\u2600-\u26FF]|\u2b05|\u2b06|\u2b07|\u2b1b|\u2b1c|\u2b50|\u2b55|\u231a|\u231b|\u2328|\u23cf|[\u23e9-\u23f3]|[\u23f8-\u23fa]|\ud83c\udccf|\u2934|\u2935|[\u2190-\u21ff])/g, event.target.value).length === 0){
       this.setState({ playerName: event.target.value.trimLeft(), error: '' })
     } else {
-      this.setState({ error: 'Cannot contain emojis' })
+      this.setState({ error: 'Name cannot contain emojis.' })
     }
   }
 
-  joinLobby = () => {
-    if (this.state.playerName) {
-      if(this.state.playerNames){
-        if (!_.contains(this.state.playerNames, this.state.playerName)) {
-          this.setState({ submitName: false }, () => {
-            this.state.dispatch(setPlayerName(this.state.playerName))
-            this.state.managingSocket.emit('newPlayer', this.state.playerName)
-            this.identifySelectedPlayerColor()
-          })
-        } else {
-          this.setState({ error: 'This name is already taken, please select a different one.' })
-        }
-      } else {
-        this.setState({ error: 'Hang tight, fetching current player names.' })
-      }
+  finalizeJoiningLobby = () => {
+    this.state.dispatch(setPlayerName(this.state.playerName))
+    this.state.managingSocket.emit('newPlayer', this.state.playerName)
+    this.identifySelectedPlayerColor()
+  }
+
+  checkForNameUniqueness = () => {
+    if (!_.contains(this.state.playerNames, this.state.playerName)) {
+      this.setState({ submitName: false }, this.finalizeJoiningLobby)
+    } else {
+      this.setState({ error: 'This name is already taken, please select a different one.' })
+    }
+  }
+
+  ableToJoinLobby = () => {
+    if(this.state.playerNames){
+      this.checkForNameUniqueness()
+    } else {
+      this.setState({ error: 'Hang tight, fetching current player names.' })
+    }
+  }
+
+  joinLobby = (playerSubmitted = true) => {
+    if (playerSubmitted && this.state.playerName !== this.nameGeneratorContext.randomName) {
+      this.ableToJoinLobby(playerSubmitted)
+    } else if (playerSubmitted) {
+      this.setState({ error: 'Please enter a name, a title is not enough.' })
     }
   }
 
@@ -164,7 +177,6 @@ class PoliticalCapital extends Component {
       this.state.managingSocket.emit('playerColorSelected', { player: this.state.playerName, color: this.state.playerParty })
     })
   }
-
   curryChangePlayerParty = curry(this.changePlayerParty)
 
   readyUp = () => {
@@ -181,7 +193,6 @@ class PoliticalCapital extends Component {
         this.state.managingSocket.emit('startGame')
       }
       this.setState({ inGame: true }, () => {
-        console.log('Reaching', true)
         this.state.dispatch(inGame(true))
       })
     }
@@ -191,6 +202,10 @@ class PoliticalCapital extends Component {
     this.state.managingSocket.emit('leaveRoom')
     this.state.managingSocket.disconnect()
     this.state.disconnect()
+  }
+
+  componentWillUnmount(){
+    this.state.managingSocket.disconnect()
   }
 
   adjustSettings = (key, isIncrease, max, min, event) => {
@@ -260,20 +275,20 @@ class PoliticalCapital extends Component {
   }
 
   renderChangeArrow = (changePlayerParty, icon) => {
-    return !this.state.playerReady ? <IconButton onTouchTap={ this.curryChangePlayerParty(changePlayerParty) }> { svgIcon(icon) } </IconButton> : <div />
+    return !this.state.playerReady ? <IconButton id={ icon } onTouchTap={ this.curryChangePlayerParty(changePlayerParty) }> { svgIcon(icon) } </IconButton> : <div />
   }
 
   renderPartySelectButtonIcon = () => undefined
 
   renderPlayerPartyPicker = () => {
     return(
-      <Flexbox flexDirection='column'>
-        <Flexbox alignItems='center' justifyContent='center'>
+      <Flexbox id='Party Picker' flexDirection='column'>
+        <Flexbox id='Container' alignItems='center' justifyContent='center'>
           <Flexbox>
             { this.renderChangeArrow(false, 'arrow_left') }
           </Flexbox>
           <Flexbox flexBasis='75%'>
-            <RaisedButton fullWidth={ true } label={ this.allColors[this.state.playerParty - 1] } icon={ this.renderPartySelectButtonIcon() } backgroundColor={ this.allColorHexes[this.state.playerParty - 1] } onTouchTap={ !this.state.playerReady && this.curryChangePlayerParty(true) } style={ { width: '20%', margin: '3px' } } />
+            <RaisedButton fullWidth={ true } label={ this.allColors[this.state.playerParty - 1] } icon={ this.renderPartySelectButtonIcon() } backgroundColor={ this.allColorHexes[this.state.playerParty - 1] } onTouchTap={ !this.state.playerReady ? this.curryChangePlayerParty(true) : undefined } style={ { width: '20%', margin: '3px' } } />
           </Flexbox>
           <Flexbox>
             { this.renderChangeArrow(true, 'arrow_right') }
@@ -319,7 +334,7 @@ class PoliticalCapital extends Component {
     return(
       <div>
         { this.state.players.map((entry, index) => (
-          <Flexbox key={ index } flexGrow={ 1 }>
+          <Flexbox id={ entry.name } key={ index } flexGrow={ 1 }>
             { this.renderReadyPlayer(entry) }
             <Flexbox flexBasis='50%' flexWrap='wrap' justifyContent='center' alignItems='center'>
               <font size={ 4 } color={ colors.DARK_GRAY }> { entry.name } </font>
@@ -355,9 +370,9 @@ class PoliticalCapital extends Component {
       <Flexbox flexGrow={ 1 } justifyContent='center' style={ { marginTop: '15px', marginBottom: '15px' } }>
         <Flexbox flexBasis='85%'>
           { (this.state.startGame && this.state.isAdmin) ?
-            <RaisedButton fullWidth={ true } primary={ true } label='Proceed To Game' onTouchTap={ this.startGame } disabled={ this.state.players.length <= 1 } style={ { width: '50%', margin: '10px' } } />
+            <RaisedButton fullWidth={ true } primary={ true } label='Proceed To Game' onClick={ this.startGame } disabled={ this.state.players.length <= 1 } style={ { width: '50%', margin: '10px' } } />
             :
-            <RaisedButton fullWidth={ true } primary={ true } label={ this.state.playerReady ? (this.state.startGame ? 'Waiting on Admin' : 'Waiting on Players') : 'Ready' } disabled={ this.state.playerReady } onTouchTap={ this.readyUp } style={ { width: '20%', margin: '3px' } } />
+            <RaisedButton id='Ready Up' fullWidth={ true } primary={ true } label={ this.state.playerReady ? (this.state.startGame ? 'Waiting on ' + this.state.admin : 'Waiting on Players') : 'Ready' } disabled={ this.state.playerReady } onTouchTap={ this.readyUp } style={ { width: '20%', margin: '3px' } } />
           }
         </Flexbox>
       </Flexbox>
@@ -366,11 +381,11 @@ class PoliticalCapital extends Component {
 
   renderDetailedSettingsView = () => {
     return this.state.showSettings ?
-      <Flexbox style={ { backgroundColor: this.colors.LIGHTEST_GRAY, padding: '5px', borderColor: this.colors.LIGHT_GRAY, borderStyle: 'solid', borderWidth: '1px', borderRadius: '10px' } } flexDirection='column'>
+      <Flexbox id='Settings' style={ { backgroundColor: this.colors.LIGHTEST_GRAY, padding: '5px', borderColor: this.colors.LIGHT_GRAY, borderStyle: 'solid', borderWidth: '1px', borderRadius: '10px' } } flexDirection='column'>
         <Flexbox justifyContent='flex-start' flexGrow={ 1 } style={ { marginBottom: '10px' } }> <font size='2'> Settings </font> </Flexbox>
-        <Flexbox flexGrow={ 1 } flexWrap='wrap' justifyContent='space-around' alignItems='flex-end'>
+        <Flexbox id='Settings Holder' flexGrow={ 1 } flexWrap='wrap' justifyContent='space-around' alignItems='flex-end'>
           { this.settings().map((settings, index) => (
-            <div key={ index }> { this.adjustItem(settings.name, settings.key, settings.max, settings.min) } </div>
+            <div id={ index } key={ index }> { this.adjustItem(settings.name, settings.key, settings.max, settings.min) } </div>
           ))
           }
         </Flexbox>
@@ -382,7 +397,7 @@ class PoliticalCapital extends Component {
   renderSettings = () => {
     return(
       <Flexbox flexDirection='column'>
-        <Flexbox flexGrow={ 1 } justifyContent='flex-start' alignItems='baseline'>
+        <Flexbox flexGrow={ 1 } justifyContent='flex-start' alignItems='baseline' style={ { marginBottom: '10px' } }>
           <RaisedButton label={ this.state.showSettings ? 'Hide' : (this.state.isAdmin ? 'Adjust Settings' : 'Show Settings') } primary={ this.state.showSettings } onTouchTap={ this.changeShowSettings } style={ { marginTop: '15px' } } />
           { (this.state.settingsChangeIndicator && !this.state.isAdmin) && <font color={ this.colors.RED } style={ { marginLeft: '15px' } }> Settings changed! </font> }
         </Flexbox>
@@ -392,13 +407,13 @@ class PoliticalCapital extends Component {
   }
 
   renderSubmitNameDialog = () => {
-    const actions = [ <RaisedButton key='Cancel' label='Cancel' secondary={ true } onTouchTap={ this.disconnect } style={ { marginRight: '10px' } } />, <RaisedButton key='Join' label='Join!' primary={ true } onTouchTap={ this.joinLobby } /> ]
+    const actions = [ <RaisedButton key='Cancel' label='Cancel' secondary={ true } onTouchTap={ this.disconnect } style={ { marginRight: '10px' } } />, <RaisedButton id='Join' key='Join' label='Join!' primary={ true } onTouchTap={ this.joinLobby } /> ]
     return(
       <Flexbox>
         { this.state.submitName &&
-          <Dialog title='Player Name' actions={ actions } modal={ true } open={ this.state.submitName } autoDetectWindowHeight={ false } repositionOnUpdate={ false }>
+          <Dialog title='Player Name' id='Name' actions={ actions } modal={ true } open={ this.state.submitName } autoDetectWindowHeight={ false } repositionOnUpdate={ false }>
             <font> Type in your name so others can see you. Note: this cannot be changed once set. </font>
-            <TextField hintText='Player Name' fullWidth={ true } onChange={ this.handleSetPlayerName } value={ this.state.playerName || '' } />
+            <TextField id='Name Field' hintText='Player Name' fullWidth={ true } onChange={ this.handleSetPlayerName } onFocus={ this.nameGeneratorContext.removeDefaultName } onBlur={ this.nameGeneratorContext.onFocusHandler } value={ this.state.playerName } />
             <Flexbox justifyContent='center'> <font color='red'> { this.state.error || '' } </font> </Flexbox>
           </Dialog>
         }

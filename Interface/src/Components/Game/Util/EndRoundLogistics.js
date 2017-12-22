@@ -9,10 +9,10 @@ import { colors, allColorHexes } from '../../../styles/colors'
 
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table'
 
-import { listOfPlayers, returnWinner, totalPartyAverageWorth } from './util.js'
+import { listOfPlayers, returnWinner, sortPartiesOnAveragePartyWorth } from './util.js'
 
 import { _ } from 'underscore'
-import { map, curry, sortWith, ascend } from 'ramda'
+import { map, curry } from 'ramda'
 
 class EndRoundLogistics extends Component {
   constructor(props){
@@ -97,6 +97,8 @@ class EndRoundLogistics extends Component {
     }
   }
 
+  renderListOfPlayerOptions = () => listOfPlayers(this.state, this.handlePlayerSelection)
+
   showPlayerOptions = () => {
     return(
       <Flexbox flexGrow={ 1 } flexDirection='column' justifyContent='center' alignItems='center' style={ { marginTop: '10px' } }>
@@ -104,7 +106,7 @@ class EndRoundLogistics extends Component {
           <font size={ 4 }> <b> You have to { this.playerPlayedCard() }! </b> </font>
         </Flexbox>
         <Flexbox flexGrow={ 1 } flexDirection='column' alignItems='center'>
-          { listOfPlayers(this.state, this.handlePlayerSelection) }
+          { this.renderListOfPlayerOptions() }
           <RaisedButton fullWidth={ true } primary={ true } label={ this.playerPlayedCard() } onTouchTap={ this.handlePlayerPartyCard } disabled={ _.isUndefined(this.state.selectedPlayer) } />
         </Flexbox>
       </Flexbox>
@@ -123,13 +125,15 @@ class EndRoundLogistics extends Component {
     )
   }
 
+  renderTakeStealMessage = () => 'Waiting for players to steal.'
+
   renderTakeAndSteal = () => {
     return(
       <Flexbox flexGrow={ 1 } justifyContent='center'>
         { this.hasPlayerStealTakeCard() ?
           <div> { this.showPlayerOptions() } </div>
           :
-          <div style={ { marginTop: '10px' } }> Waiting for players to steal. </div>
+          <div style={ { marginTop: '10px' } }> { this.renderTakeStealMessage() } </div>
         }
       </Flexbox>
     )
@@ -143,10 +147,14 @@ class EndRoundLogistics extends Component {
     )
   }
 
+  checkForStealingAndTaking = () => {
+    return this.hasTypeOfCard('Steal') || this.hasTypeOfCard('Take')
+  }
+
   renderPartyCardHandler = () => {
     if(this.hasTypeOfCard('Nullify')){
       return this.renderNullifyPresent()
-    } else if (!this.hasTypeOfCard('Nullify') && (this.hasTypeOfCard('Steal') || this.hasTypeOfCard('Take'))) {
+    } else if (!this.hasTypeOfCard('Nullify') && (this.checkForStealingAndTaking())) {
       return this.renderTakeAndSteal()
     }
     return this.renderFinalTally()
@@ -163,13 +171,17 @@ class EndRoundLogistics extends Component {
     this.setState({ showVotes: !this.state.showVotes })
   }
 
+  renderPartyCardType = (entry) => {
+    return <div> { this.renderType(this.state.round.partyCards[entry].type) }, { this.state.round.partyCards[entry].value } </div>
+  }
+
   renderEffectivePartyCardsBody = () => {
     return(
       <TableBody displayRowCheckbox={ false }>
         { _.keys(this.state.round.partyCards).map((entry, index) => (
           <TableRow key={ index }>
             <TableRowColumn style={ { wordWrap: 'break-word', whiteSpace: 'normal' } }> { entry } </TableRowColumn>
-            <TableRowColumn style={ { wordWrap: 'break-word', whiteSpace: 'normal' } }> { this.renderType(this.state.round.partyCards[entry].type) }, { this.state.round.partyCards[entry].value } </TableRowColumn>
+            <TableRowColumn style={ { wordWrap: 'break-word', whiteSpace: 'normal' } }> { this.renderPartyCardType(entry) } </TableRowColumn>
             <TableRowColumn style={ { wordWrap: 'break-word', whiteSpace: 'normal' } }> { this.renderEffective(this.state.round.partyCards[entry]) } </TableRowColumn>
           </TableRow>
         ))
@@ -212,10 +224,8 @@ class EndRoundLogistics extends Component {
     )
   }
 
-  sortParties = sortWith([ ascend(totalPartyAverageWorth) ])
-
   returnIndividualPlayers = (allParties) => {
-    const allPartyEntries = this.sortParties(_.values(allParties))
+    const allPartyEntries = sortPartiesOnAveragePartyWorth(this.state, _.values(allParties))
 
     const singlePlayer = (party, playerName) => {
       return (

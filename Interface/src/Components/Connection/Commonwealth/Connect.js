@@ -24,6 +24,14 @@ class CommonwealthConnect extends PoliticalCapitalConnect {
     return svgIcon(this.allColors[this.state.playerParty - 1])
   }
 
+  settings = () => {
+    return [
+      { name: 'Start Senators', key: 'START_SENATORS', max: 10, min: 3 },
+      { name: 'Initial Capital', key: 'START_CAPITAL', max: 120, min: 0 },
+      { name: 'Senate Tax', key: 'SENATE_TAX', max: 40, min: 0 },
+    ]
+  }
+
   renderReadyPlayer = (entry) => {
     return(
       <Flexbox flexBasis='50%' flexWrap='wrap' justifyContent='center'>

@@ -21,6 +21,7 @@ class ResolutionAndChance extends Component {
       chance: props.round.chance,
       currentRound: props.currentRound,
       managingSocket: props.managingSocket,
+      gameType: props.gameType,
     })
   }
 
@@ -99,9 +100,9 @@ class ResolutionAndChance extends Component {
         { this.renderResolutionTitle() }
         { this.state.resolution &&
           <Flexbox flexDirection='column' flexGrow={ 1 }>
-            { !this.state.isOverview && <Flexbox style={ this.cardFlavorStyle }> { this.state.resolution.flavorText } </Flexbox> }
+            { this.state.gameType !== 'Vanilla' && <Flexbox style={ this.cardFlavorStyle }> { this.state.resolution.flavorText } </Flexbox> }
             <Flexbox flexGrow={ 1 } justifyContent='center' alignItems='flex-end'>
-              <Flexbox justifyContent='center' style={ this.effectStyle }> { this.resolutionTable(this.state.resolution) } </Flexbox>
+              { this.state.gameType !== 'Commonwealth' && <Flexbox justifyContent='center' style={ this.effectStyle }> { this.resolutionTable(this.state.resolution) } </Flexbox> }
             </Flexbox>
           </Flexbox>
         }
@@ -115,7 +116,7 @@ class ResolutionAndChance extends Component {
         <h1> Chance </h1>
         { this.state.chance &&
           <Flexbox flexDirection='column' flexGrow={ 1 }>
-            { !this.state.isOverview && <Flexbox style={ this.cardFlavorStyle }> { this.state.chance.flavorText } </Flexbox> }
+            { this.state.gameType !== 'Vanilla' && <Flexbox style={ this.cardFlavorStyle }> { this.state.chance.flavorText } </Flexbox> }
             <Flexbox flexGrow={ 1 } justifyContent='center' alignItems='flex-end'>
               <Flexbox alignItems='center' flexDirection='column' style={ this.state.isOverview ? this.overviewEffectStyle : this.effectStyle }>
                 { map(this.effect, this.state.chance.effect).map((entry, index) => (
