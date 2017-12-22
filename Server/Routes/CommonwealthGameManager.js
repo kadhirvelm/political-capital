@@ -189,15 +189,15 @@ class CommonwealthGameManager extends GameManager {
 
         this.allChance = [
           {flavorText: 'All is calm in the Commonwealth.', effect: ['None']},
-          {flavorText: 'New campaign funding rules mean more money rolling into your coffers for voter outreach. You can increase your re-election chances if you play your cards right.', effect: ['2x Positives']},
+          {flavorText: 'New campaign funding rules mean more money rolling into your coffers for voter outreach. You can increase your re-election chances if you play your cards right.', effect: ['Get 20']},
           {flavorText: 'Strength in numbers. The Commonwealth has made a pact with new foreign ally that is lauded by people.', effect: ['Get 20']},
-          {flavorText: 'An ambassador\'s remarks on trade set off an international crisis. The Commonwealth\'s influence declines.', effect: ['Lose 10']},
-          {flavorText: 'The world is captivated with the Commonwealth boat races. No one is paying attention to the government right now.', effect: ['0.5x Everything']},
-          {flavorText: 'A big fight is looming. Your parties will clash in the biggest legislative battle of the term...', effect: ['2x Everything']},
+          {flavorText: 'An ambassador\'s remarks on trade set off an international crisis. The Commonwealth\'s influence declines.', effect: ['Lose 20']},
+          {flavorText: 'The world is captivated with the Commonwealth boat races, no one is paying attentiont to the government right now.', effect: ['None']},
+          {flavorText: 'A big fight is looming. Your parties will clash in the biggest legislative battle of the term.', effect: ['Get 20']},
           {flavorText: 'Good news! A new poll released shows your incumbent politicians exceeding expectations and more likely to be reelected', effect: ['Get 10 Senator']},
           {flavorText: 'The latest poll shows your incumbent senators slipping in the race with their opponents. Your fellow senators are starting to think you might be a lost cause.', effect: ['Lose 10 Senator']},
-          {flavorText: 'Riots in the streets! It\'s a sluggish economy and voters are outraged at the Commonwealth\'s slow response. Pressure is mounting to pass legislation.', effect: ['2x Negatives']},
-          {flavorText: 'Stakes are high! A foreign government has threatened the Commonwealth. Action must be taken, and it must be taken now.', effect: ['2x Everything']},
+          {flavorText: 'Riots in the streets! It\'s a sluggish economy and voters are outraged at the Commonwealth\'s slow response. Pressure is mounting to pass legislation.', effect: ['Lose 20']},
+          {flavorText: 'A foreign government has threatened the Commonwealth, though said country\'s power is negligible', effect: ['None']},
         ];
     }
 
