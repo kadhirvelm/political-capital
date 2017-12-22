@@ -4,7 +4,7 @@ var _ = require('underscore');
 module.exports = function(app, io, db) {
 
 	app.get('/', (req, res) => {
-		res.send('Political Capital Server Running - V 0.1.0');
+		res.send('Political Capital Server Running - V 0.2.0');
 	});
 
 	var ObjectID = require('mongodb').ObjectID;
