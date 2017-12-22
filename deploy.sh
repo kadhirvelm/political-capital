@@ -5,8 +5,8 @@ ssh -i "Political-Capital.pem" ubuntu@ec2-54-193-47-210.us-west-1.compute.amazon
     cd ./political-capital;
     git pull;
     cd ./Server;
-    sudo docker rm $(sudo docker ps -a -q);
-    sudo docker rmi $(sudo docker images -q);
+    sudo docker rm -f $(sudo docker ps -a -q);
+    sudo docker rmi -f $(sudo docker images -q);
     sudo docker build . -t political-capital-server:latest;
     sudo docker run political-capital-server:latest;
     exit;

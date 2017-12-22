@@ -15,4 +15,4 @@ WORKDIR /server_docker
 RUN npm install
 
 EXPOSE 3000
-CMD [ "pm2", "start", "server.js", "--watch" ]
+CMD [ "pm2", "start", "--no-daemon", "server.js", "--watch" ]
