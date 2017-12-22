@@ -10,9 +10,11 @@ services:
       context: ./Server
       dockerfile: Dockerfile
     environment:
-      - NODE_ENV=development
-      - MONGO_URL=mongodb://mongo/politicalcapital
-      - APP_PORT=3000
+      - ENV CODECLIMATE_REPO_TOKEN=112bcc20ceaa82677c01e9147e3f51430425778ba961e1f109f4ef1d413c9cec
+      - ENV APP_PORT=3001
+      - ENV REACT_APP_DEBUG=true
+      - ENV NODE_ENV=development
+      - ENV MONGO_URL=mongodb://mongo/politicalcapital
     volumes:
       - ./Server/Routes:/server_docker/Routes
       - ./Server/config:/server_docker/config
