@@ -5,18 +5,19 @@ services:
     ports:
       - "27017:27017"
   server:
+    container_name: political_capital_server
     build:
       context: ./Server
       dockerfile: Dockerfile
     environment:
       - NODE_ENV=development
       - MONGO_URL=mongodb://mongo/politicalcapital
-      - APP_PORT=3001
+      - APP_PORT=3000
     volumes:
       - ./Server/Routes:/server_docker/Routes
       - ./Server/config:/server_docker/config
     ports:
-      - "3001:3001"
+      - "3000:3000"
     links:
       - mongo
   interface:
@@ -27,7 +28,7 @@ services:
       context: ./Interface
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "3001:3001"
       - "35729:35729"
     environment:
       - REACT_APP_POLITICAL_CAPITAL=server:3001
