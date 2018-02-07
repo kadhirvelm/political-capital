@@ -94,6 +94,7 @@ describe('Register components', () => {
 
     beforeEach(() => {
       application = mountApplication([ '/game' ], {
+        dispatch: sinon.stub(),
         serverActions: {
           connectedRoom: { _id: 'TEST ROOM 1', roomName: 'Sample%20Room', gameType: 'Tutorial', players: [ { TestPlayer: {} } ] },
           playerName: 'Test Player',
@@ -114,6 +115,7 @@ describe('Register components', () => {
 
     beforeEach(() => {
       application = mountApplication([ '/game' ], {
+        dispatch: sinon.stub(),
         serverActions: {
           connectedRoom: { _id: 'TEST ROOM 1', roomName: 'Sample%20Room', gameType: 'Commonwealth', players: [ { TestPlayer: {} } ] },
           playerName: 'Test Player',

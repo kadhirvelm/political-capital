@@ -24,10 +24,10 @@ class PoliticalCapital extends Component {
   constructor(props){
     super(props)
     this.colors = colors
-    this.allColors = allColors
-    this.allColorHexes = allColorHexes
-    this.partyType = 'Party'
-    this.gameType = 'Tutorial'
+    this.allColors = props.allColors || allColors
+    this.allColorHexes = props.allColorHexes || allColorHexes
+    this.partyType = props.partyType || 'Party'
+    this.gameType = props.gameType || 'Tutorial'
     this.nameGeneratorContext = new NameGeneratorContext(this, this.resetNameFieldOnEmpty)
     this.state = {
       dispatch: props.dispatch,
@@ -238,12 +238,15 @@ class PoliticalCapital extends Component {
   }
 
   settings = () => {
-    return [
-      { name: 'Start Senators', key: 'START_SENATORS', max: 10, min: 1 },
-      { name: 'Initial Capital', key: 'START_CAPITAL', max: 120, min: 0 },
-      { name: 'Total Rounds', key: 'ROUNDS', max: 10, min: 1 },
-      { name: 'Senate Tax', key: 'SENATE_TAX', max: 40, min: 0 },
-    ]
+    return this.props.settings ?
+      this.props.settings()
+      :
+      [
+        { name: 'Start Senators', key: 'START_SENATORS', max: 10, min: 1 },
+        { name: 'Initial Capital', key: 'START_CAPITAL', max: 120, min: 0 },
+        { name: 'Total Rounds', key: 'ROUNDS', max: 10, min: 1 },
+        { name: 'Senate Tax', key: 'SENATE_TAX', max: 40, min: 0 },
+      ]
   }
 
   changeShowSettings = () => {
@@ -278,7 +281,11 @@ class PoliticalCapital extends Component {
     return !this.state.playerReady ? <IconButton id={ icon } onTouchTap={ this.curryChangePlayerParty(changePlayerParty) }> { svgIcon(icon) } </IconButton> : <div />
   }
 
-  renderPartySelectButtonIcon = () => undefined
+  renderPartySelectButtonIcon = () => {
+    if(this.props.renderPartySelectButtonIcon){
+      this.props.renderPartySelectButtonIcon(this.state)
+    }
+  }
 
   renderPlayerPartyPicker = () => {
     return(
@@ -320,14 +327,17 @@ class PoliticalCapital extends Component {
   }
 
   renderReadyPlayer = (entry) => {
-    return(
-      <Flexbox flexBasis='50%' flexWrap='wrap' justifyContent='center'>
-        <font size={ 4 } color={ colors.DARK_GRAY } style={ entry.isReady ? { fontStyle: 'normal' } : { fontStyle: 'italic' } }>
-          <font style={ { marginBottom: '5px', borderBottomWidth: '2px', borderBottomStyle: 'solid', borderBottomColor: this.fetchColor(entry) } }> { this.fetchColor(entry, true) } </font>
-          { !entry.isReady && <font>*</font>}
-        </font>
-      </Flexbox>
-    )
+    return this.props.renderReadyPlayer ?
+      this.props.renderReadyPlayer(entry)
+      :
+      (
+        <Flexbox flexBasis='50%' flexWrap='wrap' justifyContent='center'>
+          <font size={ 4 } color={ colors.DARK_GRAY } style={ entry.isReady ? { fontStyle: 'normal' } : { fontStyle: 'italic' } }>
+            <font style={ { marginBottom: '5px', borderBottomWidth: '2px', borderBottomStyle: 'solid', borderBottomColor: this.fetchColor(entry) } }> { this.fetchColor(entry, true) } </font>
+            { !entry.isReady && <font>*</font>}
+          </font>
+        </Flexbox>
+      )
   }
 
   renderPlayersViewTable = () => {
