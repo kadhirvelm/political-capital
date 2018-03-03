@@ -283,7 +283,7 @@ class PoliticalCapital extends Component {
 
   renderPartySelectButtonIcon = () => {
     if(this.props.renderPartySelectButtonIcon){
-      this.props.renderPartySelectButtonIcon(this.state)
+      this.props.renderPartySelectButtonIcon()
     }
   }
 

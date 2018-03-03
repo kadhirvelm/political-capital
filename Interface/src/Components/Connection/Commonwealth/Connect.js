@@ -5,7 +5,6 @@ import PoliticalCapitalConnect from '../Connect'
 import { commonwealthAllColors, commonwealthAllColorHexes, colors } from '../../../styles/colors'
 
 import { svgIcon } from '../../../Images/icons'
-import { _ } from 'underscore'
 
 class CommonwealthConnect extends Component {
   constructor(props){
@@ -16,8 +15,8 @@ class CommonwealthConnect extends Component {
     this.gameType = 'Commonwealth'
   }
 
-  renderPartySelectButtonIcon(state){
-    return svgIcon(this.allColors[state.playerParty - 1])
+  renderPartySelectButtonIcon(){
+    return svgIcon(this.allColors[this.connectRef.state.playerParty - 1])
   }
 
   settings(){
@@ -28,17 +27,22 @@ class CommonwealthConnect extends Component {
     ]
   }
 
-  renderReadyPlayer(entry){
+  renderReadyPlayer = (entry) => {
     return(
       <Flexbox flexBasis='50%' flexWrap='wrap' justifyContent='center'>
-        <font size={ 4 } color={ colors.DARK_GRAY } style={ entry.isReady ? { fontStyle: 'normal' } : { fontStyle: 'italic' } }> { entry.isReady ? svgIcon(this.fetchColor(entry, true), colors.GREEN) : this.fetchColor(entry, true) } </font>
+        <font size={ 4 } color={ colors.DARK_GRAY } style={ entry.isReady ? { fontStyle: 'normal' } : { fontStyle: 'italic' } }> { entry.isReady ? svgIcon(this.connectRef.fetchColor(entry, true), colors.GREEN) : this.connectRef.fetchColor(entry, true) } </font>
       </Flexbox>
     )
+  }
+
+  settingPoliticalCapitalConnectRef = (instance) => {
+    this.connectRef = instance
   }
 
   render(){
     return(
       <PoliticalCapitalConnect
+        ref={ this.settingPoliticalCapitalConnectRef }
         allColors={ this.allColors }
         allColorHexes={ this.allColorHexes }
         partyType={ this.partyType }
