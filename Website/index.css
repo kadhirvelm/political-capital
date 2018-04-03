@@ -1,78 +1,207 @@
 body {
-    font-family: 'Raleway', sans-serif;
+    font-family: 'Special Elite', cursive;
 }
 
-.flexbox-row {
-    flex-direction: column;
-    flex-grow: 1;
-    justify-content: center;
-    align-items: center;
-    display: flex;
-}
-
-.flexbox-column {
-    flex-direction: column;
-    display: flex;
+div {
+    -webkit-transition: transform 0.5s, width 0.5s, height 0.5s, opacity 500ms;
+    transition: transform 0.5s, width 0.5s, height 0.5s, opacity 500ms;
 }
 
 div.centered {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%)
-}
-
-div.right-arrow {
-    position: absolute;
-    top: 50%;
-    left: 0%;
-    transform: translateY(-50%);
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 div.left-arrow {
     position: absolute;
     top: 50%;
-    right: 0%;
+    left: 0.1%;
     transform: translateY(-50%);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+div.right-arrow {
+    position: absolute;
+    top: 50%;
+    right: 0.1%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
 
 div.top-arrow {
     position: absolute;
-    top: 0%;
+    top: 0.1%;
     left: 50%;
     transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 div.bottom-arrow {
     position: absolute;
-    bottom: 0%;
+    bottom: 0.1%;
     left: 50%;
     transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+div.upper_right-arrow {
+    position: absolute;
+    top: 7%;
+    right: 0.1%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+div.lower_right-arrow {
+    position: absolute;
+    bottom: 0%;
+    right: 0.1%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.faded {
+    opacity: 0.4;
+}
+
+.indicator-text {
+    font-size: 3vw;
+}
+
+.blinker {
+    animation: blinker 1.5s ease-in-out infinite;
+}
+
+@keyframes blinker {
+    50% {
+        opacity: 0;
+    }
+}
+
+.home {
+    z-index: 10;
 }
 
 .white-font {
     font-size: 3vw;
-    color: white;
-}
-
-.rotate {
-    /* Safari */
-    -webkit-transform: rotate(180deg);
-    /* Firefox */
-    -moz-transform: rotate(180deg);
-    /* IE */
-    -ms-transform: rotate(180deg);
-    /* Opera */
-    -o-transform: rotate(180deg);
-    /* Internet Explorer */
-    filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=2);
+    color: black;
 }
 
 .background-color {
-    background: #011A0A;
+    background: #FFFF;
 }
 
 .large-font {
     font-size: 7vw;
-    color: white;
+    color: black;
+}
+
+.hover-button {
+    -webkit-transition: width 700ms, height 700ms;
+    transition: width 700ms, height 700ms;
+    height: 50;
+    width: 50;
+}
+
+.hover-button:hover {
+    width: 60;
+    height: 60;
+}
+
+.hidden {
+    display: none;
+}
+
+div.display-full {
+    height: 100%;
+    width: 100%;
+}
+
+div.slide-in-left {
+    animation: slide-left 0.5s linear;
+}
+
+div.slide-in-top {
+    animation: slide-top 0.5s linear;
+}
+
+div.slide-in-right {
+    animation: slide-right 0.5s linear;
+}
+
+div.slide-in-bottom {
+    animation: slide-bottom 0.5s linear;
+}
+
+@keyframes slide-left {
+    from { transform: translate(-100%, 0%); opacity: 0; }
+    to { transform: translate(0%, 0%); opacity: 1; }
+}
+
+@keyframes slide-right {
+    from { transform: translate(100%, 0%); opacity: 0; }
+    to { transform: translate(0%, 0%); opacity: 1; }
+}
+
+@keyframes slide-top {
+    from { transform: translate(0%, -100%); opacity: 0; }
+    to { transform: translate(0%, 0%); opacity: 1; }
+}
+
+@keyframes slide-bottom {
+    from { transform: translate(0%, 100%); opacity: 0; }
+    to { transform: translate(0%, 0%); opacity: 1; }
+}
+
+div.hide-left {
+    animation: hide-left 0.5s linear;
+}
+
+div.hide-top {
+    animation: hide-top 0.5s linear;
+}
+
+div.hide-right {
+    animation: hide-right 0.5s linear;
+}
+
+div.hide-bottom {
+    animation: hide-bottom 0.5s linear;
+}
+
+@keyframes hide-left {
+    from { transform: translate(0%, 0%); opacity: 1; }
+    to { transform: translate(-100%, 0%); opacity: 0; }
+}
+
+@keyframes hide-top {
+    from { transform: translate(0%, 0%); opacity: 1; }
+    to { transform: translate(0%, -100%); opacity: 0;}
+}
+
+@keyframes hide-right {
+    from { transform: translate(0%, 0%); opacity: 1; }
+    to { transform: translate(100%, 0%); opacity: 0; }
+}
+
+@keyframes hide-bottom {
+    from { transform: translate(0%, 0%); opacity: 1; }
+    to { transform: translate(0%, 100%); opacity: 0; }
 }

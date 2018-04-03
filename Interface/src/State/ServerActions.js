@@ -311,3 +311,23 @@ export function changeEndGameStatus(hasSeen){
     }
   }
 }
+
+export function retrievePoliceReportData(startingPoint){
+  return new Promise((resolve, reject) => {
+    $.ajax({
+      url: 'http://web-coding-crimes.herokuapp.com/api/data?limit=10&offset=' + startingPoint,
+      type: 'GET',
+      dataType: 'json',
+      contentType: 'application/json',
+      cache: false,
+      success: function(data) {
+        console.log(data)
+        resolve(data)
+      },
+      error: function(error) {
+        console.log(error)
+        reject(error)
+      },
+    })
+  })
+}

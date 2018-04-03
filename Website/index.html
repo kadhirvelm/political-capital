@@ -1,25 +1,142 @@
 <html>
     <head>
         <link rel="stylesheet" href="index.css"></link>
-        <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Special+Elite" rel="stylesheet">
         <script src="index.js"></script>
     </head>
     <body class="background-color">
-        <div id='Home'>
+        <div id="Why" class="hidden display-full" style="flex-grow: 1;">
             <div class="centered">
-                <font class="large-font"> resync </font>
+                <font class="large-font">Why</font>
+                <font>Here's why we did this.</font>
             </div>
-            <div class="right-arrow">
-                <font class="white-font"> < </font>
+            <div class="upper_right-arrow" id="upper_right-arrow" onclick="handleOnclickToHideDiv(this)">
+                <a class="white-font">
+                    <svg class="hover-button" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 200 200">
+                        <circle cx="100" cy="100" r="95" fill="#F5B7B1" fill-opacity="0.4" />
+                        <polyline transform="rotate(135, 100, 100)" points="90 50 40 100 90 150" stroke="#B03A2E" stroke-width="10" stroke-linecap="round" fill="none" stroke-linejoin="round"/>
+                        <polyline transform="rotate(135, 100, 100)" points="140 50 90 100 140 150" stroke="#B03A2E" stroke-width="10" stroke-linecap="round" fill="none" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+                <div style="margin-right: 3vw; margin-top: 0.5vw;"> <font class="indicator-text"> What </font> </div>
             </div>
-            <div class="top-arrow">
-                <font class="white-font"> ^ </font>
+            <div class="right-arrow" id="left-arrow" onclick="handleOnclickToHideDiv(this)">
+                <font style="margin-right: 10px;" class="indicator-text"> Home </font>
+                <a class="white-font">
+                    <svg class="hover-button" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 200 200">
+                        <circle cx="100" cy="100" r="95" fill="#D5DBDB" fill-opacity="0.4" />
+                        <polyline transform="rotate(180, 100, 100)" points="90 50 40 100 90 150" stroke="#717D7E" stroke-width="10" stroke-linecap="round" fill="none" stroke-linejoin="round"/>
+                        <polyline transform="rotate(180, 100, 100)" points="140 50 90 100 140 150" stroke="#717D7E" stroke-width="10" stroke-linecap="round" fill="none" stroke-linejoin="round"/>
+                    </svg>
+                </a>
             </div>
-            <div class="left-arrow">
-                <font class="white-font"> > </font>
+            <div class="lower_right-arrow" id="lower_right-arrow" onclick="handleOnclickToHideDiv(this)">
+                <div style="margin-right: 3vw; margin-bottom: 0.25vw;"> <font class="indicator-text"> Games </font> </div>
+                <a class="white-font">
+                    <svg class="hover-button" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 200 200">
+                        <circle cx="100" cy="100" r="95" fill="#A9CCE3" fill-opacity="0.4" />
+                        <polyline transform="rotate(215, 100, 100)" points="90 50 40 100 90 150" stroke="#1F618D" stroke-width="10" stroke-linecap="round" fill="none" stroke-linejoin="round"/>
+                        <polyline transform="rotate(215, 100, 100)" points="140 50 90 100 140 150" stroke="#1F618D" stroke-width="10" stroke-linecap="round" fill="none" stroke-linejoin="round"/>
+                    </svg>
+                </a>
             </div>
-            <div class="bottom-arrow">
-                <font class="rotate white-font"> ^ </font>
+        </div>
+
+        <div id="What" class="hidden display-full" style="flex-grow: 1;">
+            <div class="centered">
+                <font class="large-font">What</font>
+                <font>What did we end up building?</font>
+            </div>
+            <div class="bottom-arrow" id="top-arrow" onclick="handleOnclickToHideDiv(this)">
+                <font style="margin-bottom: 10px;" class="indicator-text"> Home </font>
+                <a class="white-font">
+                    <svg class="hover-button" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 200 200">
+                        <circle cx="100" cy="100" r="95" fill="#D5DBDB" fill-opacity="0.4" />
+                        <polyline transform="rotate(270, 100, 100)" points="90 50 40 100 90 150" stroke="#717D7E" stroke-width="10" stroke-linecap="round" fill="none" stroke-linejoin="round"/>
+                        <polyline transform="rotate(270, 100, 100)" points="140 50 90 100 140 150" stroke="#717D7E" stroke-width="10" stroke-linecap="round" fill="none" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+
+        <div id="Who" class="hidden display-full" style="flex-grow: 1;">
+            <div class="centered">
+                <font class="large-font">Who</font>
+                <font>Who all built this?</font>
+            </div>
+            <div class="left-arrow" id='right-arrow' onclick="handleOnclickToHideDiv(this)">
+                <a class="white-font">
+                    <svg class="hover-button" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 200 200">
+                        <circle cx="100" cy="100" r="95" fill="#D5DBDB" fill-opacity="0.4" />
+                        <polyline points="90 50 40 100 90 150" stroke="#717D7E" stroke-width="10" stroke-linecap="round" fill="none" stroke-linejoin="round"/>
+                        <polyline points="140 50 90 100 140 150" stroke="#717D7E" stroke-width="10" stroke-linecap="round" fill="none" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+                <font style="margin-left: 10px;" class="indicator-text"> Home </font>
+            </div>
+        </div>
+
+        <div id="Games" class="hidden display-full" style="flex-grow: 1;">
+            <div class="centered">
+                <font class="large-font">Games</font>
+                <font>The games we built</font>
+            </div>
+            <div class="top-arrow" id='bottom-arrow' onclick="handleOnclickToHideDiv(this)">
+                <a class="white-font">
+                    <svg class="hover-button" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 200 200">
+                        <circle cx="100" cy="100" r="95" fill="#D5DBDB" fill-opacity="0.4" />
+                        <polyline transform="rotate(90, 100, 100)" points="90 50 40 100 90 150" stroke="#717D7E" stroke-width="10" stroke-linecap="round" fill="none" stroke-linejoin="round"/>
+                        <polyline transform="rotate(90, 100, 100)" points="140 50 90 100 140 150" stroke="#717D7E" stroke-width="10" stroke-linecap="round" fill="none" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+                <font style="margin-top: 10px;" class="indicator-text"> Home </font>
+            </div>
+        </div>
+
+        <div id="Home" class="home display-full">
+            <div class="centered">
+                <font class="large-font">resync</font>
+                <font>Building human connection through games</font>
+            </div>
+            <div id='left-arrow-home' class="left-arrow blinker" onmouseover="handleHoverRemoveBlinker(this)" onclick="handleOnclickToDisplayDiv(this)">
+                <a class="white-font">
+                    <svg class="hover-button" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 200 200">
+                        <circle cx="100" cy="100" r="95" fill="#A9DFBF" fill-opacity="0.4" />
+                        <polyline points="90 50 40 100 90 150" stroke="#1E8449" stroke-width="10" stroke-linecap="round" fill="none" stroke-linejoin="round"/>
+                        <polyline points="140 50 90 100 140 150" stroke="#1E8449" stroke-width="10" stroke-linecap="round" fill="none" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+                <font style="margin-left: 10px;" class="indicator-text"> Why </font>
+            </div>
+            <div id='top-arrow-home' class="top-arrow faded" onmouseover="fadeOthers(this)" onclick="handleOnclickToDisplayDiv(this)">
+                <a class="white-font">
+                    <svg class="hover-button" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 200 200">
+                        <circle cx="100" cy="100" r="95" fill="#F5B7B1" fill-opacity="0.4" />
+                        <polyline transform="rotate(90, 100, 100)" points="90 50 40 100 90 150" stroke="#B03A2E" stroke-width="10" stroke-linecap="round" fill="none" stroke-linejoin="round"/>
+                        <polyline transform="rotate(90, 100, 100)" points="140 50 90 100 140 150" stroke="#B03A2E" stroke-width="10" stroke-linecap="round" fill="none" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+                <font style="margin-top: 10px;" class="indicator-text"> What </font>
+            </div>
+            <div id="right-arrow-home" class="right-arrow faded" onmouseover="fadeOthers(this)" onclick="handleOnclickToDisplayDiv(this)">
+                <font style="margin-right: 10px;" class="indicator-text"> Who </font>
+                <a class="white-font">
+                    <svg class="hover-button" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 200 200">
+                        <circle cx="100" cy="100" r="95" fill="#F9E79F" fill-opacity="0.4" />
+                        <polyline transform="rotate(180, 100, 100)" points="90 50 40 100 90 150" stroke="#B7950B" stroke-width="10" stroke-linecap="round" fill="none" stroke-linejoin="round"/>
+                        <polyline transform="rotate(180, 100, 100)" points="140 50 90 100 140 150" stroke="#B7950B" stroke-width="10" stroke-linecap="round" fill="none" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+            </div>
+            <div id="bottom-arrow-home" class="bottom-arrow faded" onmouseover="fadeOthers(this)" onclick="handleOnclickToDisplayDiv(this)">
+                <font style="margin-bottom: 10px;" class="indicator-text"> Games </font>
+                <a class="white-font">
+                    <svg class="hover-button" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 200 200">
+                        <circle cx="100" cy="100" r="95" fill="#A9CCE3" fill-opacity="0.4" />
+                        <polyline transform="rotate(270, 100, 100)" points="90 50 40 100 90 150" stroke="#1F618D" stroke-width="10" stroke-linecap="round" fill="none" stroke-linejoin="round"/>
+                        <polyline transform="rotate(270, 100, 100)" points="140 50 90 100 140 150" stroke="#1F618D" stroke-width="10" stroke-linecap="round" fill="none" stroke-linejoin="round"/>
+                    </svg>
+                </a>
             </div>
         </div>
     </body>
