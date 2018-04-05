@@ -2,6 +2,11 @@ body {
     font-family: 'Special Elite', cursive;
 }
 
+p {
+    font-family: 'Neucha', cursive;
+    font-size: 3vmin;
+}
+
 div {
     -webkit-transition: transform 0.5s, width 0.5s, height 0.5s, opacity 500ms;
     transition: transform 0.5s, width 0.5s, height 0.5s, opacity 500ms;
@@ -20,7 +25,7 @@ div.centered {
 div.left-arrow {
     position: absolute;
     top: 50%;
-    left: 0.1%;
+    left: 1%;
     transform: translateY(-50%);
     display: flex;
     flex-direction: row;
@@ -30,7 +35,7 @@ div.left-arrow {
 div.right-arrow {
     position: absolute;
     top: 50%;
-    right: 0.1%;
+    right: 1%;
     transform: translateY(-50%);
     display: flex;
     flex-direction: row;
@@ -39,7 +44,7 @@ div.right-arrow {
 
 div.top-arrow {
     position: absolute;
-    top: 0.1%;
+    top: 1%;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -49,7 +54,7 @@ div.top-arrow {
 
 div.bottom-arrow {
     position: absolute;
-    bottom: 0.1%;
+    bottom: 1%;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -57,21 +62,37 @@ div.bottom-arrow {
     align-items: center;
 }
 
-div.upper_right-arrow {
+div.top_right-arrow {
     position: absolute;
-    top: 7%;
-    right: 0.1%;
-    transform: translateY(-50%);
+    top: 1%;
+    right: 1%;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
 }
 
-div.lower_right-arrow {
+div.top_left-arrow {
     position: absolute;
-    bottom: 0%;
-    right: 0.1%;
-    transform: translateY(-50%);
+    top: 1%;
+    left: 1%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+div.bottom_right-arrow {
+    position: absolute;
+    bottom: 1%;
+    right: 1%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+div.bottom_left-arrow {
+    position: absolute;
+    bottom: 1%;
+    left: 1%;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
@@ -93,10 +114,6 @@ div.lower_right-arrow {
     50% {
         opacity: 0;
     }
-}
-
-.home {
-    z-index: 10;
 }
 
 .white-font {
@@ -129,9 +146,22 @@ div.lower_right-arrow {
     display: none;
 }
 
+.flexbox-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.flexbox-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
 div.display-full {
     height: 100%;
     width: 100%;
+    top: 0%;
+    position: absolute;
 }
 
 div.slide-in-left {
@@ -148,6 +178,22 @@ div.slide-in-right {
 
 div.slide-in-bottom {
     animation: slide-bottom 0.5s linear;
+}
+
+div.slide-in-top_left {
+    animation: slide-top-left 0.5s linear;
+}
+
+div.slide-in-top_right {
+    animation: slide-top-right 0.5s linear;
+}
+
+div.slide-in-bottom_left {
+    animation: slide-bottom-left 0.5s linear;
+}
+
+div.slide-in-bottom_right {
+    animation: slide-bottom-right 0.5s linear;
 }
 
 @keyframes slide-left {
@@ -170,6 +216,26 @@ div.slide-in-bottom {
     to { transform: translate(0%, 0%); opacity: 1; }
 }
 
+@keyframes slide-top-left {
+    from { transform: translate(-100%, -100%); opacity: 0; }
+    to { transform: translate(0%, 0%); opacity: 1; }
+}
+
+@keyframes slide-top-right {
+    from { transform: translate(100%, -100%); opacity: 0; }
+    to { transform: translate(0%, 0%); opacity: 1; }
+}
+
+@keyframes slide-bottom-left {
+    from { transform: translate(-100%, 100%); opacity: 0; }
+    to { transform: translate(0%, 0%); opacity: 1; }
+}
+
+@keyframes slide-bottom-right {
+    from { transform: translate(100%, 100%); opacity: 0; }
+    to { transform: translate(0%, 0%); opacity: 1; }
+}
+
 div.hide-left {
     animation: hide-left 0.5s linear;
 }
@@ -184,6 +250,22 @@ div.hide-right {
 
 div.hide-bottom {
     animation: hide-bottom 0.5s linear;
+}
+
+div.hide-top_left {
+    animation: hide-top-left 0.5s linear;
+}
+
+div.hide-top_right {
+    animation: hide-top-right 0.5s linear;
+}
+
+div.hide-bottom_left {
+    animation: hide-bottom-left 0.5s linear;
+}
+
+div.hide-bottom_right {
+    animation: hide-bottom-right 0.5s linear;
 }
 
 @keyframes hide-left {
@@ -204,4 +286,24 @@ div.hide-bottom {
 @keyframes hide-bottom {
     from { transform: translate(0%, 0%); opacity: 1; }
     to { transform: translate(0%, 100%); opacity: 0; }
+}
+
+@keyframes hide-top-left {
+    from { transform: translate(0%, 0%); opacity: 1; }
+    to { transform: translate(-100%, -100%); opacity: 0; }
+}
+
+@keyframes hide-top-right {
+    from { transform: translate(0%, 0%); opacity: 1; }
+    to { transform: translate(100%, -100%); opacity: 0;}
+}
+
+@keyframes hide-bottom-left {
+    from { transform: translate(0%, 0%); opacity: 1; }
+    to { transform: translate(-100%, 100%); opacity: 0; }
+}
+
+@keyframes hide-bottom-right {
+    from { transform: translate(0%, 0%); opacity: 1; }
+    to { transform: translate(100%, 100%); opacity: 0; }
 }

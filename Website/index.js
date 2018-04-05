@@ -1,20 +1,9 @@
-const mapping = {
-    left: "Why",
-    top: "What",
-    right: "Who",
-    bottom: "Games",
-};
-
 const extractDirection = (element) => element.id.split('-')[0];
+const formatIntoDiv = (div) => "#" + div;
 
-function handleOnclickToDisplayDiv(element){
-    const direction = extractDirection(element);
-    hideHomeAndDisplay(mapping[direction], direction)
-}
-
-function handleOnclickToHideDiv(element){
-    const direction = extractDirection(element);
-    displayHomeAndHideDiv(mapping[direction], direction)
+function handleChangingDivPositions(elementDirection, firstElement, secondElement){ // left, home, why
+    const direction = extractDirection(elementDirection);
+    hideFirstElementAndDisplaySecond(direction, formatIntoDiv(firstElement), formatIntoDiv(secondElement));
 }
 
 const oppositeMapping = {
@@ -22,29 +11,20 @@ const oppositeMapping = {
     right: "left",
     top: "bottom",
     bottom: "top",
+    "top_left": "bottom_right",
+    "top_right": "bottom_left",
+    "bottom_left": "top_right",
+    "bottom_right": "top_left",
 }
 
-function hideHomeAndDisplay(divId, direction){
-    document.querySelector("#" + divId).classList.remove("hidden");
-    document.querySelector("#" + divId).classList.remove("hide-" + direction);
-    document.querySelector('#Home').classList.remove("display-" + oppositeMapping[direction]);
-
-    document.querySelector("#" + divId).classList.add("slide-in-" + direction);
-    document.querySelector('#Home').classList.add("hide-" + oppositeMapping[direction]);
+function hideFirstElementAndDisplaySecond(direction, firstElement, secondElement){
+    document.querySelector(secondElement).classList.remove("hidden");
+    document.querySelector(secondElement).classList.add("slide-in-" + direction);
+    document.querySelector(firstElement).classList.add("hide-" + oppositeMapping[direction]);
     setTimeout(() => {
-        document.querySelector("#Home").classList.add("hidden");
-    }, 500)
-}
-
-function displayHomeAndHideDiv(divId, direction){
-    document.querySelector("#Home").classList.remove("hidden");
-    document.querySelector("#" + divId).classList.remove("slide-in-" + direction);
-    document.querySelector('#Home').classList.remove("hide-" + oppositeMapping[direction]);
-
-    document.querySelector("#" + divId).classList.add("hide-" + direction);
-    document.querySelector('#Home').classList.add("display-" + oppositeMapping[direction]);
-    setTimeout(() => {
-        document.querySelector("#" + divId).classList.add("hidden");
+        document.querySelector(firstElement).classList.add("hidden");
+        document.querySelector(secondElement).classList.remove("slide-in-" + direction);
+        document.querySelector(firstElement).classList.remove("hide-" + oppositeMapping[direction]);
     }, 500)
 }
 
