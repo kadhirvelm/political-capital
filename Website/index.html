@@ -3,6 +3,18 @@
         <link rel="stylesheet" href="index.css"></link>
         <link href="https://fonts.googleapis.com/css?family=Neucha|Special+Elite" rel="stylesheet">
         <script src="index.js"></script>
+
+        <meta name="description" content="Building human connection through the multiplayer experience." />
+        <meta name="author" content="Kadhir Manickam">
+        <meta charset="UTF-8">
+        <meta name="image" content="ResyncLogo.png">
+        <link rel="icon" href="ResyncLogo.png">
+        <link rel="shortcut icon" href="ResyncLogo.png">
+
+
+        <meta name="url" content="http://www.resync.games">
+
+        <title> Resync Games - Blending Technology with Board Games </title>
     </head>
     <body class="background-color">
         <div id="Why" class="hidden display-full" style="flex-grow: 1;">
@@ -53,9 +65,9 @@
         </div>
 
         <div id="What" class="hidden display-full" style="flex-grow: 1;">
-            <div class="centered" style="top: 40%;">
+            <div class="centered" style="top: 45%;">
                 <font class="large-font">What</font>
-                <p>
+                <p style="font-size: 2.5vmin">
                     Multiplayer video games can integrate amazing technology leading to intricate team dynamics but often miss out on that personable interaction.
                     On the other hand, board games are great for interacting with other people but as the complexity of a game increases, so does the amount
                     of time it takes to learn and understand the game. We personally really enjoy board games that err on the complicated side, but struggle to find people to play with us.
@@ -100,9 +112,16 @@
         </div>
 
         <div id="Who" class="hidden display-full" style="flex-grow: 1;">
-            <div class="centered">
-                <font class="large-font">Who</font>
-                <font>Who all built this?</font>
+            <div class="centered" style="left: 60%;flex-direction: row;">
+                <div id="WhoBox">
+                    Loading Table Contents...
+                </div>
+                <script>
+                    populateWhoBox();
+                </script>
+                <div>
+                    <font class="large-font" style="margin-left: 15px;">Who</font>
+                </div>
             </div>
             <div class="top_left-arrow faded" id='top_left-arrow' onmouseover="handleHoverRemoveBlinker(this)" onclick="handleChangingDivPositions(this, 'Who', 'What')">
                 <a class="white-font">
@@ -137,9 +156,15 @@
         </div>
 
         <div id="Games" class="hidden display-full" style="flex-grow: 1;">
-            <div class="centered">
+            <div class="centered flexbox-column" style="top: 40%;">
                 <font class="large-font">Games</font>
-                <font>The games we built</font>
+                <div class="flexbox-row">
+                    <img src="PCLogo.png" style="height: auto; width: 150px;" alt="PC Logo">
+                    <div class="flexbox-column" style="margin-left: 15px;">
+                        <a href="http://www.political-capital.resync.games" class="header-link">Political Capital</a>
+                        <font style="margin-top: 15px;">A game of political relationships and intrigue. Use logic and manipulation to victory. </font>
+                    </div>
+                </div>
             </div>
             <div class="top_left-arrow faded" id='top_left-arrow' onclick="handleChangingDivPositions(this, 'Games', 'Why')">
                 <a class="white-font">
@@ -175,8 +200,8 @@
 
         <div id="Home" class="display-full">
             <div class="centered">
-                <font class="large-font">resync</font>
-                <font>Building human connection through games</font>
+                <div class="flexbox-row" style="align-items: center;"><img src="ResyncLogo.png" style="height: auto; width: 50px;margin-right: 15px;"/><font class="large-font">resync</font></div>
+                <font style="margin-top: 15px;">Building human connection through games</font>
             </div>
             <div id='left-arrow-home' class="left-arrow blinker" onmouseover="handleHoverRemoveBlinker(this)" onclick="handleChangingDivPositions(this, 'Home', 'Why')">
                 <a class="white-font">

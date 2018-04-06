@@ -7,10 +7,18 @@ p {
     font-size: 3vmin;
 }
 
+.neucha {
+    font-family: 'Neucha', cursive;
+}
+
 div {
     -webkit-transition: transform 0.5s, width 0.5s, height 0.5s, opacity 500ms;
     transition: transform 0.5s, width 0.5s, height 0.5s, opacity 500ms;
 }
+
+/**
+* Arrow displays
+*/
 
 div.centered {
     position: absolute;
@@ -98,71 +106,9 @@ div.bottom_left-arrow {
     align-items: flex-end;
 }
 
-.faded {
-    opacity: 0.4;
-}
-
-.indicator-text {
-    font-size: 3vw;
-}
-
-.blinker {
-    animation: blinker 1.5s ease-in-out infinite;
-}
-
-@keyframes blinker {
-    50% {
-        opacity: 0;
-    }
-}
-
-.white-font {
-    font-size: 3vw;
-    color: black;
-}
-
-.background-color {
-    background: #FFFF;
-}
-
-.large-font {
-    font-size: 7vw;
-    color: black;
-}
-
-.hover-button {
-    -webkit-transition: width 700ms, height 700ms;
-    transition: width 700ms, height 700ms;
-    height: 50;
-    width: 50;
-}
-
-.hover-button:hover {
-    width: 60;
-    height: 60;
-}
-
-.hidden {
-    display: none;
-}
-
-.flexbox-column {
-    display: flex;
-    flex-direction: column;
-}
-
-.flexbox-row {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-}
-
-div.display-full {
-    height: 100%;
-    width: 100%;
-    top: 0%;
-    position: absolute;
-}
+/**
+* Sliding and Hiding CSS Elements
+*/
 
 div.slide-in-left {
     animation: slide-left 0.5s linear;
@@ -306,4 +252,145 @@ div.hide-bottom_right {
 @keyframes hide-bottom-right {
     from { transform: translate(0%, 0%); opacity: 1; }
     to { transform: translate(100%, 100%); opacity: 0; }
+}
+
+/**
+* Miscellaneous Items
+*/
+
+img.rounded-image {
+    border-radius: 50%;
+    height: auto;
+    width: 13vmin;
+    border-color: gray;
+    border-width: 0.25px;
+    border-style: solid;
+}
+
+.faded {
+    opacity: 0.4;
+}
+
+.indicator-text {
+    font-size: 3vw;
+}
+
+.blinker {
+    animation: blinker 2s ease-in-out infinite;
+}
+
+@keyframes blinker {
+    50% {
+        opacity: 0;
+    }
+}
+
+.who-box {
+    padding: 10px;
+    margin: 10px;
+    border-color:#F0F0E9;
+    border-style: solid;
+    border-width: 1px;
+    width: 45vmin;
+    border-radius: 10px;
+}
+
+div.who-box-table {
+    overflow-y: hidden;
+    overflow-x: scroll;
+    height: 60vh;
+    width: 60vw;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+}
+
+.top-right {
+    position: absolute;
+    top: 5%;
+    right: 2%;
+}
+
+.white-font {
+    font-size: 3vw;
+    color: black;
+}
+
+.background-color {
+    background: #FFFF;
+}
+
+.large-font {
+    font-size: 7vw;
+    color: black;
+}
+
+.hover-button {
+    -webkit-transition: width 700ms, height 700ms;
+    transition: width 700ms, height 700ms;
+    height: 50;
+    width: 50;
+}
+
+.hover-button:hover {
+    width: 60;
+    height: 60;
+}
+
+.hidden {
+    display: none;
+}
+
+.flexbox-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.flexbox-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+div.display-full {
+    height: 100%;
+    width: 100%;
+    top: 0%;
+    position: absolute;
+}
+
+/* width */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    opacity: 0;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: black; 
+    border-radius: 10px;
+    opacity: 0.5;
+}
+
+a.header-link {
+    font-size: 5vmin;
+    color: #1F618D;
+    transition: color 0.5s;
+    text-decoration: none;
+}
+
+a.header-link:hover {
+    font-size: 5vmin;
+    color: #5B2C6F;
+}
+
+html, body {
+    max-width: 100%;
+    max-height: 100%;
+    overflow-x: hidden;
+    overflow-y: hidden;
 }
