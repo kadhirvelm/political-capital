@@ -1,0 +1,396 @@
+body {
+    font-family: 'Special Elite', cursive;
+}
+
+p {
+    font-family: 'Neucha', cursive;
+    font-size: 3vmin;
+}
+
+.neucha {
+    font-family: 'Neucha', cursive;
+}
+
+div {
+    -webkit-transition: transform 0.5s, width 0.5s, height 0.5s, opacity 500ms;
+    transition: transform 0.5s, width 0.5s, height 0.5s, opacity 500ms;
+}
+
+/**
+* Arrow displays
+*/
+
+div.centered {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+div.left-arrow {
+    position: absolute;
+    top: 50%;
+    left: 1%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+div.right-arrow {
+    position: absolute;
+    top: 50%;
+    right: 1%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+div.top-arrow {
+    position: absolute;
+    top: 1%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+div.bottom-arrow {
+    position: absolute;
+    bottom: 1%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+div.top_right-arrow {
+    position: absolute;
+    top: 1%;
+    right: 1%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+div.top_left-arrow {
+    position: absolute;
+    top: 1%;
+    left: 1%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+div.bottom_right-arrow {
+    position: absolute;
+    bottom: 1%;
+    right: 1%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+div.bottom_left-arrow {
+    position: absolute;
+    bottom: 1%;
+    left: 1%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+/**
+* Sliding and Hiding CSS Elements
+*/
+
+div.slide-in-left {
+    animation: slide-left 0.5s linear;
+}
+
+div.slide-in-top {
+    animation: slide-top 0.5s linear;
+}
+
+div.slide-in-right {
+    animation: slide-right 0.5s linear;
+}
+
+div.slide-in-bottom {
+    animation: slide-bottom 0.5s linear;
+}
+
+div.slide-in-top_left {
+    animation: slide-top-left 0.5s linear;
+}
+
+div.slide-in-top_right {
+    animation: slide-top-right 0.5s linear;
+}
+
+div.slide-in-bottom_left {
+    animation: slide-bottom-left 0.5s linear;
+}
+
+div.slide-in-bottom_right {
+    animation: slide-bottom-right 0.5s linear;
+}
+
+@keyframes slide-left {
+    from { transform: translate(-100%, 0%); opacity: 0; }
+    to { transform: translate(0%, 0%); opacity: 1; }
+}
+
+@keyframes slide-right {
+    from { transform: translate(100%, 0%); opacity: 0; }
+    to { transform: translate(0%, 0%); opacity: 1; }
+}
+
+@keyframes slide-top {
+    from { transform: translate(0%, -100%); opacity: 0; }
+    to { transform: translate(0%, 0%); opacity: 1; }
+}
+
+@keyframes slide-bottom {
+    from { transform: translate(0%, 100%); opacity: 0; }
+    to { transform: translate(0%, 0%); opacity: 1; }
+}
+
+@keyframes slide-top-left {
+    from { transform: translate(-100%, -100%); opacity: 0; }
+    to { transform: translate(0%, 0%); opacity: 1; }
+}
+
+@keyframes slide-top-right {
+    from { transform: translate(100%, -100%); opacity: 0; }
+    to { transform: translate(0%, 0%); opacity: 1; }
+}
+
+@keyframes slide-bottom-left {
+    from { transform: translate(-100%, 100%); opacity: 0; }
+    to { transform: translate(0%, 0%); opacity: 1; }
+}
+
+@keyframes slide-bottom-right {
+    from { transform: translate(100%, 100%); opacity: 0; }
+    to { transform: translate(0%, 0%); opacity: 1; }
+}
+
+div.hide-left {
+    animation: hide-left 0.5s linear;
+}
+
+div.hide-top {
+    animation: hide-top 0.5s linear;
+}
+
+div.hide-right {
+    animation: hide-right 0.5s linear;
+}
+
+div.hide-bottom {
+    animation: hide-bottom 0.5s linear;
+}
+
+div.hide-top_left {
+    animation: hide-top-left 0.5s linear;
+}
+
+div.hide-top_right {
+    animation: hide-top-right 0.5s linear;
+}
+
+div.hide-bottom_left {
+    animation: hide-bottom-left 0.5s linear;
+}
+
+div.hide-bottom_right {
+    animation: hide-bottom-right 0.5s linear;
+}
+
+@keyframes hide-left {
+    from { transform: translate(0%, 0%); opacity: 1; }
+    to { transform: translate(-100%, 0%); opacity: 0; }
+}
+
+@keyframes hide-top {
+    from { transform: translate(0%, 0%); opacity: 1; }
+    to { transform: translate(0%, -100%); opacity: 0;}
+}
+
+@keyframes hide-right {
+    from { transform: translate(0%, 0%); opacity: 1; }
+    to { transform: translate(100%, 0%); opacity: 0; }
+}
+
+@keyframes hide-bottom {
+    from { transform: translate(0%, 0%); opacity: 1; }
+    to { transform: translate(0%, 100%); opacity: 0; }
+}
+
+@keyframes hide-top-left {
+    from { transform: translate(0%, 0%); opacity: 1; }
+    to { transform: translate(-100%, -100%); opacity: 0; }
+}
+
+@keyframes hide-top-right {
+    from { transform: translate(0%, 0%); opacity: 1; }
+    to { transform: translate(100%, -100%); opacity: 0;}
+}
+
+@keyframes hide-bottom-left {
+    from { transform: translate(0%, 0%); opacity: 1; }
+    to { transform: translate(-100%, 100%); opacity: 0; }
+}
+
+@keyframes hide-bottom-right {
+    from { transform: translate(0%, 0%); opacity: 1; }
+    to { transform: translate(100%, 100%); opacity: 0; }
+}
+
+/**
+* Miscellaneous Items
+*/
+
+img.rounded-image {
+    border-radius: 50%;
+    height: auto;
+    width: 13vmin;
+    border-color: gray;
+    border-width: 0.25px;
+    border-style: solid;
+}
+
+.faded {
+    opacity: 0.4;
+}
+
+.indicator-text {
+    font-size: 3vw;
+}
+
+.blinker {
+    animation: blinker 2s ease-in-out infinite;
+}
+
+@keyframes blinker {
+    50% {
+        opacity: 0;
+    }
+}
+
+.who-box {
+    padding: 10px;
+    margin: 10px;
+    border-color:#F0F0E9;
+    border-style: solid;
+    border-width: 1px;
+    width: 45vmin;
+    border-radius: 10px;
+}
+
+div.who-box-table {
+    overflow-y: hidden;
+    overflow-x: scroll;
+    height: 60vh;
+    width: 60vw;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+}
+
+.top-right {
+    position: absolute;
+    top: 5%;
+    right: 2%;
+}
+
+.white-font {
+    font-size: 3vw;
+    color: black;
+}
+
+.background-color {
+    background: #FFFF;
+}
+
+.large-font {
+    font-size: 7vw;
+    color: black;
+}
+
+.hover-button {
+    -webkit-transition: width 700ms, height 700ms;
+    transition: width 700ms, height 700ms;
+    height: 50;
+    width: 50;
+}
+
+.hover-button:hover {
+    width: 60;
+    height: 60;
+}
+
+.hidden {
+    display: none;
+}
+
+.flexbox-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.flexbox-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+div.display-full {
+    height: 100%;
+    width: 100%;
+    top: 0%;
+    position: absolute;
+}
+
+/* width */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    opacity: 0;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: black; 
+    border-radius: 10px;
+    opacity: 0.5;
+}
+
+a.header-link {
+    font-size: 5vmin;
+    color: #1F618D;
+    transition: color 0.5s;
+    text-decoration: none;
+}
+
+a.header-link:hover {
+    font-size: 5vmin;
+    color: #5B2C6F;
+}
+
+html, body {
+    max-width: 100%;
+    max-height: 100%;
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
