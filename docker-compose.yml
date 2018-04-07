@@ -1,6 +1,7 @@
 version: "2"
 services:
   mongo:
+    container_name: political_capital_database
     image: mongo
     ports:
       - "27017:27017"
@@ -19,10 +20,11 @@ services:
       - ./Server/Routes:/server_docker/Routes
       - ./Server/config:/server_docker/config
     ports:
-      - "3000:3000"
+      - "3001:3001"
     links:
       - mongo
   interface:
+    container_name: political_capital_interface
     volumes:
       - ./Interface/src:/interface_docker/src
     restart: always
@@ -30,7 +32,7 @@ services:
       context: ./Interface
       dockerfile: Dockerfile
     ports:
-      - "3001:3001"
+      - "3000:3000"
       - "35729:35729"
     environment:
       - REACT_APP_POLITICAL_CAPITAL=server:3001
