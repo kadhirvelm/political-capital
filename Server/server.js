@@ -23,14 +23,14 @@ app.use( function(req,res,next) {
 
 const server = http.createServer(app);
 
-MongoClient.connect(db.url, (err, database) => {
+MongoClient.connect(db.url, (err, client) => {
   if (err) {
     return console.log(err);
   }
 
 	var io = require('socket.io')(server);
 
-  require('./Routes')(app, io, database);
+  require('./Routes')(app, io, client.db('political_capital'));
 
   server.listen(port, () => {
     console.log(`Server running at port ${port}`);

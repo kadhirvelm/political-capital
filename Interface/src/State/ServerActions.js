@@ -263,8 +263,6 @@ export function createNewRoom(name, password, admin, gameType, callback){
   const data = { roomName: name, password: password, admin: admin, gameType: gameType }
   return (dispatch) => {
     dispatch(createRoomsRequeset())
-    console.log(process.env.REACT_APP_POLITICAL_CAPITAL, data)
-
     $.ajax({
       url: process.env.REACT_APP_POLITICAL_CAPITAL + '/rooms',
       type: 'POST',

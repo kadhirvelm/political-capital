@@ -7,12 +7,12 @@ RUN npm install --global nodemon
 RUN npm install pm2 -g
 
 ENV CODECLIMATE_REPO_TOKEN=112bcc20ceaa82677c01e9147e3f51430425778ba961e1f109f4ef1d413c9cec
-ENV APP_PORT=3000
+ENV APP_PORT=3001
 ENV REACT_APP_DEBUG=false
 ENV NODE_ENV=production
 
 WORKDIR /server_docker
 RUN npm install
 
-EXPOSE 3000
+EXPOSE 3001
 CMD [ "pm2", "start", "--no-daemon", "server.js", "--watch" ]
