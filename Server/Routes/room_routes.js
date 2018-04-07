@@ -37,9 +37,10 @@ module.exports = function(app, io, db) {
 	}
 
 	app.post('/rooms', (req, res) => {
+		console.log(req.body);
 		const gameName = req.body.roomName.replaceAll(' ', '%20');
 		if (!R.contains(gameName.hashCode(), currentGameManagers)) {
-      createNewRoom(req, res, gameName);
+      		createNewRoom(req, res, gameName);
 		} else {
 			res.status(400).send({'error': 'Duplicate game name not allowed.'});
 		}
@@ -64,9 +65,9 @@ module.exports = function(app, io, db) {
 	});
 
 	function turnAllGameManagersOn() {
-		db.collection('rooms').find().toArray( function(err, items) {
-			R.forEach(turnOnGameManager, items);
-		});
+		// db.collection('rooms').find().toArray( function(err, items) {
+		// 	R.forEach(turnOnGameManager, items);
+		// });
 	}
 
 	function turnOnGameManager(item) {

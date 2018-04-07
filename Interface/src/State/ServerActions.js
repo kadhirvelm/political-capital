@@ -124,7 +124,6 @@ function getRoomsSuccess(rooms){
 export function getCurrentRooms(callback){
   return (dispatch) => {
     dispatch(getRoomsRequeset())
-
     $.ajax({
       url: process.env.REACT_APP_POLITICAL_CAPITAL + '/rooms',
       type: 'GET',
@@ -264,6 +263,7 @@ export function createNewRoom(name, password, admin, gameType, callback){
   const data = { roomName: name, password: password, admin: admin, gameType: gameType }
   return (dispatch) => {
     dispatch(createRoomsRequeset())
+    console.log(process.env.REACT_APP_POLITICAL_CAPITAL, data)
 
     $.ajax({
       url: process.env.REACT_APP_POLITICAL_CAPITAL + '/rooms',
@@ -277,8 +277,10 @@ export function createNewRoom(name, password, admin, gameType, callback){
         if (callback) {
           callback(returnedData)
         }
+        console.log(returnedData)
       },
       error: function(error) {
+        console.log(error)
         dispatch(failed(error.responseJSON))
       },
     })
@@ -310,24 +312,4 @@ export function changeEndGameStatus(hasSeen){
       dispatch(showEndGameStatus())
     }
   }
-}
-
-export function retrievePoliceReportData(startingPoint){
-  return new Promise((resolve, reject) => {
-    $.ajax({
-      url: 'http://web-coding-crimes.herokuapp.com/api/data?limit=10&offset=' + startingPoint,
-      type: 'GET',
-      dataType: 'json',
-      contentType: 'application/json',
-      cache: false,
-      success: function(data) {
-        console.log(data)
-        resolve(data)
-      },
-      error: function(error) {
-        console.log(error)
-        reject(error)
-      },
-    })
-  })
 }
