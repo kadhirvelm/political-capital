@@ -140,7 +140,9 @@ export class Main extends Component {
   renderHomeScreen = (props) => <Async load={ import('./Components/Home') } componentProps={ props } />
 
   renderHome = () => {
-    return this.renderHomeScreen()
+    return this.renderHomeScreen({
+      changeWindowLocation: this.changeWindowLocation,
+    })
   }
 
   renderLoading = () => {
