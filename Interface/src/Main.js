@@ -76,8 +76,10 @@ export class Main extends Component {
       this.changeWindowLocation('game')
     } else if (_.isObject(this.state.connectedRoom)){
       this.changeWindowLocation('connect')
-    } else {
+    } else if (this.state.isJoiningRoom){
       this.changeWindowLocation('rooms')
+    } else {
+      this.changeWindowLocation('home')
     }
   }
 
@@ -135,6 +137,12 @@ export class Main extends Component {
     })
   }
 
+  renderHomeScreen = (props) => <Async load={ import('./Components/Home') } componentProps={ props } />
+
+  renderHome = () => {
+    return this.renderHomeScreen()
+  }
+
   renderLoading = () => {
     this.renderCurrentState()
     return (<div id='Loading'> Routing... </div>)
@@ -144,6 +152,7 @@ export class Main extends Component {
     return (
       <Flexbox flexDirection='column' flexGrow={ 1 }>
         <Switch>
+          <Route path='/home' component={ this.renderHome } />
           <Route path='/rooms' component={ this.renderRooms } />
           <Route path='/connect' component={ this.renderConnection } />
           <Route path='/game' component={ this.renderGame } />

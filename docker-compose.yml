@@ -12,15 +12,15 @@ services:
       dockerfile: Dockerfile
     environment:
       - ENV CODECLIMATE_REPO_TOKEN=112bcc20ceaa82677c01e9147e3f51430425778ba961e1f109f4ef1d413c9cec
-      - ENV APP_PORT=3001
+      - ENV APP_PORT=80
       - ENV REACT_APP_DEBUG=true
       - ENV NODE_ENV=development
-      - ENV MONGO_URL=mongodb://mongo/politicalcapital
+      - ENV MONGO_URL=mongodb://mongo/political_capital
     volumes:
       - ./Server/Routes:/server_docker/Routes
       - ./Server/config:/server_docker/config
     ports:
-      - "3001:3001"
+      - "80:80"
     links:
       - mongo
   interface:
