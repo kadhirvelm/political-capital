@@ -4,7 +4,7 @@ import { routerReducer } from 'react-router-redux'
 import { dissoc } from 'ramda'
 
 import {
-  FAILED_REQUEST,
+  FAILED_REQUEST, RESET,
   CREATE_ROOMS_REQUEST, CREATE_ROOMS_SUCCESS,
   GET_ROOMS_REQUEST, GET_ROOMS_SUCCESS,
   JOIN_ROOM_REQUEST, JOIN_ROOM_SUCCESS,
@@ -15,6 +15,7 @@ import {
   FINALIZE_PARTY_NAME,
   SHOW_END_GAME_STATUS, SEEN_END_GAME_STATUS,
   SET_GAME_TYPE, REMOVE_GAME_TYPE,
+  IS_JOINING_ROOM,
 } from './ServerActions'
 
 import { reducer } from 'redux-form'
@@ -100,6 +101,12 @@ function serverActions(state = {
         return Object.assign({}, state, fetch, {
           gameType: action.gameType,
         })
+      case IS_JOINING_ROOM:
+        return Object.assign({}, state, fetch, {
+          isJoiningRoom: action.isJoiningRoom,
+        })
+      case RESET:
+        return {}
       default:
         return state
     }

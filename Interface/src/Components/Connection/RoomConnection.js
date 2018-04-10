@@ -15,11 +15,14 @@ import {
   StepLabel,
 } from 'material-ui/Stepper'
 
-import { getCurrentRooms, createNewRoom, getSpecificRoom, setPlayerName } from '../../State/ServerActions'
+import { getCurrentRooms, createNewRoom, getSpecificRoom, setPlayerName, resetEverything } from '../../State/ServerActions'
 
 import { colors } from '../../styles/colors'
 import { svgIcon } from '../../Images/icons'
 import { curry } from 'ramda'
+
+import { backLabelStyle, backButtonStyle } from '../../styles/global-consts.js'
+import '../../styles/global.css'
 
 import { _ } from 'underscore'
 import { match, assoc } from 'ramda'
@@ -306,9 +309,12 @@ class RoomConnection extends Component {
     )
   }
 
+  returnHome = () => this.state.dispatch(resetEverything())
+
   render() {
     return (
       <Flexbox id='Room Connection' flexDirection='column'>
+        <RaisedButton label={ (<h2> Back </h2>) } onClick={ this.returnHome } primary={ true } style={ backButtonStyle } labelColor='white' labelStyle={ backLabelStyle } />
         { this.renderHeaderAndRooms() }
         { this.createNewRoomDialog() }
         { this.enterRoomPasswordDialog() }

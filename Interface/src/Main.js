@@ -35,6 +35,7 @@ export class Main extends Component {
       errorMessage: props.serverActions.message,
       hasSeenTabulation: props.serverActions.hasSeenTabulation,
       gameType: props.serverActions.gameType || 'Vanilla',
+      isJoiningRoom: props.serverActions.isJoiningRoom,
     })
   }
 
@@ -137,11 +138,11 @@ export class Main extends Component {
     })
   }
 
-  renderHomeScreen = (props) => <Async load={ import('./Components/Home') } componentProps={ props } />
+  renderHomeScreen = (props) => <Async load={ import('./Components/Home/Home') } componentProps={ props } />
 
   renderHome = () => {
     return this.renderHomeScreen({
-      changeWindowLocation: this.changeWindowLocation,
+      dispatch: this.state.dispatch,
     })
   }
 

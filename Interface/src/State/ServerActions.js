@@ -2,6 +2,20 @@ import $ from 'jquery'
 
 export const FAILED_REQUEST = 'FAILED_REQUEST'
 
+export const RESET = 'RESET'
+
+function reset(){
+  return {
+    type: RESET,
+  }
+}
+
+export function resetEverything(){
+  return (dispatch) => {
+    dispatch(reset())
+  }
+}
+
 export const SET_GAME_TYPE = 'SET_GAME_TYPE'
 export const REMOVE_GAME_TYPE = 'REMOVE_GAME_TYPE'
 
@@ -308,6 +322,26 @@ export function changeEndGameStatus(hasSeen){
       dispatch(seenEndGameStatus())
     } else {
       dispatch(showEndGameStatus())
+    }
+  }
+}
+
+export const IS_JOINING_ROOM = 'IS_JOINING_ROOM'
+
+function joinRoom(){
+  return {
+    type: IS_JOINING_ROOM,
+    isJoiningRoom: true,
+  }
+}
+
+export function isJoiningRoom(join = true){
+  console.log(join)
+  return (dispatch) => {
+    if(join){
+      dispatch(joinRoom())
+    } else {
+      dispatch(reset())
     }
   }
 }

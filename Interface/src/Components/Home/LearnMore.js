@@ -1,38 +1,19 @@
 import React, { Component } from 'react'
 import Flexbox from 'flexbox-react'
 
-import PCLogo from '../Images/PCLogo.png'
-import GameSetup from '../Images/GameSetup.png'
+import GameSetup from '../../Images/GameSetup.png'
 
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group'
 import RaisedButton from 'material-ui/RaisedButton'
 import IconButton from 'material-ui/IconButton'
 
-import { svgIcon } from '../Images/icons'
+import { svgIcon } from '../../Images/icons'
 
-import '../styles/global.css'
+import '../../styles/global.css'
 import './Home.css'
+import { backLabelStyle, backButtonStyle } from '../../styles/global-consts'
 
-const mainButtonStyle = {
-  width: '25vw',
-  height: '13vh',
-  margin: '10px',
-  fontSize: '5vmin',
-}
-
-const mobileButtonStyle = {
-  width: '75vw',
-}
-
-const labelStyle = {
-  fontSize: '3.5vw',
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-}
-
-class PoliticalCapitalGame extends Component {
+class LearnMore extends Component {
   constructor(props){
     super(props)
     this.state = Object.assign({}, this.propsConst(props))
@@ -40,46 +21,9 @@ class PoliticalCapitalGame extends Component {
 
   propsConst(props){
     return({
-      dispatch: props.dispatch,
-      changeWindowLocation: props.changeWindowLocation,
+      isMobile: props.isMobile,
+      handleOnClick: props.handleOnClick,
     })
-  }
-
-  handleOnClick = (key) => {
-    return () => {
-      switch(key){
-        case 'Learning':
-          this.setState({ isLearning: true })
-          break
-        case 'Joining':
-          this.state.changeWindowLocation('connect')
-          break
-        case 'Creating':
-          this.state.changeWindowLocation('rooms')
-          break
-        case 'Home':
-          this.setState({ isLearning: false })
-          break
-        default:
-          break
-      }
-    }
-  }
-
-  renderBasicScreen = (isMobile) => {
-    return(
-      <div key='Basic Screen' style={ { top: '40%', left: '50%', transform: 'translate(-50%, -50%)', position: 'absolute' } }>
-        <Flexbox flexGrow={ 1 } justifyContent='center' alignItems='center'>
-          <img src={ PCLogo } alt='PC' style={ { width: '12vmin', height: '12vmin', marginRight: '15px' } } />
-          <h1 style={ { textAlign: 'center' } }> Welcome to <br /> Political Capital </h1>
-        </Flexbox>
-        <Flexbox flexDirection={ isMobile ? 'column' : 'row' } justifyContent='center' alignItems='center'>
-          <RaisedButton onClick={ this.handleOnClick('Learning') } label={ (<h2>Learn</h2>) } style={ Object.assign({}, mainButtonStyle, isMobile ? mobileButtonStyle : {}) } labelColor='#424949' labelStyle={ labelStyle } />
-          <RaisedButton onClick={ this.handleOnClick('Joining') } label={ (<h2>Join</h2>) } primary={ true } style={ Object.assign({}, mainButtonStyle, isMobile ? mobileButtonStyle : {}) } labelColor='white' labelStyle={ labelStyle } />
-          <RaisedButton onClick={ this.handleOnClick('Creating') } label={ (<h2>Create</h2>) } style={ Object.assign({}, mainButtonStyle, isMobile ? mobileButtonStyle : {}) } labelColor='#424949' labelStyle={ labelStyle } />
-        </Flexbox>
-      </div>
-    )
   }
 
   handleOpeningLearning = (id) => {
@@ -99,11 +43,12 @@ class PoliticalCapitalGame extends Component {
           </Flexbox>
           <Flexbox flexGrow={ 1 }>
             <ReactCSSTransitionGroup
+              style={ { width: '100%' } }
               transitionName='fade'
-              transitionEnterTimeout={ 500 }
-              transitionLeaveTimeout={ 500 }>
+              transitionEnterTimeout={500}
+              transitionLeaveTimeout={500}>
               { isOpened &&
-                <div style={ { marginLeft: '15px', marginBottom: '15px', width: '100%' } } key={ id }>
+                <div style={ { width: '100%' } } key={ id }>
                   { content }
                 </div>
               }
@@ -116,7 +61,7 @@ class PoliticalCapitalGame extends Component {
 
   renderWhatIsPC(){
     return(
-      <Flexbox flexGrow={ 1 }>
+      <Flexbox flexGrow={ 1 } style={ { marginLeft: '15px' } }>
         <p>
           Political Capital is a game of relationships and manipulation - or at least that's what we think so far. The game constantly
           changes with each new deck.
@@ -133,7 +78,7 @@ class PoliticalCapitalGame extends Component {
 
   renderHowIsItPlayed(isMobile){
     return(
-      <Flexbox flexGrow={ 1 } flexDirection='column'>
+      <Flexbox flexGrow={ 1 } flexDirection='column' style={ { marginLeft: '10px' } }>
         As with other resync games, Political Capital blends a board game with technology. The goal is for all players to focus on
         their interactions with other players without being bogged down by the rules of the game. The technology involved with ensure
         that all players will always know what to do next.
@@ -153,43 +98,41 @@ class PoliticalCapitalGame extends Component {
 
   renderVideoEmbed(){
     return(
-      <Flexbox flexGrow={ 1 } justifyContent='center' style={ { background: 'green' } }>
-        <iframe title='Explainer' width="560" height="315" src="https://www.youtube-nocookie.com/embed/HnaIjNhiXFs?rel=0" frameBorder="0" allow="autoplay; encrypted-media" allowFullScreen></iframe>
+      <Flexbox justifyContent='center' style={ { marginTop: '10px', marginBottom: '10px', width: '100%' } }>
+        <iframe style={ { display: 'block' } } title='Explainer' width="560" height="315" src="https://www.youtube-nocookie.com/embed/HnaIjNhiXFs?rel=0" frameBorder="0" allow="autoplay; encrypted-media" allowFullScreen></iframe>
       </Flexbox>
     )
   }
 
-  renderLearningScreen = (isMobile) => {
+  renderPoliticalCapitalRules(){
+    return(
+      <Flexbox style={ { marginBottom: '15px' } } justifyContent='center'>
+        <iframe title='Google Docs' width='95%' height='600vh' src="https://docs.google.com/document/d/e/2PACX-1vTjOK_pR3bse95J29w5uawQ_Mq26UDKL5kMQ3HPs_wpYnbl2QQ0EBRs467HzwchMbPv68NQBZzXMvh2/pub?embedded=true"></iframe>
+      </Flexbox>
+    )
+  }
+
+  renderLearningScreen = () => {
     return(
       <div key='Learning Screen'>
-        <RaisedButton label={ (<h2> Back</h2>) } onClick={ this.handleOnClick('Home') } primary={ true } style={ { position: 'absolute', top: '20px', left: '20px', width: '10vw', height: '5vw' } } labelColor='white' labelStyle={ { fontSize: '2vw', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' } } />
+        <RaisedButton label={ (<h2> Back </h2>) } onClick={ this.state.handleOnClick('Home') } primary={ true } style={ backButtonStyle } labelColor='white' labelStyle={ backLabelStyle } />
         <Flexbox flexDirection='column' style={ { top: '10%', marginTop: '15px', width: '95%', height: '93%', position: 'absolute', left: '50%', transform: 'translateX(-50%)' } }>
           { this.renderOpeningDiv('What is Political Capital?', this.renderWhatIsPC(), 'What Is It') }
-          { this.renderOpeningDiv('How is it Played?', this.renderHowIsItPlayed(isMobile), 'How Played') }
+          { this.renderOpeningDiv('How is it Played?', this.renderHowIsItPlayed(this.state.isMobile), 'How Played') }
           { this.renderOpeningDiv((<div> How to Play Political Capital - Instructional Video </div>), this.renderVideoEmbed(), 'Video') }
-          { this.renderOpeningDiv('Political Capital Rules', 'Some Content', 'Rules') }
+          { this.renderOpeningDiv('Political Capital Rules', this.renderPoliticalCapitalRules(), 'Rules') }
         </Flexbox>
       </div>
     )
   }
 
   render() {
-    const isMobile = window.innerWidth < 700
     return (
       <Flexbox id='Home Screen' flexDirection='column'>
-        <ReactCSSTransitionGroup
-          transitionName='fade'
-          transitionEnterTimeout={500}
-          transitionLeaveTimeout={500}>
-          { this.state.isLearning ?
-            this.renderLearningScreen(isMobile)
-            :
-            this.renderBasicScreen(isMobile)
-          }
-        </ReactCSSTransitionGroup>
+        { this.renderLearningScreen() }
       </Flexbox>
     )
   }
 }
 
-export default PoliticalCapitalGame
+export default LearnMore
