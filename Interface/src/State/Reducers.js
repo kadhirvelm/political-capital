@@ -16,6 +16,7 @@ import {
   SHOW_END_GAME_STATUS, SEEN_END_GAME_STATUS,
   SET_GAME_TYPE, REMOVE_GAME_TYPE,
   IS_JOINING_ROOM,
+  IS_CREATING_ROOM,
 } from './ServerActions'
 
 import { reducer } from 'redux-form'
@@ -104,6 +105,10 @@ function serverActions(state = {
       case IS_JOINING_ROOM:
         return Object.assign({}, state, fetch, {
           isJoiningRoom: action.isJoiningRoom,
+        })
+      case IS_CREATING_ROOM:
+        return Object.assign({}, state, fetch, {
+          isCreatingRoom: action.isCreatingRoom,
         })
       case RESET:
         return {}

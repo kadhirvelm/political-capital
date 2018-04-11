@@ -4,7 +4,7 @@ import Flexbox from 'flexbox-react'
 import PCLogo from '../../Images/PCLogo.png'
 import LearnMore from './LearnMore'
 
-import { isJoiningRoom } from '../../State/ServerActions'
+import { isJoiningRoom, isCreatingRoom } from '../../State/ServerActions'
 
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group'
 import RaisedButton from 'material-ui/RaisedButton'
@@ -31,11 +31,11 @@ class PoliticalCapitalGame extends Component {
         case 'Learning':
           this.setState({ isLearning: true })
           break
-        case 'Joining':
+        case 'Join':
           this.state.dispatch(isJoiningRoom())
           break
-        case 'Creating':
-          this.state.changeWindowLocation('rooms')
+        case 'Create':
+          this.state.dispatch(isCreatingRoom())
           break
         case 'Home':
           this.setState({ isLearning: false })
@@ -46,6 +46,16 @@ class PoliticalCapitalGame extends Component {
     }
   }
 
+  renderActionItem(isMobile, buttonCommand, errorText){
+    const isDisabled = (buttonCommand === 'Create' && isMobile) || (buttonCommand === 'Join' && !isMobile)
+    return(
+      <Flexbox flexDirection='column' alignItems='center'>
+        <RaisedButton primary={ !isDisabled } disabled={ isDisabled } onClick={ this.handleOnClick(buttonCommand) } label={ (<h2> { buttonCommand } </h2>) } style={ Object.assign({}, mainButtonStyle, isMobile ? mobileButtonStyle : {}) } labelColor='#424949' labelStyle={ labelStyle } />
+        { isDisabled && <font color='red'> { errorText } </font> }
+      </Flexbox>
+    )
+  }
+
   renderBasicScreen = (isMobile) => {
     return(
       <div key='Basic Screen' style={ { top: '40%', left: '50%', transform: 'translate(-50%, -50%)', position: 'absolute' } }>
@@ -53,17 +63,17 @@ class PoliticalCapitalGame extends Component {
           <img src={ PCLogo } alt='PC' style={ { width: '12vmin', height: '12vmin', marginRight: '15px' } } />
           <h1 style={ { textAlign: 'center' } }> Welcome to <br /> Political Capital </h1>
         </Flexbox>
-        <Flexbox flexDirection={ isMobile ? 'column' : 'row' } justifyContent='center' alignItems='center'>
+        <Flexbox flexDirection={ isMobile ? 'column' : 'row' } justifyContent='center' alignItems='baseline'>
           <RaisedButton onClick={ this.handleOnClick('Learning') } label={ (<h2>Learn</h2>) } style={ Object.assign({}, mainButtonStyle, isMobile ? mobileButtonStyle : {}) } labelColor='#424949' labelStyle={ labelStyle } />
-          <RaisedButton onClick={ this.handleOnClick('Joining') } label={ (<h2>Join</h2>) } primary={ true } style={ Object.assign({}, mainButtonStyle, isMobile ? mobileButtonStyle : {}) } labelColor='white' labelStyle={ labelStyle } />
-          <RaisedButton onClick={ this.handleOnClick('Creating') } label={ (<h2>Create</h2>) } style={ Object.assign({}, mainButtonStyle, isMobile ? mobileButtonStyle : {}) } labelColor='#424949' labelStyle={ labelStyle } />
+          { this.renderActionItem(isMobile, 'Join', 'Only mobile devices can be players.') }
+          { this.renderActionItem(isMobile, 'Create', 'This screen is not large enough to create a game.') }
         </Flexbox>
       </div>
     )
   }
 
   render() {
-    const isMobile = window.innerWidth < 700
+    const isMobile = window.innerWidth < 800 || window.innerHeight < 600
     return (
       <Flexbox id='Home Screen' flexDirection='column'>
         <ReactCSSTransitionGroup

@@ -10,8 +10,8 @@ export const backButtonStyle = {
   position: 'absolute',
   top: '20px',
   left: '20px',
-  width: '100px',
-  height: '50px',
+  width: '10vw',
+  height: '5vh',
 }
 
 export const backLabelStyle = {

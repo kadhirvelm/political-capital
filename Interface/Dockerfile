@@ -4,6 +4,8 @@ RUN mkdir /interface_docker
 COPY . /interface_docker
 
 WORKDIR /interface_docker
+ADD . /interface_docker
+
 RUN npm install
 
 EXPOSE 3000

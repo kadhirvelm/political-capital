@@ -12,7 +12,10 @@ ENV REACT_APP_DEBUG=false
 ENV NODE_ENV=production
 
 WORKDIR /server_docker
+ADD . /server_docker
+
 RUN npm install
 
 EXPOSE 80
-CMD [ "pm2", "start", "--no-daemon", "server.js", "--watch" ]
+# CMD [ "pm2", "start", "--no-daemon", "server.js", "--watch" ]
+CMD [ "nodemon -L server.js" ]

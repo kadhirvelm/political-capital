@@ -289,10 +289,8 @@ export function createNewRoom(name, password, admin, gameType, callback){
         if (callback) {
           callback(returnedData)
         }
-        console.log(returnedData)
       },
       error: function(error) {
-        console.log(error)
         dispatch(failed(error.responseJSON))
       },
     })
@@ -335,13 +333,23 @@ function joinRoom(){
   }
 }
 
-export function isJoiningRoom(join = true){
-  console.log(join)
+export function isJoiningRoom(){
   return (dispatch) => {
-    if(join){
-      dispatch(joinRoom())
-    } else {
-      dispatch(reset())
-    }
+    dispatch(joinRoom())
+  }
+}
+
+export const IS_CREATING_ROOM = 'IS_CREATING_ROOM'
+
+function createRoom(){
+  return {
+    type: IS_CREATING_ROOM,
+    isCreatingRoom: true,
+  }
+}
+
+export function isCreatingRoom(){
+  return (dispatch) => {
+    dispatch(createRoom())
   }
 }

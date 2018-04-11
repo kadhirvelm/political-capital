@@ -4,15 +4,11 @@ import Async from 'react-code-splitting'
 import Flexbox from 'flexbox-react'
 import { Route, Switch } from 'react-router-dom'
 
-import RoomConnection from './Components/Connection/RoomConnection'
-
 import { mapStateToProps } from './State/StateMethods'
 import { connect } from 'react-redux'
 
 import { setRooms, disconnect } from './State/ServerActions'
 import { Manager } from 'socket.io-client'
-
-import { _ } from 'underscore'
 
 export class Main extends Component {
   constructor(props){
@@ -36,6 +32,7 @@ export class Main extends Component {
       hasSeenTabulation: props.serverActions.hasSeenTabulation,
       gameType: props.serverActions.gameType || 'Vanilla',
       isJoiningRoom: props.serverActions.isJoiningRoom,
+      isCreatingRoom: props.serverActions.isCreatingRoom,
     })
   }
 
@@ -63,9 +60,6 @@ export class Main extends Component {
     this.state.socketManager.disconnect()
   }
 
-  // renderRoomConnect = (props) => <Async load={ import('./Components/RoomConnection') } componentProps={ props } />
-  renderRoomConnect = (props) => <RoomConnection { ...props } />
-
   changeWindowLocation = (newLocation) => {
     if(!window.location.href.endsWith(newLocation)) {
       window.location.href = newLocation
@@ -75,35 +69,21 @@ export class Main extends Component {
   renderCurrentState = () => {
     if (this.state.inGame){
       this.changeWindowLocation('game')
-    } else if (_.isObject(this.state.connectedRoom)){
-      this.changeWindowLocation('connect')
     } else if (this.state.isJoiningRoom){
-      this.changeWindowLocation('rooms')
+      this.changeWindowLocation('connect')
+    } else if (this.state.isCreatingRoom) {
+      this.changeWindowLocation('create')
     } else {
       this.changeWindowLocation('home')
     }
   }
 
-  renderPoliticalCapitalGame = (props) => <Async load={ import('./Components/Game/Game') } componentProps={ props } />
-  renderCommonwealthGame = (props) => <Async load={ import('./Components/Game/Commonwealth/Game') } componentProps={ props } />
+  renderHomeScreen = (props) => <Async load={ import('./Components/Home/Home') } componentProps={ props } />
 
-  renderGame = () => {
-    const props = {
+  renderHome = () => {
+    return this.renderHomeScreen({
       dispatch: this.state.dispatch,
-      connectedRoom: this.state.connectedRoom,
-      playerName: this.state.playerName,
-      players: this.state.players,
-      playerParty: this.state.playerParty,
-      playerPartyName: this.state.playerPartyName,
-      disconnect: this.disconnect,
-      hasSeenTabulation: this.state.hasSeenTabulation,
-    }
-    switch(this.state.gameType){
-      case 'Commonwealth':
-        return this.renderCommonwealthGame(props)
-      default:
-        return this.renderPoliticalCapitalGame(props)
-    }
+    })
   }
 
   renderPoliticalCapitalConnect = (props) => <Async load={ import('./Components/Connection/Connect') } componentProps={ props } />
@@ -137,13 +117,35 @@ export class Main extends Component {
       errorMessage: this.state.errorMessage,
     })
   }
+  
+  renderGameCreation = (props) => <Async load={ import('./Components/Connection/GameCreation') } componentProps={ props } />
 
-  renderHomeScreen = (props) => <Async load={ import('./Components/Home/Home') } componentProps={ props } />
-
-  renderHome = () => {
-    return this.renderHomeScreen({
+  renderCreate = () => {
+    return this.renderGameCreation({
       dispatch: this.state.dispatch,
     })
+  }
+
+  renderPoliticalCapitalGame = (props) => <Async load={ import('./Components/Game/Game') } componentProps={ props } />
+  renderCommonwealthGame = (props) => <Async load={ import('./Components/Game/Commonwealth/Game') } componentProps={ props } />
+
+  renderGame = () => {
+    const props = {
+      dispatch: this.state.dispatch,
+      connectedRoom: this.state.connectedRoom,
+      playerName: this.state.playerName,
+      players: this.state.players,
+      playerParty: this.state.playerParty,
+      playerPartyName: this.state.playerPartyName,
+      disconnect: this.disconnect,
+      hasSeenTabulation: this.state.hasSeenTabulation,
+    }
+    switch(this.state.gameType){
+      case 'Commonwealth':
+        return this.renderCommonwealthGame(props)
+      default:
+        return this.renderPoliticalCapitalGame(props)
+    }
   }
 
   renderLoading = () => {
@@ -156,8 +158,8 @@ export class Main extends Component {
       <Flexbox flexDirection='column' flexGrow={ 1 }>
         <Switch>
           <Route path='/home' component={ this.renderHome } />
-          <Route path='/rooms' component={ this.renderRooms } />
           <Route path='/connect' component={ this.renderConnection } />
+          <Route path='/create' component={ this.renderCreate } />
           <Route path='/game' component={ this.renderGame } />
           <Route path='/*' component={ this.renderLoading } />
         </Switch>
