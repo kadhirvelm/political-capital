@@ -126,7 +126,7 @@ class GameCreation extends Component {
 
   renderDetailedSettingsView = () => {
     return (
-      <Flexbox id='Settings' style={ { backgroundColor: '#F9E79F', padding: '5px', borderColor: '#F7DC6F', borderStyle: 'solid', borderWidth: '1px', borderRadius: '10px', height: '60vh' } } flexDirection='column'>
+      <Flexbox id='Settings' style={ { backgroundColor: '#FADBD8', padding: '5px', borderColor: '#EC7063', borderStyle: 'solid', borderWidth: '1px', borderRadius: '10px', height: '60vh' } } flexDirection='column'>
         <Flexbox justifyContent='center'> <h2> { this.state.fullGame.gameType } Deck Settings </h2> </Flexbox>
         <Flexbox id='Settings Holder' flexGrow={ 1 } flexWrap='wrap' justifyContent='space-around' alignItems='center'>
           { this.settings().map((settings, index) => (
