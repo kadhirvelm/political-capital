@@ -40,7 +40,7 @@ class PoliticalCapitalGame extends Component {
 
   baseStateSettings = (props) => {
     return {
-      managingSocket: io(process.env.REACT_APP_POLITICAL_CAPITAL + '/' + props.connectedRoom.roomName),
+      managingSocket: io(process.env.REACT_APP_POLITICAL_CAPITAL + '/' + props.connectedRoom._id),
       rounds: {},
       players: {},
       parties: {},

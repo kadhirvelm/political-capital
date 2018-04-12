@@ -7,15 +7,12 @@ import { Route, Switch } from 'react-router-dom'
 import { mapStateToProps } from './State/StateMethods'
 import { connect } from 'react-redux'
 
-import { setRooms, disconnect } from './State/ServerActions'
-import { Manager } from 'socket.io-client'
+import { disconnect } from './State/ServerActions'
 
 export class Main extends Component {
   constructor(props){
     super(props)
-    this.state = Object.assign({}, this.propsConst(props), {
-      socketManager: new Manager(process.env.REACT_APP_POLITICAL_CAPITAL, { autoConnect: true, reconnection: true }),
-    })
+    this.state = Object.assign({}, this.propsConst(props))
   }
 
   propsConst = (props) => {
@@ -30,7 +27,6 @@ export class Main extends Component {
       isFetching: props.serverActions.isFetching,
       errorMessage: props.serverActions.message,
       hasSeenTabulation: props.serverActions.hasSeenTabulation,
-      gameType: props.serverActions.gameType || 'Vanilla',
       isJoiningRoom: props.serverActions.isJoiningRoom,
       isCreatingRoom: props.serverActions.isCreatingRoom,
     })
@@ -38,12 +34,6 @@ export class Main extends Component {
 
   componentDidMount(){
     this.renderCurrentState()
-  }
-
-  joinRoom = (room, socket) => {
-    this.setState({ gameType: room.gameType, connectedRoom: room }, () => {
-      this.state.dispatch(setRooms(room, socket))
-    })
   }
 
   disconnect = () => {
@@ -54,10 +44,6 @@ export class Main extends Component {
     this.setState(this.propsConst(nextProps), () => {
       this.renderCurrentState()
     })
-  }
-
-  componentWillUnmount(){
-    this.state.socketManager.disconnect()
   }
 
   changeWindowLocation = (newLocation) => {
@@ -73,6 +59,8 @@ export class Main extends Component {
       this.changeWindowLocation('connect')
     } else if (this.state.isCreatingRoom) {
       this.changeWindowLocation('create')
+    } else if (this.state.isHostingRoom) {
+      this.changeWindowLocation('overview/' + this.state.connectedRoom._id)
     } else {
       this.changeWindowLocation('home')
     }
@@ -100,7 +88,7 @@ export class Main extends Component {
       playerReady: this.state.playerReady,
       hasSeenTabulation: this.state.hasSeenTabulation,
     }
-    switch(this.state.gameType){
+    switch(this.state.connectedRoom && this.state.connectedRoom.gameType){
       case 'Commonwealth':
         return this.renderCommonwealthConnect(props)
       default:
@@ -117,12 +105,13 @@ export class Main extends Component {
       errorMessage: this.state.errorMessage,
     })
   }
-  
+
   renderGameCreation = (props) => <Async load={ import('./Components/Connection/GameCreation') } componentProps={ props } />
 
   renderCreate = () => {
     return this.renderGameCreation({
       dispatch: this.state.dispatch,
+      connectedRoom: this.state.connectedRoom,
     })
   }
 
@@ -140,7 +129,7 @@ export class Main extends Component {
       disconnect: this.disconnect,
       hasSeenTabulation: this.state.hasSeenTabulation,
     }
-    switch(this.state.gameType){
+    switch(this.state.connectedRoom && this.state.connectedRoom.gameType){
       case 'Commonwealth':
         return this.renderCommonwealthGame(props)
       default:
@@ -153,6 +142,13 @@ export class Main extends Component {
     return (<div id='Loading'> Routing... </div>)
   }
 
+  renderGameOverview = (props) => <Async load={ import('./Components/OutsideGame/GameOverviewScreen') } componentProps={ props } />
+  renderOverview = () => {
+    return this.renderGameOverview({
+      dispatch: this.state.dispatch,
+    })
+  }
+
   render() {
     return (
       <Flexbox flexDirection='column' flexGrow={ 1 }>
@@ -161,6 +157,7 @@ export class Main extends Component {
           <Route path='/connect' component={ this.renderConnection } />
           <Route path='/create' component={ this.renderCreate } />
           <Route path='/game' component={ this.renderGame } />
+          <Route path='/overview/:id' component={ this.renderOverview } />
           <Route path='/*' component={ this.renderLoading } />
         </Switch>
       </Flexbox>

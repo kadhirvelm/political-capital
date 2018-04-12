@@ -49,7 +49,7 @@ class PoliticalCapitalGame extends Component {
   renderActionItem(isMobile, buttonCommand, errorText){
     const isDisabled = (buttonCommand === 'Create' && isMobile) || (buttonCommand === 'Join' && !isMobile)
     return(
-      <Flexbox flexDirection='column' alignItems='center'>
+      <Flexbox flexDirection='column' alignItems='center' className={ !isDisabled ? 'blinker' : '' }>
         <RaisedButton primary={ !isDisabled } disabled={ isDisabled } onClick={ this.handleOnClick(buttonCommand) } label={ (<h2> { buttonCommand } </h2>) } style={ Object.assign({}, mainButtonStyle, isMobile ? mobileButtonStyle : {}) } labelColor='#424949' labelStyle={ labelStyle } />
         { isDisabled && <font color='red'> { errorText } </font> }
       </Flexbox>

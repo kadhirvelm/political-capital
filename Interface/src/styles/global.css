@@ -26,3 +26,76 @@
   }
 
   @import url('https://fonts.googleapis.com/css?family=Didact+Gothic');
+
+.game-creation-box {
+  margin: 10px;
+  padding: 20px;
+  border:#ede9e6 solid 1px;
+  opacity: 0.8;
+  transition: opacity 100ms linear;
+}
+
+.blinker { 
+  animation: blink 1.5s ease-in-out 3;
+}
+
+@keyframes blink {
+  50% {
+    background: #F7DC6F;
+  }
+}
+
+.game-creation-box:hover {
+  opacity: 1;
+  transition: opacity 100ms linear;
+}
+
+.increase-size {
+  transition: font-size 0.25s ease-in-out;
+}
+
+.room-identifier {
+  background: white;
+  padding: 20px;
+  margin-top: 20px;
+  border: gray solid 1px;
+  z-index: 3;
+}
+
+.hover-me-indicator {
+  animation: blink_blue 2s linear infinite;
+}
+
+@keyframes blink_blue {
+  50% {
+    background: #85C1E9;
+  }
+}
+
+.room-identifier:hover {
+  animation: blink 1.0s ease-in-out 1;
+}
+
+.room-identifier:hover .increase-size{
+  font-size: 30vw;
+  transition: font-size 0.25s ease-in-out;
+}
+
+.player-table {
+  border: gray solid 1px;
+  background: white;
+  padding: 10px;
+  margin-bottom: 10px;
+  margin-left: 10px;
+  width: 90%;
+  animation: fade-in 1s 1;
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}

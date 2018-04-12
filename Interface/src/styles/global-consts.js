@@ -11,7 +11,7 @@ export const backButtonStyle = {
   top: '20px',
   left: '20px',
   width: '10vw',
-  height: '5vh',
+  height: '6vh',
 }
 
 export const backLabelStyle = {

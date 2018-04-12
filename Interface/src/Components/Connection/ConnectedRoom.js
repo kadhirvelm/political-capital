@@ -1,9 +1,9 @@
 import React, { Component } from 'react'
 import Flexbox from 'flexbox-react'
-import { Link } from 'react-router-dom'
 
 import { colors, allColors, allColorHexes } from '../../styles/colors'
 import { svgIcon } from '../../Images/icons'
+import ResyncLogo from '../../Images/ResyncLogo.png'
 
 import RaisedButton from 'material-ui/RaisedButton'
 import TextField from 'material-ui/TextField'
@@ -15,7 +15,7 @@ import { values, sortWith, ascend, prop, match, curry, assoc } from 'ramda'
 
 import { _ } from 'underscore'
 
-import { setPlayerName, readyUp, inGame, setRooms } from '../../State/ServerActions'
+import { setPlayerName, readyUp, inGame } from '../../State/ServerActions'
 import { NameGeneratorContext } from './Catalog.js'
 
 const io = require('socket.io-client')
@@ -54,9 +54,7 @@ class ConnectedRoom extends Component {
     if(props.connectedRoom){
       return {
         connectedRoom: props.connectedRoom,
-        managingSocket: io(process.env.REACT_APP_POLITICAL_CAPITAL + '/' + props.connectedRoom.roomName),
-        admin: props.connectedRoom.admin,
-        isAdmin: props.playerName === props.connectedRoom.admin,
+        managingSocket: io(process.env.REACT_APP_POLITICAL_CAPITAL + '/' + props.connectedRoom._id),
       }
     }
     return {}
@@ -105,12 +103,6 @@ class ConnectedRoom extends Component {
       })
     })
 
-    this.state.managingSocket.on('updateAdmin', (newAdmin) => {
-      this.setState({ connectedRoom: _.extend(this.state.connectedRoom, { admin: newAdmin }), isAdmin: this.state.playerName === newAdmin }, () => {
-        this.state.dispatch(setRooms(this.state.connectedRoom, this.state.managingSocket))
-      })
-    })
-
     this.state.managingSocket.on('updatedSettings', (newSettings) => {
       this.setState({ settings: newSettings, settingsChangeIndicator: true })
     })
@@ -123,6 +115,10 @@ class ConnectedRoom extends Component {
       if(this.state.playerReady && this.state.playerParty){
         this.state.managingSocket.emit('identifyPlayer', this.state.playerName, this.state.playerParty)
       }
+    })
+
+    this.state.managingSocket.on('boot', () => {
+      this.disconnect()
     })
   }
 
@@ -226,58 +222,21 @@ class ConnectedRoom extends Component {
     this.state.managingSocket.disconnect()
   }
 
-  adjustSettings = (key, isIncrease, max, min, event) => {
-    const currSettings = this.state.settings
-    if(!_.isString(max) && !_.isString(min)){
-      let newValue = isIncrease ? ++currSettings[key] : --currSettings[key]
-      newValue = Math.min(Math.max(newValue, min), max)
-      currSettings[key] = newValue
-    } else {
-      let newValue = isIncrease ? max : min
-      newValue = newValue === currSettings[key] ? (newValue === max ? min : max) : newValue
-      currSettings[key] = newValue
-    }
-    this.setState({ settings: currSettings }, () => {
-      this.state.managingSocket.emit('adjustSettings', this.state.settings)
-    })
-  }
-
-  curryAdjustSettings = curry(this.adjustSettings)
-
-  adjustItem = (name, key, max, min) => {
-    return(
-      <Flexbox key={ key } alignItems='center'>
-        <font style={ !this.state.isAdmin ? { marginRight: '10px' } : {} }> { name } </font>
-        { this.state.isAdmin && <IconButton onTouchTap={ this.curryAdjustSettings(key, false, max, min) }> { svgIcon('arrow_left') } </IconButton> }
-        <font style={ !this.state.isAdmin ? { maringLeft: '20px', marginRight: '20px' } : {} }> { this.state.settings[key] } </font>
-        { this.state.isAdmin && <IconButton onTouchTap={ this.curryAdjustSettings(key, true, max, min) }> { svgIcon('arrow_right') } </IconButton> }
-      </Flexbox>
-    )
-  }
-
-  settings = () => {
-    return this.props.settings ?
-      this.props.settings()
-      :
-      [
-        { name: 'Start Senators', key: 'START_SENATORS', max: 10, min: 1 },
-        { name: 'Initial Capital', key: 'START_CAPITAL', max: 120, min: 0 },
-        { name: 'Total Rounds', key: 'ROUNDS', max: 10, min: 1 },
-        { name: 'Senate Tax', key: 'SENATE_TAX', max: 40, min: 0 },
-      ]
-  }
-
   changeShowSettings = () => {
     this.setState({ showSettings: !this.state.showSettings })
   }
 
   renderHeaders = () => {
     return(
-      <Flexbox flexDirection='column'>
+      <Flexbox flexDirection='column' style={ { marginBottom: '20px' } }>
+        <Flexbox flexGrow={ 1 } alignItems='center' flexDirection='column' style={ { marginBottom: '15px' } }>
+          <font style={ { fontSize: '25px' } }> Political Capital </font>
+          <font> By Resync </font>
+        </Flexbox>
         <Flexbox flexGrow={ 1 } alignItems='flex-start'>
           <Flexbox flexDirection='column'>
             <font> { this.gameType } Deck </font>
-            <Link to={ '/overview/' + this.state.connectedRoom.roomName } target='blank' style={ { textDecoration: 'none', color: this.colors.LIGHT_BLUE } }> Game Overview </Link>
+            <font> Room ID: <b> { this.state.connectedRoom._id } </b> </font>
           </Flexbox>
           <Flexbox flexGrow={ 1 } justifyContent='flex-end'>
             <IconButton tooltip='Disconnect' onTouchTap={ this.disconnect }>
@@ -285,12 +244,7 @@ class ConnectedRoom extends Component {
             </IconButton>
           </Flexbox>
         </Flexbox>
-        <Flexbox flexDirection='column' alignItems='center'>
-          <font style={ { marginTop: '15px', fontSize: '7vw' } }> <u> { this.state.connectedRoom.roomName.replaceAll('%20', ' ') } </u> </font>
-          <Flexbox justifyContent='center' alignItems='baseline' style={ { marginBottom: '15px' } }>
-            <font style={ { marginRight: '15px' } } size='2'> { !_.isEmpty(this.state.connectedRoom.password) && 'Password: ' + this.state.connectedRoom.password } </font>
-          </Flexbox>
-        </Flexbox>
+        <img alt='Reysnc Logo' src={ ResyncLogo } width='20px' height='20px' style={ { position: 'fixed', right: '5px', bottom: '5px' } } />
       </Flexbox>
     )
   }
@@ -366,7 +320,6 @@ class ConnectedRoom extends Component {
             { this.renderReadyPlayer(entry) }
             <Flexbox flexBasis='50%' flexWrap='wrap' justifyContent='center' alignItems='center'>
               <font size={ 4 } color={ colors.DARK_GRAY }> { entry.name } </font>
-              <div style={ { marginLeft: '5px' } }> { entry.name === this.state.connectedRoom.admin && svgIcon('crown') } </div>
             </Flexbox>
           </Flexbox>
         ))
@@ -407,33 +360,6 @@ class ConnectedRoom extends Component {
     )
   }
 
-  renderDetailedSettingsView = () => {
-    return this.state.showSettings ?
-      <Flexbox id='Settings' style={ { backgroundColor: this.colors.LIGHTEST_GRAY, padding: '5px', borderColor: this.colors.LIGHT_GRAY, borderStyle: 'solid', borderWidth: '1px', borderRadius: '10px' } } flexDirection='column'>
-        <Flexbox justifyContent='flex-start' flexGrow={ 1 } style={ { marginBottom: '10px' } }> <font size='2'> Settings </font> </Flexbox>
-        <Flexbox id='Settings Holder' flexGrow={ 1 } flexWrap='wrap' justifyContent='space-around' alignItems='flex-end'>
-          { this.settings().map((settings, index) => (
-            <div id={ index } key={ index }> { this.adjustItem(settings.name, settings.key, settings.max, settings.min) } </div>
-          ))
-          }
-        </Flexbox>
-      </Flexbox>
-      :
-      <div />
-  }
-
-  renderSettings = () => {
-    return(
-      <Flexbox flexDirection='column'>
-        <Flexbox flexGrow={ 1 } justifyContent='flex-start' alignItems='baseline' style={ { marginBottom: '10px' } }>
-          <RaisedButton label={ this.state.showSettings ? 'Hide' : (this.state.isAdmin ? 'Adjust Settings' : 'Show Settings') } primary={ this.state.showSettings } onTouchTap={ this.changeShowSettings } style={ { marginTop: '15px' } } />
-          { (this.state.settingsChangeIndicator && !this.state.isAdmin) && <font color={ this.colors.RED } style={ { marginLeft: '15px' } }> Settings changed! </font> }
-        </Flexbox>
-        { this.renderDetailedSettingsView() }
-      </Flexbox>
-    )
-  }
-
   renderSubmitNameDialog = () => {
     const actions = [ <RaisedButton key='Cancel' label='Cancel' secondary={ true } onTouchTap={ this.disconnect } style={ { marginRight: '10px' } } />, <RaisedButton id='Join' key='Join' label='Join!' primary={ true } onTouchTap={ this.joinLobby } /> ]
     return(
@@ -456,7 +382,6 @@ class ConnectedRoom extends Component {
         { this.renderPlayerPartyPicker() }
         { this.renderPlayers() }
         { this.renderReadyButton() }
-        { this.renderSettings() }
         { this.renderSubmitNameDialog() }
       </div>
     )

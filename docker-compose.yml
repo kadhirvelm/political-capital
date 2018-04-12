@@ -1,8 +1,8 @@
 version: "2"
 services:
-  mongo:
+  mongodb:
     container_name: political_capital_database
-    image: mongo
+    image: mongo:latest
     ports:
       - "27017:27017"
   server:
@@ -15,14 +15,15 @@ services:
       - ENV APP_PORT=80
       - ENV REACT_APP_DEBUG=true
       - ENV NODE_ENV=development
-      - ENV MONGO_URL=mongodb://mongo/political_capital
     volumes:
       - ./Server/Routes:/server_docker/Routes
       - ./Server/config:/server_docker/config
     ports:
       - "80:80"
     links:
-      - mongo
+      - mongodb
+    depends_on:
+      - mongodb
   interface:
     container_name: political_capital_interface
     volumes:

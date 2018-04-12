@@ -1,7 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import Main from './Main'
-import GameOverview from './Components/OutsideGame/GameOverviewScreen'
 import './styles/global.css'
 
 import { createStore, applyMiddleware } from 'redux'
@@ -60,7 +59,6 @@ ReactDOM.render((
   	<MuiThemeProvider muiTheme={ muiTheme }>
   		<BrowserRouter>
   			<Switch>
-          <Route path='/overview/:nsp' component={ GameOverview } />
     			<Route path='*' component={ Main } />
     		</Switch>
     	</BrowserRouter>

@@ -4,8 +4,8 @@ var _ = require('underscore');
 var GameManager = require('./GameManager');
 
 class CommonwealthGameManager extends GameManager {
-    constructor(io, namespace, roomID, deleteRoom, db, admin, settings){
-        super(io, namespace, roomID, deleteRoom, db, admin, settings);
+    constructor(io, id, deleteRoom, db, settings){
+        super(io, id, deleteRoom, db, settings);
         console.log('Commonwealth Deck Manager Initiated');
         this.MINIMUM_SENATORS = 2;
         this.GAME_TYPE = 'Commonwealth';
