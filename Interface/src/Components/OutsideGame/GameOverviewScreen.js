@@ -29,6 +29,7 @@ class GameOverviewScreeen extends Component {
     this.state = {
       dispatch: props.dispatch,
       roomName: props.id,
+      gameType: props.gameType,
       managingSocket: io(process.env.REACT_APP_POLITICAL_CAPITAL + '/' + props.id, { autoConnect: true, reconnection: true }),
       rounds: {},
       players: {},
@@ -46,11 +47,8 @@ class GameOverviewScreeen extends Component {
     } else {
       this.state.managingSocket.connect()
       this.handleAllSocketConnections()
+      this.state.managingSocket.emit('getFullGame')
     }
-  }
-
-  componentDidMount(){
-    this.state.managingSocket.emit('getGameType')
   }
 
   componentWillUnmount(){
@@ -145,13 +143,6 @@ class GameOverviewScreeen extends Component {
   handleAllSocketConnections = () => {
     this.state.managingSocket.on('bribeSentOut', (bribeAmount) => {
       this.changePlaySound(true, bribeAmount)
-    })
-
-    this.state.managingSocket.on('receiveGameType', (gameType) => {
-      this.setState({ gameType: gameType }, () => {
-        this.setAllColorHexes()
-        this.state.managingSocket.emit('getFullGame')
-      })
     })
 
     this.handleReceivingFullGame()
@@ -430,6 +421,7 @@ class GameOverviewScreeen extends Component {
   }
 
   render() {
+    console.log(this.state)
     return (
       <Flexbox flexDirection='column'>
         { this.renderGameOverviewScreen() }

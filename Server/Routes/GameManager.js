@@ -680,7 +680,7 @@ class GameManager {
 
   emitNewPartyName(socket, name){
     if (this.catchObjectErrors(this.players, this.playerNames[socket.id])){
-      const playerParty = this.players[this.playerNames[socket.id]].party;
+      const playerParty = (this.players[this.playerNames[socket.id]] || {}).party;
       if (this.parties && this.parties[playerParty]){
         this.parties[playerParty].partyName = name;
         this.roomSocket.to(playerParty).emit('getPartyName', name);
@@ -816,10 +816,6 @@ class GameManager {
   }
 
   handleSocketCallback(socket){
-    socket.on('getGameType', () => {
-      socket.emit('receiveGameType', this.GAME_TYPE);
-    });
-
     socket.on('newPlayer', (newPlayer) => {
       this.playerNames[socket.id] = newPlayer.toString();
       this.sockets[newPlayer.toString()] = socket;

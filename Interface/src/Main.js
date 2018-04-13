@@ -131,6 +131,7 @@ export class Main extends Component {
       dispatch: this.state.dispatch,
       connectedRoom: this.state.connectedRoom,
       id: this.state.connectedRoom && this.state.connectedRoom._id,
+      gameType: this.state.connectedRoom.gameType,
     })
   }
 
