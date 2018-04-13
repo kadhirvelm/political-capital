@@ -5,27 +5,25 @@ var returnRandomPartyName = require('./Catalog').returnRandomPartyName;
 
 class GameManager {
 
-  constructor(io, namespace, roomID, deleteRoom, db, admin, settings){
+  constructor(io, id, deleteRoom, db, settings){
     this.io = io;
-    this.namespace = namespace;
-    this.roomSocket = io.of(this.namespace);
+    this._id = id;
+    this.roomSocket = io.of(this._id);
     this.handleRoomSocketConnection();
 
-    this.roomID = roomID;
     this.deleteRoom = deleteRoom;
+    this.disconnect = this.disconnect;
     this.db = db;
-    this.admin = admin;
     this.settings = settings;
     this.playerNames = {};
+    this.sockets = {};
     this.MINIMUM_SENATORS = 3;
-    this.GAME_TYPE = 'Vanilla';
+    this.GAME_TYPE = 'Tutorial';
 
-    console.log('Game Manager initiated - ' + namespace);
+    console.log('Game Manager initiated at namespace ' + this._id);
     this.initialGameSettings();
 
-    if (this.roomID !== 'PENDING'){
-      this.fetchGameFromDB();
-    }
+    this.fetchGameFromDB();
     this.numUniqueParties = () => R.length(R.uniq(R.map((player) => R.prop('party', player), R.values(this.players))));
     this.gameResolutionsAndChange();
   }
@@ -66,7 +64,7 @@ class GameManager {
   }
 
   initialGameSettings(){
-    this.settings = this.settings || this.baseSettings();
+    this.settings = _.isEmpty(this.settings) ? this.baseSettings() : this.settings;
     this.inGame = false;
     this.setRoundGameStats();
     this.setPartyCards();
@@ -102,14 +100,9 @@ class GameManager {
     ];
   }
 
-  updateRoomID(id){
-    this.roomID = id;
-    this.fetchGameFromDB();
-  }
-
   disconnect(){
-    const details = {'roomID' : this.roomID.toString()};
-    this.db.collection('games').deleteOne(details);
+    this.db.collection('games').deleteOne({'_id' : this._id});
+    this.roomSocket.emit('boot');
 
     const connectedNamespaceSockets = Object.keys(this.roomSocket.connected);
     connectedNamespaceSockets.forEach( (socketID) => {
@@ -117,18 +110,12 @@ class GameManager {
     });
     this.roomSocket.removeAllListeners();
     delete this.io.nsps[this.namespace];
-  }
-
-  updateAdmin(newAdmin){
-    this.admin = newAdmin;
-    this.roomSocket.emit('updateAdmin', newAdmin);
+    console.log('Game Manager disconnected at namespace ' + this._id);
   }
 
   updateRoomDetails(){
-    var ObjectID = require('mongodb').ObjectID;
-    const details = {'_id' : new ObjectID(this.roomID)};
-    const newRoom = {$set: {inGame: this.inGame, players: this.players, settings: this.settings, admin: this.admin}};
-    this.db.collection('rooms').update(details, newRoom, (err, result) => {
+    const newRoom = {$set: {inGame: this.inGame, players: this.players, settings: this.settings}};
+    this.db.collection('rooms').update({'_id' : this._id}, newRoom, (err, result) => {
       if (err){
         console.log('Updating room details error', err);
       }
@@ -153,22 +140,21 @@ class GameManager {
   }
 
   fetchGameFromDB(){
-    this.db.collection('games').findOne({'roomID' : this.roomID.toString()}, (error, item) => {
+    this.db.collection('games').findOne({'_id' : this._id}, (error, item) => {
       if (error){
-        console.log('Error fetching game', roomID);
+        console.log('Error fetching game', this._id);
       } else if (item) {
         this.setCurrentGameSettingsBasedOnDBSettings(item);
       } else if (_.isNull(item)){
-        console.log('Creating new game');
-        const newGame = {roomID: this.roomID.toString(), players: {}, rounds: {}, parties: {}, currentRound: 0};
+        const newGame = {_id: this._id, players: {}, rounds: {}, parties: {}, currentRound: 0};
         this.db.collection('games').insert(newGame);
       }
     });
   }
 
   updateGame(){
-    const details = {'roomID': this.roomID.toString()};
-    const updatedGame = {roomID: this.roomID.toString(), rounds: this.rounds, players: this.players, parties: this.parties, currentRound: this.currentRound, inGame: this.inGame,
+    const details = {'_id': this._id};
+    const updatedGame = {_id: this._id, rounds: this.rounds, players: this.players, parties: this.parties, currentRound: this.currentRound, inGame: this.inGame,
       handleThesePartyCards: this.handleThesePartyCards, individualPlayerBonuses: this.individualPlayerBonuses, passesBonus: this.passesBonus, failsBonus: this.failsBonus,
       yesVoteModifier: this.yesVoteModifier, noVoteModifier: this.noVoteModifier, roundWinner: this.roundWinner, currActionsAgainstPlayers: this.currActionsAgainstPlayers, endGame: this.endGame};
     this.db.collection('games').update(details, updatedGame, (err, result) => {
@@ -201,12 +187,12 @@ class GameManager {
       setTimeout(() => {
         this.roomSocket.clients( (error, clients) => {
           if (clients.length === 0 && process.env.REACT_APP_DEBUG !== 'true') {
-            this.deleteRoom(this.roomID);
+            this.deleteRoom(this._id);
           }
         });
       }, 30000);
     } else {
-      this.deleteRoom(this.roomID);
+      this.deleteRoom(this._id);
     }
   }
 
@@ -216,7 +202,7 @@ class GameManager {
   }
 
   emitFullGame(socket = this.roomSocket){
-    socket.emit('receiveFullGame', {parties: this.parties, players: this.players, currentRound: this.currentRound, rounds: this.rounds, settings: this.settings, inGame: this.inGame, endGame: this.endGame});
+    socket.emit('receiveFullGame', {gameType: this.GAME_TYPE, parties: this.parties, players: this.players, currentRound: this.currentRound, rounds: this.rounds, settings: this.settings, inGame: this.inGame, endGame: this.endGame});
   }
 
   checkIfAllPartyNamesSet(){
@@ -694,7 +680,7 @@ class GameManager {
 
   emitNewPartyName(socket, name){
     if (this.catchObjectErrors(this.players, this.playerNames[socket.id])){
-      const playerParty = this.players[this.playerNames[socket.id]].party;
+      const playerParty = (this.players[this.playerNames[socket.id]] || {}).party;
       if (this.parties && this.parties[playerParty]){
         this.parties[playerParty].partyName = name;
         this.roomSocket.to(playerParty).emit('getPartyName', name);
@@ -748,9 +734,7 @@ class GameManager {
 
   handleIndividualPlayerSettings(socket){
     socket.on('adjustSettings', (settings) => {
-      if (this.playerNames[socket.id] === this.admin){
-        this.adjustSettings(settings);
-      }
+      this.adjustSettings(settings);
     });
 
     socket.on('playerColorSelected', (item) => {
@@ -766,8 +750,7 @@ class GameManager {
     });
   }
 
-  omitPlayerFromParty(socket){
-    const playerName = this.playerNames[socket.id];
+  omitPlayerFromParty(playerName){
     if (this.players[playerName] && this.players[playerName].party && this.parties && this.parties[this.players[playerName].party] && this.parties[this.players[playerName].party].players){
       if (this.parties[this.players[playerName].party].players.length === 1){
         this.parties = _.omit(this.parties, this.players[playerName].party);
@@ -777,16 +760,10 @@ class GameManager {
     }
   }
 
-  updateAdminIfNeeded(socket){
-    if (this.playerNames[socket.id] === this.admin){
-      this.updateAdmin(_.keys(this.players).length > 0 ? _.sample(_.values(this.players)).name : '');
-    }
-  }
-
   endGameIfNotEnoughPlayers(){
     this.setInGame(false);
     this.roomSocket.emit('closeGame');
-    this.deleteRoom(this.roomID);
+    this.deleteRoom(this._id);
   }
 
   updateAllPlayers(){
@@ -795,16 +772,23 @@ class GameManager {
     this.updateRoomDetails();
   }
 
+  removePlayer(playerName){
+    this.players = _.omit(this.players, playerName);
+    if (_.keys(this.players).length <= 1 && this.inGame){
+      this.endGameIfNotEnoughPlayers(socket);
+    } else {
+      this.updateAllPlayers();
+    }
+  }
+
+  bootPlayer(playerName){
+    this.omitPlayerFromParty(playerName);
+    this.removePlayer(playerName);
+  }
+
   handlePlayerLeavingRoom(socket){
-    socket.on('leaveRoom', () => {
-      this.omitPlayerFromParty(socket);
-      this.players = _.omit(this.players, this.playerNames[socket.id]);
-      this.updateAdminIfNeeded(socket);
-      if (_.keys(this.players).length <= 1 && this.inGame){
-        this.endGameIfNotEnoughPlayers(socket);
-      } else {
-        this.updateAllPlayers(socket);
-      }
+    socket.on('leaveRoom', (playerName) => {
+      this.bootPlayer(playerName);
     });
   }
 
@@ -814,11 +798,9 @@ class GameManager {
     });
 
     socket.on('startGame', () => {
-      if (this.playerNames[socket.id] === this.admin){
-        this.inGame = true;
-        this.roomSocket.emit('startGame');
-        this.updateGame();
-      }
+      this.inGame = true;
+      this.roomSocket.emit('startGame');
+      this.updateGame();
     });
   }
 
@@ -834,34 +816,42 @@ class GameManager {
   }
 
   handleSocketCallback(socket){
-    socket.on('getGameType', () => {
-      socket.emit('receiveGameType', this.GAME_TYPE);
-    });
-
     socket.on('newPlayer', (newPlayer) => {
       this.playerNames[socket.id] = newPlayer.toString();
+      this.sockets[newPlayer.toString()] = socket;
       if (!_.contains(_.keys(this.players), newPlayer)){
         this.players[this.playerNames[socket.id].toString()] = {name: newPlayer, isReady: false};
-      }
-      if (_.isEmpty(this.admin)){
-        this.updateAdmin(newPlayer);
       }
       this.updateAllPlayers();
       this.updateRoomDetails();
     });
 
-    const handleIdentifyingPlayerLogic = (name, partyNumber, partyName) => {
-      if (name){
-        this.playerNames[socket.id] = name.toString();
-        if (partyNumber && !_.contains(_.keys(socket.rooms), partyNumber)){
-          this.clearSocketRooms(socket, partyNumber);
-          socket.join(partyNumber);
+    const handleIdentifyingPlayerLogic = (socket) => {
+      return (name, partyNumber) => {
+        if (name){
+          this.playerNames[socket.id] = name.toString();
+          this.sockets[name.toString()] = socket;
+          if (partyNumber && !_.contains(_.keys(socket.rooms), partyNumber)){
+            this.clearSocketRooms(socket, partyNumber);
+            socket.join(partyNumber);
+          }
         }
-      }
-      this.emitFullGame();
+        this.emitFullGame();
+      };
     };
 
-    socket.on('identifyPlayer', handleIdentifyingPlayerLogic);
+    socket.on('bootPlayer', (playerID, password) => {
+      if (password === 'political-capital-boot-password' && this.sockets[playerID]){
+        if (this.sockets[playerID]){
+          this.sockets[playerID].emit('boot');
+          this.bootPlayer(playerID);
+        } else {
+          this.removePlayer(playerID);
+        }
+      }
+    });
+
+    socket.on('identifyPlayer', handleIdentifyingPlayerLogic(socket));
 
     this.handleStartingAndClosingGame(socket);
     this.handlePlayerLeavingRoom(socket);
@@ -871,9 +861,5 @@ class GameManager {
     this.handleMiscellaneousCallback(socket);
   }
 }
-
-GameManager.prototype.id = function() {
-	return this.namespace.hashCode();
-};
 
 module.exports = GameManager;
