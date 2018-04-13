@@ -116,7 +116,7 @@ class ResolutionAndChance extends Component {
         <h1> Chance </h1>
         { this.state.chance &&
           <Flexbox flexDirection='column' flexGrow={ 1 }>
-            { this.state.gameType !== 'Vanilla' && <Flexbox style={ this.cardFlavorStyle }> { this.state.chance.flavorText } </Flexbox> }
+            { this.state.gameType !== 'Tutorial' && <Flexbox style={ this.cardFlavorStyle }> { this.state.chance.flavorText } </Flexbox> }
             <Flexbox flexGrow={ 1 } justifyContent='center' alignItems='flex-end'>
               <Flexbox alignItems='center' flexDirection='column' style={ this.state.isOverview ? this.overviewEffectStyle : this.effectStyle }>
                 { map(this.effect, this.state.chance.effect).map((entry, index) => (

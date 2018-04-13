@@ -304,10 +304,14 @@ class GameOverviewScreeen extends Component {
   }
 
   renderPlayersAssemblingList = () => {
+    const playersInAParty = _.flatten(_.pluck(Object.values(this.state.parties), 'players'))
     return(
       <Flexbox flexGrow={ 1 } justifyContent='space-around'>
         { _.map(this.state.players, (value, key) => (
-          <font key={ key } color={ value.isReady ? this.allColorHexes[value.party - 1] : Colors.colors.DARK_BLUE } style={ { margin: '10px' } }> { value.name } </font>
+          <Flexbox key={ key } alignItems='center'>
+            <font color={ value.isReady ? this.allColorHexes[value.party - 1] : Colors.colors.DARK_BLUE } style={ { margin: '10px' } }> { value.name } </font>
+            <div> { playersInAParty.includes(value.name) ? svgIcon('smallCheckmark') : svgIcon('smallCancel') } </div>
+          </Flexbox>
         ))
         }
       </Flexbox>
@@ -403,7 +407,7 @@ class GameOverviewScreeen extends Component {
     return(
       <Flexbox flexGrow={ 1 } flexDirection='column'>
         <Flexbox flexGrow={ 1 } flexDirection='column' alignItems='center'>
-          <font size={ 6 }> { this.state.roomName } Overview </font>
+          <font size={ 6 }> Political Capital - Game Overview </font>
         </Flexbox>
         <Flexbox id='Show players and parties' flexDirection='row' justifyContent='center' style={ Object.assign({}, { marginTop: '15px' }, individualBox) }>
           <Flexbox flexShrink={ 1 } justifyContent='flex-start' alignItems='flex-start' style={ { marginTop: '-3px' } }> <font size={ 2 } color={ Colors.colors.DARK_GRAY }> Players </font> </Flexbox>
@@ -421,7 +425,6 @@ class GameOverviewScreeen extends Component {
   }
 
   render() {
-    console.log(this.state)
     return (
       <Flexbox flexDirection='column'>
         { this.renderGameOverviewScreen() }

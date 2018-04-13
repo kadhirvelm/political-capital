@@ -74,11 +74,15 @@ class GameCreation extends Component {
     }
   }
 
+  renderRoomID = () => {
+    return <Flexbox className={ 'room-identifier ' + (this.state.hasHovered ? '' : 'hover-me-indicator') } onMouseOver={ this.removeHoverMeIndicator } alignItems='center'> <font className='hide-me-on-increase' style={ { marginRight: '5px' } }> Room ID: </font> <font className='increase-size'> { this.state.connectedRoom && this.state.connectedRoom._id } </font> </Flexbox>
+  }
+
   renderCancelAndRoomIdentifier = () => {
     return(
       <Flexbox style={ { position: 'absolute' } } flexDirection='column'>
         <RaisedButton label={ (<h2> Cancel </h2>) } onClick={ this.resetToHome } style={ { width: '5vw', height: '5vh' } } labelStyle={ { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' } } />
-        <Flexbox className={ 'room-identifier ' + (this.state.hasHovered ? '' : 'hover-me-indicator') } onMouseOver={ this.removeHoverMeIndicator } alignItems='center'> <font className='hide-me-on-increase' style={ { marginRight: '5px' } }> Room ID: </font> <font className='increase-size'> { this.state.connectedRoom && this.state.connectedRoom._id } </font> </Flexbox>
+        { this.renderRoomID() }
       </Flexbox>
     )
   }
@@ -180,6 +184,26 @@ class GameCreation extends Component {
     )
   }
 
+  renderPlayers = () => {
+    return (
+      <Flexbox id='Players' flexBasis='70%' flexDirection='row' flexWrap='wrap'>
+        { Object.values(this.state.fullGame.players).map((player) => (
+          <Flexbox className={ 'player-table' + (player.isReady ? ' is-ready' : '') } key={ player.name } style={ { position: 'relative', width: '32vw' } } flexBasis='content'>
+            { this.renderPlayerViewTable(player) }
+          </Flexbox>
+        ))}
+      </Flexbox>
+    )
+  }
+
+  renderNoPlayers = () => {
+    return(
+      <Flexbox id='No Players' flexBasis='70%' justifyContent='center' alignItems='center' flexGrow={ 1 } flexDirection='column' style={ { height: '30vh' } }>
+        <font style={ { fontSize: '5vmin' } }> Waiting For Players </font>
+      </Flexbox>
+    )
+  }
+
   /** Main Rendering */
 
   renderFullGameSettingsAndPlayers = () => {
@@ -188,13 +212,7 @@ class GameCreation extends Component {
         <Flexbox id='Game Settings' flexBasis='30%' flexDirection='column' flexGrow={ 1 }>
           { this.renderDetailedSettingsView() }
         </Flexbox>
-        <Flexbox id='Players' flexBasis='70%' flexDirection='row' flexWrap='wrap'>
-          { Object.values(this.state.fullGame.players).map((player) => (
-            <Flexbox className={ 'player-table' + (player.isReady ? ' is-ready' : '') } key={ player.name } style={ { position: 'relative', width: '32vw' } } flexBasis='content'>
-              { this.renderPlayerViewTable(player) }
-            </Flexbox>
-          ))}
-        </Flexbox>
+        { Object.keys(this.state.fullGame.players).length > 0 ? this.renderPlayers() : this.renderNoPlayers() }
       </Flexbox>
     )
   }

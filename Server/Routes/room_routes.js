@@ -3,6 +3,7 @@ var _ = require('underscore');
 const VERSION = '0.5.1';
 const MILLISECONDS_PER_MINUTE = 1000 * 60;
 const DELETE_INACTIVE_ROOMS_AFTER_SET_MINUTES = 20;
+const DELETE_ACTIVE_ROOMS_AFTER_SET_MINUTES = 60 * 12;
 var CURRENT_GAME_MANAGERS = {};
 
 module.exports = function(app, io, db) {
@@ -111,11 +112,9 @@ module.exports = function(app, io, db) {
   function deleteStrayRoomsAfterInactivity(){
     db.collection('rooms').find().toArray( function(err, allRooms) {
       allRooms.forEach((room) => {
-        if (Object.keys(room.players).length === 0){
-          const timeDifference = ((new Date().getTime() - new Date(room.timeStamp).getTime()) / MILLISECONDS_PER_MINUTE);
-          if (timeDifference > DELETE_INACTIVE_ROOMS_AFTER_SET_MINUTES){
-            this.deleteRoom(room._id);
-          }
+				const timeDifference = ((new Date().getTime() - new Date(room.timeStamp).getTime()) / MILLISECONDS_PER_MINUTE);
+        if ((Object.keys(room.players).length === 0 && timeDifference > DELETE_ACTIVE_ROOMS_AFTER_SET_MINUTES) || (timeDifference > DELETE_ACTIVE_ROOMS_AFTER_SET_MINUTES)){
+          this.deleteRoom(room._id);
         }
       });
 		});

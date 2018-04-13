@@ -22,6 +22,7 @@ import Snackbar from 'material-ui/Snackbar'
 import { _ } from 'underscore'
 import { colors } from '../../styles/colors'
 import '../../styles/Transitions.css'
+import '../../styles/global.css'
 import { svgIcon } from '../../Images/icons'
 
 import { finalizePartyName, readyUp } from '../../State/ServerActions'
@@ -440,10 +441,6 @@ class PoliticalCapitalGame extends Component {
     }
   }
 
-  returnRegisteredParties = () => {
-    return _.keys(_.filter(this.state.parties, (party) => !_.isEmpty(party.players))).length
-  }
-
   requestNewPartyName = () => {
     this.state.managingSocket.emit('newPartyName', this.state.playerName)
   }
@@ -453,22 +450,19 @@ class PoliticalCapitalGame extends Component {
       <Dialog id='Party Name Dialog' title='Set Party Name' modal={ true } open={ !this.allPartiesSubmitted() } autoDetectWindowHeight={ false } repositionOnUpdate={ false } style={ { zIndex: 3 } } contentStyle={ { zIndex: 3 } } overlayStyle={ { zIndex: 2 } }>
         <Flexbox flexDirection='column'>
           <Flexbox flexBasis='auto' justifyContent='center' alignItems='center' style={ { margin: '7px' } }>
+            <IconButton style={ { width: '30px', height: '30px', top: '50%', transform: 'translateY(50%)', marginRight: '15px' } } iconStyle={ { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' } } onClick={ this.requestNewPartyName }> { svgIcon('dice') } </IconButton>
             <TextField id='PartyName' value={ this.state.playerPartyName || '' } label='Party Name' floatingLabelText='Party Name'
-              disabled={ !this.hasNotSubmittedPartyName() } onChange={ this.adjustPartyName } errorText={ this.state.errorName || '' } />
-            <IconButton style={ { marginLeft: '10px' } } onClick={ this.requestNewPartyName }> { svgIcon('dice') } </IconButton>
+              disabled={ !this.hasNotSubmittedPartyName() } onChange={ this.adjustPartyName } multiLine={ true } rows={ 3 } errorText={ this.state.errorName || '' } />
           </Flexbox>
           <Flexbox alignItems='center'>
             <Flexbox flexGrow={ 1 } alignItems='center'>
               <RaisedButton primary={ true } label='Submit' disabled={ !this.hasNotSubmittedPartyName() } onClick={ this.finalizePartyName } fullWidth={ true } />
             </Flexbox>
             <Flexbox alignItems='center' justifyContent='flex-end'>
-              <IconButton tooltip='Disconnect' onTouchTap={ this.openTryingToDisconnect }>
+              <IconButton onTouchTap={ this.openTryingToDisconnect } style={ { position: 'absolute', top: '1%', right: '1%' } }>
                 { svgIcon('logout', colors.RED) }
               </IconButton>
             </Flexbox>
-          </Flexbox>
-          <Flexbox flexGrow={ 1 } justifyContent='center' style={ { marginTop: '10px' } }>
-            <font> { this.returnRegisteredParties() } Parties Registered </font>
           </Flexbox>
         </Flexbox>
       </Dialog>
@@ -561,9 +555,9 @@ class PoliticalCapitalGame extends Component {
   renderTools = () => {
     return(
       <Flexbox alignItems='flex-start' style={ { marginBottom: '10px' } }>
-        <Flexbox flexGrow={ 1 } justifyContent='flex-start' alignItems='center'>
+        <Flexbox flexGrow={ 1 } justifyContent='flex-start' alignItems='center' style={ { position: 'relative' } }>
           { this.renderToolsComponent() }
-          <Flexbox flexGrow={ 1 } justifyContent='flex-start'> <font size={ 4 } color={ colors.LIGHT_GRAY }> { this.currentGameStateText() } </font> </Flexbox>
+          <Flexbox flexGrow={ 1 } justifyContent='flex-start' className='pop-on-first-show'> <font color={ colors.LIGHT_GRAY }> { this.currentGameStateText() } </font> </Flexbox>
         </Flexbox>
         { this.renderNameAndParty() }
       </Flexbox>

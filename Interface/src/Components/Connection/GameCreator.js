@@ -41,7 +41,6 @@ class GameCreator extends Component {
   }
 
   render() {
-    console.log(this.state.isCreatingRoom, this.state.connectedRoom)
     return (
       <Flexbox id='Room Setup' flexDirection='column' flexGrow={ 1 } className='no-moving'>
         { this.state.isCreatingRoom ?
