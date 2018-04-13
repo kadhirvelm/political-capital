@@ -100,7 +100,7 @@ class ResolutionAndChance extends Component {
         { this.renderResolutionTitle() }
         { this.state.resolution &&
           <Flexbox flexDirection='column' flexGrow={ 1 }>
-            { this.state.gameType !== 'Vanilla' && <Flexbox style={ this.cardFlavorStyle }> { this.state.resolution.flavorText } </Flexbox> }
+            { this.state.gameType !== 'Tutorial' && <Flexbox style={ this.cardFlavorStyle }> { this.state.resolution.flavorText } </Flexbox> }
             <Flexbox flexGrow={ 1 } justifyContent='center' alignItems='flex-end'>
               { this.state.gameType !== 'Commonwealth' && <Flexbox justifyContent='center' style={ this.effectStyle }> { this.resolutionTable(this.state.resolution) } </Flexbox> }
             </Flexbox>

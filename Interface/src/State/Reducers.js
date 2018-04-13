@@ -64,6 +64,7 @@ function serverActions(state = {
       case IN_GAME:
         return Object.assign({}, state, {
           inGame: action.inGame,
+          isAdmin: action.isAdmin,
         })
       case FINALIZE_PARTY_NAME:
         return Object.assign({}, state, fetch, {

@@ -112,9 +112,7 @@ class ConnectedRoom extends Component {
     })
 
     this.state.managingSocket.on('reconnect', () => {
-      if(this.state.playerReady && this.state.playerParty){
-        this.state.managingSocket.emit('identifyPlayer', this.state.playerName, this.state.playerParty)
-      }
+      this.state.managingSocket.emit('identifyPlayer', this.state.playerName, this.state.playerParty)
     })
 
     this.state.managingSocket.on('boot', () => {
@@ -209,7 +207,7 @@ class ConnectedRoom extends Component {
   }
 
   disconnect = () => {
-    this.state.managingSocket.emit('leaveRoom')
+    this.state.managingSocket.emit('leaveRoom', this.state.playerName)
     this.state.managingSocket.disconnect()
     this.state.disconnect()
   }
@@ -235,8 +233,8 @@ class ConnectedRoom extends Component {
         </Flexbox>
         <Flexbox flexGrow={ 1 } alignItems='flex-start'>
           <Flexbox flexDirection='column'>
-            <font> { this.gameType } Deck </font>
-            <font> Room ID: <b> { this.state.connectedRoom._id } </b> </font>
+            <font> { this.gameType } Deck ({ this.state.connectedRoom._id }) </font>
+            <font> { this.state.playerName } </font>
           </Flexbox>
           <Flexbox flexGrow={ 1 } justifyContent='flex-end'>
             <IconButton tooltip='Disconnect' onTouchTap={ this.disconnect }>
@@ -353,7 +351,7 @@ class ConnectedRoom extends Component {
           { (this.state.startGame && this.state.isAdmin) ?
             <RaisedButton fullWidth={ true } primary={ true } label='Proceed To Game' onClick={ this.startGame } disabled={ this.state.players.length <= 1 } style={ { width: '50%', margin: '10px' } } />
             :
-            <RaisedButton id='Ready Up' fullWidth={ true } primary={ true } label={ this.state.playerReady ? (this.state.startGame ? 'Waiting on ' + this.state.admin : 'Waiting on Players') : 'Ready' } disabled={ this.state.playerReady } onTouchTap={ this.readyUp } style={ { width: '20%', margin: '3px' } } />
+            <RaisedButton id='Ready Up' fullWidth={ true } primary={ true } label={ this.state.playerReady ? 'Waiting' : 'Ready' } disabled={ this.state.playerReady } onTouchTap={ this.readyUp } style={ { width: '20%', margin: '3px' } } />
           }
         </Flexbox>
       </Flexbox>

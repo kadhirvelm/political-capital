@@ -18,17 +18,18 @@ export class Main extends Component {
   propsConst = (props) => {
     return({
       dispatch: props.dispatch,
+      isJoiningRoom: props.serverActions.isJoiningRoom,
+      isCreatingRoom: props.serverActions.isCreatingRoom,
       connectedRoom: props.serverActions.connectedRoom,
       playerName: props.serverActions.playerName,
       playerParty: props.serverActions.playerParty,
       playerPartyName: props.serverActions.playerPartyName,
       playerReady: props.serverActions.playerReady,
       inGame: props.serverActions.inGame,
+      isAdmin: props.serverActions.isAdmin,
       isFetching: props.serverActions.isFetching,
       errorMessage: props.serverActions.message,
       hasSeenTabulation: props.serverActions.hasSeenTabulation,
-      isJoiningRoom: props.serverActions.isJoiningRoom,
-      isCreatingRoom: props.serverActions.isCreatingRoom,
     })
   }
 
@@ -48,19 +49,19 @@ export class Main extends Component {
 
   changeWindowLocation = (newLocation) => {
     if(!window.location.href.endsWith(newLocation)) {
-      window.location.href = newLocation
+      window.location.pathname = newLocation
     }
   }
 
   renderCurrentState = () => {
-    if (this.state.inGame){
+    if (this.state.inGame && !this.state.isAdmin){
       this.changeWindowLocation('game')
+    } else if (this.state.inGame && this.state.isAdmin){
+      this.changeWindowLocation('overview/' + this.state.connectedRoom._id)
     } else if (this.state.isJoiningRoom){
       this.changeWindowLocation('connect')
     } else if (this.state.isCreatingRoom) {
       this.changeWindowLocation('create')
-    } else if (this.state.isHostingRoom) {
-      this.changeWindowLocation('overview/' + this.state.connectedRoom._id)
     } else {
       this.changeWindowLocation('home')
     }
@@ -74,11 +75,10 @@ export class Main extends Component {
     })
   }
 
-  renderPoliticalCapitalConnect = (props) => <Async load={ import('./Components/Connection/Connect') } componentProps={ props } />
-  renderCommonwealthConnect = (props) => <Async load={ import('./Components/Connection/Commonwealth/Connect') } componentProps={ props } />
+  renderConnection = (props) => <Async load={ import('./Components/Connection/Connect') } componentProps={ props } />
 
-  renderConnection = () => {
-    const props = {
+  renderConnect = () => {
+    return this.renderConnection({
       dispatch: this.state.dispatch,
       disconnect: this.disconnect,
       connectedRoom: this.state.connectedRoom,
@@ -87,29 +87,12 @@ export class Main extends Component {
       inGame: this.state.inGame,
       playerReady: this.state.playerReady,
       hasSeenTabulation: this.state.hasSeenTabulation,
-    }
-    switch(this.state.connectedRoom && this.state.connectedRoom.gameType){
-      case 'Commonwealth':
-        return this.renderCommonwealthConnect(props)
-      default:
-        return this.renderPoliticalCapitalConnect(props)
-    }
-  }
-
-  renderRooms = () => {
-    return this.renderRoomConnect({
-      socketManager: this.state.socketManager,
-      dispatch: this.state.dispatch,
-      joinRoom: this.joinRoom,
-      isFetching: this.state.isFetching,
-      errorMessage: this.state.errorMessage,
     })
   }
 
-  renderGameCreation = (props) => <Async load={ import('./Components/Connection/GameCreation') } componentProps={ props } />
-
+  renderGameCreator = (props) => <Async load={ import('./Components/Connection/GameCreator') } componentProps={ props } />
   renderCreate = () => {
-    return this.renderGameCreation({
+    return this.renderGameCreator({
       dispatch: this.state.dispatch,
       connectedRoom: this.state.connectedRoom,
     })
@@ -142,10 +125,12 @@ export class Main extends Component {
     return (<div id='Loading'> Routing... </div>)
   }
 
-  renderGameOverview = (props) => <Async load={ import('./Components/OutsideGame/GameOverviewScreen') } componentProps={ props } />
+  renderGameOverview = (props) => <Async load={ import('./Components/OutsideGame/GameOverview') } componentProps={ props } />
   renderOverview = () => {
     return this.renderGameOverview({
       dispatch: this.state.dispatch,
+      connectedRoom: this.state.connectedRoom,
+      id: this.state.connectedRoom && this.state.connectedRoom._id,
     })
   }
 
@@ -154,7 +139,7 @@ export class Main extends Component {
       <Flexbox flexDirection='column' flexGrow={ 1 }>
         <Switch>
           <Route path='/home' component={ this.renderHome } />
-          <Route path='/connect' component={ this.renderConnection } />
+          <Route path='/connect' component={ this.renderConnect } />
           <Route path='/create' component={ this.renderCreate } />
           <Route path='/game' component={ this.renderGame } />
           <Route path='/overview/:id' component={ this.renderOverview } />

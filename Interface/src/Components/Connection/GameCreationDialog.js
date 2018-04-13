@@ -13,13 +13,17 @@ import { backLabelStyle } from '../../styles/global-consts'
 import { _ } from 'underscore'
 
 class GameCreationDialog extends Component {
+  returnID(){
+    return Math.floor(Math.random() * Math.floor(999))
+  }
+
   constructor(props){
     super(props)
     this.state = Object.assign({}, this.propsConst(props), {
       dispatch: props.dispatch,
       connectedRoom: props.connectedRoom || {
         gameType: 'Tutorial',
-        _id: Math.floor(Math.random() * Math.floor(8999)),
+        _id: this.returnID(),
       },
       errors: {
         gameTypeError: '',
@@ -44,8 +48,14 @@ class GameCreationDialog extends Component {
     return (event, value) => this.setState({ connectedRoom: Object.assign({}, this.state.connectedRoom, { [id]: value }) })
   }
 
+  handleErrorCallback = () => {
+    this.setState({ connectedRoom: Object.assign({}, this.state.connectedRoom, { _id: this.returnID() }) }, () => {
+      this.handleRoomSubmit()
+    })
+  }
+
   handleRoomSubmit = () => {
-    this.state.dispatch(createNewRoom(this.state.connectedRoom._id, this.state.connectedRoom.gameType))
+    this.state.dispatch(createNewRoom(this.state.connectedRoom._id, this.state.connectedRoom.gameType, this.handleErrorCallback))
   }
 
   returnDeckTemplate(title, bullets){

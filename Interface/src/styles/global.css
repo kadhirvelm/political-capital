@@ -55,11 +55,12 @@
 }
 
 .room-identifier {
+  font-size: 2.5vw;
   background: white;
   padding: 20px;
   margin-top: 20px;
   border: gray solid 1px;
-  z-index: 3;
+  z-index: 10;
 }
 
 .hover-me-indicator {
@@ -68,7 +69,7 @@
 
 @keyframes blink_blue {
   50% {
-    background: #85C1E9;
+    background: #AED6F1;
   }
 }
 
@@ -81,8 +82,18 @@
   transition: font-size 0.25s ease-in-out;
 }
 
+.hide-me-on-increase {
+  opacity: 1;
+  transition: opacity 0.25s ease-in-out .20s;
+}
+
+.room-identifier:hover .hide-me-on-increase{
+  opacity: 0;
+  transition: opacity 0.25s ease-in-out;
+}
+
 .player-table {
-  border: gray solid 1px;
+  border: #F2F3F4 solid 1px;
   background: white;
   padding: 10px;
   margin-bottom: 10px;
@@ -97,5 +108,52 @@
   }
   100% {
     opacity: 1;
+  }
+}
+
+.is-ready {
+  transition: background 1.5s linear, border 1.0s linear;
+  animation: flash_green 1.5s ease-in-out 2;
+}
+
+@keyframes flash_green {
+  50% {
+    background: #D5F5E3;
+    border: #82E0AA solid 1px;
+    opacity: 0.75;
+  }
+}
+
+.no-moving {
+  max-width: 100%;
+  max-height: 100%;
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+.player-table-font-scaled {
+  font-size: 2.5vmin;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.disappear-after-10-seconds {
+  opacity: 0;
+  animation: opacity-change 10s ease-in-out;
+}
+
+@keyframes opacity-change {
+  20% {
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
   }
 }

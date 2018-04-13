@@ -51,7 +51,7 @@ class PoliticalCapitalGame extends Component {
     return(
       <Flexbox flexDirection='column' alignItems='center' className={ !isDisabled ? 'blinker' : '' }>
         <RaisedButton primary={ !isDisabled } disabled={ isDisabled } onClick={ this.handleOnClick(buttonCommand) } label={ (<h2> { buttonCommand } </h2>) } style={ Object.assign({}, mainButtonStyle, isMobile ? mobileButtonStyle : {}) } labelColor='#424949' labelStyle={ labelStyle } />
-        { isDisabled && <font color='red'> { errorText } </font> }
+        { isDisabled && <font color='red' className='disappear-after-10-seconds'> { errorText } </font> }
       </Flexbox>
     )
   }

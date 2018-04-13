@@ -1,51 +1,17 @@
 var _ = require('underscore');
 
+const VERSION = '0.5.1';
+const MILLISECONDS_PER_MINUTE = 1000 * 60;
+const DELETE_INACTIVE_ROOMS_AFTER_SET_MINUTES = 20;
+var CURRENT_GAME_MANAGERS = {};
+
 module.exports = function(app, io, db) {
 
 	app.get('/', (req, res) => {
-		res.send('Political Capital Server Running - V 0.5.0');
-	});
-
-	var currentGameManagers = [];
-	turnAllGameManagersOn();
-
-	function reduceGamemanager(gameManager){
-		return {
-			_id: gameManager._id,
-			settings: gameManager.settings,
-		};
-	}
-
-	function createNewRoom(req, res){
-		var gameManager = createGameManager(req.body.gameType, req.body._id);
-		var newRoom = {_id: req.body._id, gameType: req.body.gameType, gameManager: reduceGamemanager(gameManager), inGame: false, players: {}, settings: {}};
-		db.collection('rooms').insert(newRoom, (err, result) => {
-			if (err) {
-				res.send({'error': err});
-			} else {
-				currentGameManagers.push(gameManager._id);
-				res.send(result.ops[0]);
-			}
-		});
-  }
-
-	app.post('/rooms', (req, res) => {
-		if (!currentGameManagers.includes(req.body._id)) {
-			createNewRoom(req, res);
-		} else {
-			res.status(400).send({'error': 'Duplicate game id not allowed.'});
-		}
-	});
-
-	app.post('/rooms/exists', (req, res) => {
-		db.collection('rooms').findOne({_id: parseInt(req.body._id, 10)}, (err, item) => {
-			if (!_.isNull(item)){
-				res.send({exists: true, room: item});
-			} else {
-				res.status(400).send({exists: false});
-			}
-		});
+		res.send('Political Capital Server Running - V ' + VERSION);
   });
+
+  /** Turning on game managers. */
 
   var GameManager = require('./GameManager');
 	var CommonwealthGameManager = require('./CommonwealthGameManager');
@@ -60,9 +26,9 @@ module.exports = function(app, io, db) {
   };
 
   function turnOnGameManager(item) {
-		if (!currentGameManagers.includes(item._id)) {
+		if (!Object.keys(CURRENT_GAME_MANAGERS).includes(item._id.toString())) {
 			var gameManager = createGameManager(item.gameType, item._id, item.settings);
-			currentGameManagers.push(gameManager._id);
+      CURRENT_GAME_MANAGERS[gameManager._id.toString()] = gameManager;
 		}
 	}
 
@@ -72,8 +38,52 @@ module.exports = function(app, io, db) {
 		});
   }
 
+  /** Creating New Rooms. */
+
+	function reduceGamemanager(gameManager){
+		return {
+			_id: gameManager._id,
+			settings: gameManager.settings,
+		};
+	}
+
+	function createNewRoom(req, res){
+		var gameManager = createGameManager(req.body.gameType, req.body._id);
+		var newRoom = {_id: req.body._id, gameType: req.body.gameType, gameManager: reduceGamemanager(gameManager), inGame: false, players: {}, settings: {}, timeStamp: new Date()};
+		db.collection('rooms').insert(newRoom, (err, result) => {
+			if (err) {
+				res.send({'error': err});
+			} else {
+				CURRENT_GAME_MANAGERS[gameManager._id.toString()] = gameManager;
+				res.send(result.ops[0]);
+			}
+		});
+  }
+
+	app.post('/rooms', (req, res) => {
+		if (!Object.keys(CURRENT_GAME_MANAGERS).includes(req.body._id.toString())) {
+			createNewRoom(req, res);
+		} else {
+			res.status(400).send({'error': 'Duplicate game id not allowed.'});
+		}
+  });
+
+  /** Checking if a room exists before joining. */
+
+	app.post('/rooms/exists', (req, res) => {
+		db.collection('rooms').findOne({_id: parseInt(req.body._id, 10)}, (err, item) => {
+			if (!_.isNull(item)){
+				res.send({exists: true, room: item});
+			} else {
+				res.status(400).send({exists: false});
+			}
+		});
+  });
+
+  /** Deleting room logic. */
+
   app.delete('/rooms', (req, res) => {
-		const callback = (err) => {
+		const callback = (err, item) => {
 			if (err){
 				res.send({'error': err});
 			} else {
@@ -84,20 +94,41 @@ module.exports = function(app, io, db) {
 	});
 
   shutdownRoomSocket = (roomID) => {
-    const gameManager = currentGameManagers.find((element) => element === roomID);
-		if (gameManager){
-			gameManager.disconnect();
-		}
+		if (CURRENT_GAME_MANAGERS[roomID.toString()]){
+			CURRENT_GAME_MANAGERS[roomID.toString()].disconnect();
+    }
+    delete CURRENT_GAME_MANAGERS[roomID.toString()];
 	};
 
 	deleteRoom = (roomID, callback) => {
 		shutdownRoomSocket(roomID);
-    db.collection('rooms').deleteOne({_id: roomID}, callback);
-    currentGameManagers.splice(currentGameManagers.indexOf(roomID), 1);
-	};
+    db.collection('rooms').deleteOne({_id: parseInt(roomID, 10)}, callback);
+    console.log('Deleted Room - ' + roomID);
+  };
 
-};
+  /** Timed loop, checking for inactive rooms. */
 
-String.prototype.replaceAll = function(str1, str2, ignore) {
-  return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g,'\\$&'),(ignore?'gi':'g')),(typeof (str2)=='string')?str2.replace(/\$/g,'$$$$'):str2);
+  function deleteStrayRoomsAfterInactivity(){
+    db.collection('rooms').find().toArray( function(err, allRooms) {
+      allRooms.forEach((room) => {
+        if (Object.keys(room.players).length === 0){
+          const timeDifference = ((new Date().getTime() - new Date(room.timeStamp).getTime()) / MILLISECONDS_PER_MINUTE);
+          if (timeDifference > DELETE_INACTIVE_ROOMS_AFTER_SET_MINUTES){
+            this.deleteRoom(room._id);
+          }
+        }
+      });
+		});
+  };
+
+  function deletingStrayRoomsLoop(){
+    deleteStrayRoomsAfterInactivity();
+    setTimeout(() => {
+      deletingStrayRoomsLoop();
+    }, DELETE_INACTIVE_ROOMS_AFTER_SET_MINUTES * MILLISECONDS_PER_MINUTE);
+  }
+
+  deletingStrayRoomsLoop();
+  turnAllGameManagersOn();
+
 };

@@ -124,16 +124,17 @@ export function readyUp(name, party, callback){
 
 export const IN_GAME = 'IN_GAME'
 
-function inGameSuccess(canStartGame){
+function inGameSuccess(canStartGame, isAdmin){
   return {
     type: IN_GAME,
     inGame: canStartGame,
+    isAdmin: isAdmin,
   }
 }
 
-export function inGame(canStartGame){
+export function inGame(canStartGame, isAdmin = false){
   return (dispatch) => {
-    dispatch(inGameSuccess(canStartGame))
+    dispatch(inGameSuccess(canStartGame, isAdmin))
   }
 }
 
@@ -187,12 +188,13 @@ export function createNewRoom(id, gameType, callback){
       cache: false,
       success: function(returnedData) {
         dispatch(createRoomsSuccess(returnedData))
-        if (callback) {
-          callback(returnedData)
-        }
       },
       error: function(error) {
+        console.log(error)
         dispatch(failed(error.responseJSON))
+        if (callback) {
+          callback(error)
+        }
       },
     })
   }

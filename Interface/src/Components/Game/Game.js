@@ -36,6 +36,9 @@ class PoliticalCapitalGame extends Component {
   constructor(props){
     super(props)
     this.state = Object.assign({}, this.propsConst(props), this.baseStateSettings(props))
+    if(!props.playerName){
+      this.state.disconnect()
+    }
   }
 
   baseStateSettings = (props) => {

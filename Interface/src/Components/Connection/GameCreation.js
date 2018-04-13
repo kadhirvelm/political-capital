@@ -1,9 +1,8 @@
 import React, { Component } from 'react'
 import Flexbox from 'flexbox-react'
-import { resetEverything } from '../../State/ServerActions'
+import { resetEverything, inGame } from '../../State/ServerActions'
 import RaisedButton from 'material-ui/RaisedButton'
 import IconButton from 'material-ui/IconButton'
-import GameCreationDialog from './GameCreationDialog'
 import '../../styles/global.css'
 import { svgIcon } from '../../Images/icons'
 import ResyncLogo from '../../Images/ResyncLogo.png'
@@ -19,8 +18,11 @@ class GameCreation extends Component {
   constructor(props){
     super(props)
     this.colors = colors
+    this.allColors = props.allColors || allColors
+    this.allColorHexes = props.allColorHexes || allColorHexes
     this.state = Object.assign({}, this.propsConst(this.props), {
       hasHovered: false,
+      startGame: false,
     })
   }
 
@@ -46,13 +48,21 @@ class GameCreation extends Component {
     this.handleAllSocketConnections()
   }
 
+  checkIfAllPlayersAreReady(players){
+    return Object.values(players).filter((player) => !player.isReady).length === 0
+  }
+
   handleAllSocketConnections = () => {
     if(this.props.connectedRoom && !this.state.managingSocket){
       this.setState({ managingSocket: io(process.env.REACT_APP_POLITICAL_CAPITAL + '/' + this.props.connectedRoom._id) }, () => {
         this.state.managingSocket.emit('getFullGame')
 
         this.state.managingSocket.on('receiveFullGame', (fullGame) => {
-          this.setState({ fullGame: fullGame })
+          this.setState({ fullGame: fullGame, startGame: this.checkIfAllPlayersAreReady(fullGame.players) })
+        })
+
+        this.state.managingSocket.on('boot', () => {
+          this.resetToHome()
         })
       })
     }
@@ -68,7 +78,7 @@ class GameCreation extends Component {
     return(
       <Flexbox style={ { position: 'absolute' } } flexDirection='column'>
         <RaisedButton label={ (<h2> Cancel </h2>) } onClick={ this.resetToHome } style={ { width: '5vw', height: '5vh' } } labelStyle={ { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' } } />
-        <Flexbox className={ 'room-identifier ' + (this.state.hasHovered ? '' : 'hover-me-indicator') } onMouseOver={ this.removeHoverMeIndicator } alignItems='center'> <font> Room ID: <font className='increase-size'> { this.state.connectedRoom && this.state.connectedRoom._id } </font> </font> </Flexbox>
+        <Flexbox className={ 'room-identifier ' + (this.state.hasHovered ? '' : 'hover-me-indicator') } onMouseOver={ this.removeHoverMeIndicator } alignItems='center'> <font className='hide-me-on-increase' style={ { marginRight: '5px' } }> Room ID: </font> <font className='increase-size'> { this.state.connectedRoom && this.state.connectedRoom._id } </font> </Flexbox>
       </Flexbox>
     )
   }
@@ -78,15 +88,13 @@ class GameCreation extends Component {
       <Flexbox flexDirection='column' flexGrow={ 1 } alignItems='center'>
         <Flexbox flexGrow={ 1 } alignItems='center' flexDirection='column' style={ { marginBottom: '15px' } }>
           <font style={ { fontSize: '7vw' } }> Political Capital </font>
-          <font style={ { fontSize: '5vw' } }> By Resync </font>
+          <font style={ { fontSize: '5vw', marginTop: '-4vh' } }> By Resync </font>
         </Flexbox>
       </Flexbox>
     )
   }
 
-  bootPlayer = (playerName) => {
-    return () => this.state.managingSocket.emit('bootPlayer', playerName)
-  }
+  /** Settings Table */
 
   adjustSettings = (key, isIncrease, max, min, event) => {
     const currSettings = this.state.fullGame.settings
@@ -116,17 +124,18 @@ class GameCreation extends Component {
     )
   }
 
-  settings = () =>
-    [
+  settings = () => {
+    return (this.props.settings && this.props.settings()) || [
       { name: 'Start Senators', key: 'START_SENATORS', max: 10, min: 1 },
       { name: 'Initial Capital', key: 'START_CAPITAL', max: 120, min: 0 },
       { name: 'Total Rounds', key: 'ROUNDS', max: 10, min: 1 },
       { name: 'Senate Tax', key: 'SENATE_TAX', max: 40, min: 0 },
     ]
+  }
 
   renderDetailedSettingsView = () => {
     return (
-      <Flexbox id='Settings' style={ { backgroundColor: '#FADBD8', padding: '5px', borderColor: '#EC7063', borderStyle: 'solid', borderWidth: '1px', borderRadius: '10px', height: '60vh' } } flexDirection='column'>
+      <Flexbox id='Settings' style={ { backgroundColor: '#FDEBD0', padding: '5px', borderColor: '#F8C471', borderStyle: 'solid', borderWidth: '1px', borderRadius: '10px', height: '50vh' } } flexDirection='column'>
         <Flexbox justifyContent='center'> <h2> { this.state.fullGame.gameType } Deck Settings </h2> </Flexbox>
         <Flexbox id='Settings Holder' flexGrow={ 1 } flexWrap='wrap' justifyContent='space-around' alignItems='center'>
           { this.settings().map((settings, index) => (
@@ -134,25 +143,71 @@ class GameCreation extends Component {
           ))
           }
         </Flexbox>
-      </Flexbox>)
+      </Flexbox>
+    )
   }
+
+  /** Player Table */
+
+  bootPlayer = (playerName) => {
+    return () => this.state.managingSocket.emit('bootPlayer', playerName, 'political-capital-boot-password')
+  }
+
+  renderKickButton(player){
+    return(
+      <Flexbox flexBasis='10%' justifyContent='flex-end' alignItems='center'>
+        <IconButton style={ { zIndex: '3' } } iconStyle={ { width: '15px', height: '15px' } } tooltip={ 'Kick ' + player.name } onClick={ this.bootPlayer(player.name) }>
+          { svgIcon('cancel', '#566573') }
+        </IconButton>
+      </Flexbox>
+    )
+  }
+
+  renderPlayerSelecting = (player) => {
+    return this.props.renderPlayerSelecting ? this.props.renderPlayerSelecting(player) : <font> { player.isReady ? this.allColors[player.party - 1] : 'Selecting...' } </font>
+  }
+
+  renderPlayerViewTable(player){
+    return(
+      <Flexbox className='player-table-font-scaled' id={ player.name } justifyContent='space-between' alignItems='center' style={ { position: 'relative', width: '100%' } }>
+        <div style={ { padding: '10px', position: 'absolute', width: '100%', height: '100%', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: '2', opacity: '0.25', background: player.isReady ? this.allColorHexes[player.party - 1] : '' } } />
+        <Flexbox flexBasis='60%' justifyContent='center'> <font> { player.name } </font> </Flexbox>
+        <Flexbox flexBasis='30%' justifyContent='center'>
+          { this.renderPlayerSelecting(player) }
+        </Flexbox>
+        { this.renderKickButton(player) }
+      </Flexbox>
+    )
+  }
+
+  /** Main Rendering */
 
   renderFullGameSettingsAndPlayers = () => {
     return(
-      <Flexbox flexGrow={ 1 } alignItems='flex-start'>
-        <Flexbox id='Game Settings' flexBasis='40%' flexDirection='column' flexGrow={ 1 }>
+      <Flexbox flexGrow={ 1 } alignItems='flex-start' style={ { marginTop: '2vh' } }>
+        <Flexbox id='Game Settings' flexBasis='30%' flexDirection='column' flexGrow={ 1 }>
           { this.renderDetailedSettingsView() }
         </Flexbox>
-        <Flexbox id='Players' flexBasis='60%' flexDirection='column'>
-          { Object.values(this.state.fullGame.players).map((value) => (
-            <Flexbox className='player-table' key={ value.name } style={ { position: 'relative' } }>
-              { value.name }
-              <IconButton tooltip={ 'Kick ' + value.name } onClick={ this.bootPlayer(value.name) } style={ { position: 'absolute', right: '1%', top: '50%', transform: 'translate(-1%, -50%)' } }>
-                { svgIcon('cancel', 'red') }
-              </IconButton>
+        <Flexbox id='Players' flexBasis='70%' flexDirection='row' flexWrap='wrap'>
+          { Object.values(this.state.fullGame.players).map((player) => (
+            <Flexbox className={ 'player-table' + (player.isReady ? ' is-ready' : '') } key={ player.name } style={ { position: 'relative', width: '32vw' } } flexBasis='content'>
+              { this.renderPlayerViewTable(player) }
             </Flexbox>
           ))}
         </Flexbox>
+      </Flexbox>
+    )
+  }
+
+  startGame = () => {
+    this.state.managingSocket.emit('startGame')
+    this.state.dispatch(inGame(true, true))
+  }
+
+  renderStartGame = () => {
+    return(
+      <Flexbox flexGrow={ 1 } justifyContent='center' alignItems='center' style={ { height: '13vh', margin: '15px' } }>
+        <RaisedButton labelStyle={ { color: 'white', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '8vmin' } } style={ { width: '50vw', height: '10vh' } } primary={ true } label='Start' disabled={ !this.state.startGame } onClick={ this.startGame } />
       </Flexbox>
     )
   }
@@ -163,6 +218,7 @@ class GameCreation extends Component {
         { this.renderCancelAndRoomIdentifier() }
         { this.renderMainTitle() }
         { this.state.fullGame && this.renderFullGameSettingsAndPlayers() }
+        { this.renderStartGame() }
         <img alt='Logo' src={ ResyncLogo } style={ { position: 'fixed', bottom: '25px', right: '25px' } } width='50vmin' height='50vmin' />
       </Flexbox>
     )
@@ -170,8 +226,8 @@ class GameCreation extends Component {
 
   render() {
     return (
-      <Flexbox id='Room Setup' flexDirection='column' flexGrow={ 1 }>
-        { this.state.isCreatingRoom ? <GameCreationDialog resetToHome={ this.resetToHome } {...this.props } /> : this.renderGameCreationState() }
+      <Flexbox id='Room Setup' flexDirection='column' flexGrow={ 1 } className='no-moving'>
+        { this.renderGameCreationState() }
       </Flexbox>
     )
   }

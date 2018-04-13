@@ -2,6 +2,8 @@ import React, { Component } from 'react'
 import Flexbox from 'flexbox-react'
 
 import ConnectedRoom from './ConnectedRoom'
+import CommonwealthConnectedRoom from './Commonwealth/CommonwealthConnectedRoom'
+
 import { resetEverything, attemptToJoinRoom } from '../../State/ServerActions'
 
 import Dialog from 'material-ui/Dialog'
@@ -65,11 +67,20 @@ class Connect extends Component {
     )
   }
 
+  renderConnectedRoom = () => {
+    switch(this.state.connectedRoom.gameType){
+      case 'Commonwealth':
+        return <CommonwealthConnectedRoom { ...this.props } />
+      default:
+        return <ConnectedRoom { ...this.props } />
+    }
+  }
+
   render() {
     return (
       <Flexbox id='Room Setup' flexDirection='column' flexGrow={ 1 }>
         { this.state.dialogOpen && this.renderConnectRoomDialog() }
-        <ConnectedRoom { ...this.props } />
+        { this.state.connectedRoom && this.renderConnectedRoom() }
       </Flexbox>
     )
   }
