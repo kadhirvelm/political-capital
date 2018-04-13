@@ -23,12 +23,14 @@ const io = require('socket.io-client')
 
 const individualBox = { borderColor: Colors.colors.DARKER_PASTEL, borderStyle: 'solid', borderWidth: '1px', padding: '10px', backgroundColor: Colors.colors.SLIGHTLY_DARKER_PASTEL }
 
-class GameOverview extends Component {
+class GameOverviewScreeen extends Component {
   constructor(props){
     super(props)
     this.state = {
-      roomName: props.match.params.nsp,
-      managingSocket: io(process.env.REACT_APP_POLITICAL_CAPITAL + '/' + props.match.params.nsp.replaceAll(' ', '%20'), { autoConnect: true, reconnection: true }),
+      dispatch: props.dispatch,
+      roomName: props.id,
+      gameType: props.gameType,
+      managingSocket: io(process.env.REACT_APP_POLITICAL_CAPITAL + '/' + props.id, { autoConnect: true, reconnection: true }),
       rounds: {},
       players: {},
       parties: {},
@@ -45,11 +47,8 @@ class GameOverview extends Component {
     } else {
       this.state.managingSocket.connect()
       this.handleAllSocketConnections()
+      this.state.managingSocket.emit('getFullGame')
     }
-  }
-
-  componentDidMount(){
-    this.state.managingSocket.emit('getGameType')
   }
 
   componentWillUnmount(){
@@ -144,13 +143,6 @@ class GameOverview extends Component {
   handleAllSocketConnections = () => {
     this.state.managingSocket.on('bribeSentOut', (bribeAmount) => {
       this.changePlaySound(true, bribeAmount)
-    })
-
-    this.state.managingSocket.on('receiveGameType', (gameType) => {
-      this.setState({ gameType: gameType }, () => {
-        this.setAllColorHexes()
-        this.state.managingSocket.emit('getFullGame')
-      })
     })
 
     this.handleReceivingFullGame()
@@ -312,18 +304,26 @@ class GameOverview extends Component {
   }
 
   renderPlayersAssemblingList = () => {
+    const playersInAParty = _.flatten(_.pluck(Object.values(this.state.parties), 'players'))
     return(
       <Flexbox flexGrow={ 1 } justifyContent='space-around'>
         { _.map(this.state.players, (value, key) => (
-          <font key={ key } color={ value.isReady ? this.allColorHexes[value.party - 1] : Colors.colors.DARK_BLUE } style={ { margin: '10px' } }> { value.name } </font>
+          <Flexbox key={ key } alignItems='center'>
+            <font color={ value.isReady ? this.allColorHexes[value.party - 1] : Colors.colors.DARK_BLUE } style={ { margin: '10px' } }> { value.name } </font>
+            <div> { playersInAParty.includes(value.name) ? svgIcon('smallCheckmark') : svgIcon('smallCancel') } </div>
+          </Flexbox>
         ))
         }
       </Flexbox>
     )
   }
 
-  renderPartyAffiliation = (party) => {
-    return svgIcon(Colors.commonwealthAllColors[party - 1])
+  renderPartyDetail = (value, key) => {
+    return (this.props.renderPartyDetail && this.props.renderPartyDetail(value, key)) ||
+    (<Flexbox alignItems='baseline'>
+      <font size={ 5 } color={ this.allColorHexes[key - 1] }> { value.partyName } </font>
+      <div style={ { marginLeft: '7px' } }> { this.currentRoundPartyCardsContainsParty(value.partyName) && svgIcon('smallCheckmark') } </div>
+    </Flexbox>)
   }
 
   renderPartiesAssembled = () => {
@@ -331,11 +331,7 @@ class GameOverview extends Component {
       <Flexbox flexGrow={ 1 } flexDirection='row' justifyContent='space-around'>
         { _.map(this.state.parties, (value, key) => (
           <Flexbox key={ key + this.currentRoundPartyCardsContainsParty(value.partyName).toString() } flexDirection='column' alignItems='center'>
-            <Flexbox alignItems='baseline'>
-              <font size={ 5 } color={ this.allColorHexes[key - 1] }> { value.partyName } </font>
-              <div style={ { marginLeft: '6px' } }> { this.state.gameType !== 'Vanilla' && this.renderPartyAffiliation(key) } </div>
-              <div style={ { marginLeft: '7px' } }> { this.currentRoundPartyCardsContainsParty(value.partyName) && svgIcon('smallCheckmark') } </div>
-            </Flexbox>
+            { this.renderPartyDetail(value, key) }
             <Flexbox flexDirection='column' style={ { marginTop: '10px' } }>
               { value.players.map((entry, index) => (
                 <Flexbox key={ index + this.currentRoundVotesContainsPlayer(entry).toString() }>
@@ -411,7 +407,7 @@ class GameOverview extends Component {
     return(
       <Flexbox flexGrow={ 1 } flexDirection='column'>
         <Flexbox flexGrow={ 1 } flexDirection='column' alignItems='center'>
-          <font size={ 6 }> { this.state.roomName } Overview </font>
+          <font size={ 6 }> Political Capital - Game Overview </font>
         </Flexbox>
         <Flexbox id='Show players and parties' flexDirection='row' justifyContent='center' style={ Object.assign({}, { marginTop: '15px' }, individualBox) }>
           <Flexbox flexShrink={ 1 } justifyContent='flex-start' alignItems='flex-start' style={ { marginTop: '-3px' } }> <font size={ 2 } color={ Colors.colors.DARK_GRAY }> Players </font> </Flexbox>
@@ -431,11 +427,7 @@ class GameOverview extends Component {
   render() {
     return (
       <Flexbox flexDirection='column'>
-        { this.state.gameClosed ?
-          <Flexbox> Either game session has ended or unable to locate game </Flexbox>
-          :
-          this.renderGameOverviewScreen()
-        }
+        { this.renderGameOverviewScreen() }
         { /* this.state.playSound && <Sound url='http://sfxcontent.s3.amazonaws.com/soundfx/cash-register.mp3' playStatus={ 'PLAYING' } onFinishedPlaying={ this.changePlaySound } /> -- Error with Safari 11 */ }
         <Snackbar open={ this.state.bribeSentOut } message={'Bribe sent out for ' + this.state.bribeAmount + ' political capital'} autoHideDuration={ 20000 } onRequestClose={ this.closeBribeSentOut } />
       </Flexbox>
@@ -443,10 +435,5 @@ class GameOverview extends Component {
   }
 }
 
-export default GameOverview
+export default GameOverviewScreeen
 
-// eslint-disable-next-line
-String.prototype.replaceAll = function(str1, str2, ignore) {
-  // eslint-disable-next-line
-  return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g,"\\$&"),(ignore?"gi":"g")),(typeof(str2)=="string")?str2.replace(/\$/g,"$$$$"):str2);
-}

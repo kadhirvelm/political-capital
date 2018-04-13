@@ -11,10 +11,6 @@ import { changeEndGameStatus } from '../../State/ServerActions'
 
 import { _ } from 'underscore'
 
-import createPlotlyComponent from 'react-plotlyjs'
-const Plotly = require('plotly.js/dist/plotly')
-const PlotlyComponent = createPlotlyComponent(Plotly)
-
 class EndGame extends Component {
   constructor(props){
     super(props)
@@ -157,9 +153,9 @@ class EndGame extends Component {
   renderAdditionalOverviewScreenComponent = () => {
     return(
       <Flexbox flexDirection='column' flexGrow={ 1 } style={ { marginTop: '10px' } }>
-        <PlotlyComponent data={ this.politicalCapitalData() } layout={ this.layout('Poltical Capital') } config={ this.config() } />
+        {/* <PlotlyComponent data={ this.politicalCapitalData() } layout={ this.layout('Poltical Capital') } config={ this.config() } />
         <div style={ { margin: '10px' } } />
-        <PlotlyComponent data={ this.senatorData() } layout={ this.layout('Senators') } config={ this.config() } />
+        <PlotlyComponent data={ this.senatorData() } layout={ this.layout('Senators') } config={ this.config() } /> */}
         { /* this.state.playSound && <Sound url='https://s3-us-west-1.amazonaws.com/political-capital/Game.mp3' playFromPosition={ 4000 } playStatus={ 'PLAYING' } onFinishedPlaying={ this.changePlaySound } /> -- Error with Safari 11 */ }
       </Flexbox>
     )
@@ -229,7 +225,7 @@ class EndGame extends Component {
   renderDisplayResults = () => {
     return(
       <Flexbox flexGrow={ 1 } flexDirection='column' key='End Game'>
-        { this.state.isOverviewScreen && this.renderAdditionalOverviewScreenComponent() }
+        {/* { this.state.isOverviewScreen && this.renderAdditionalOverviewScreenComponent() } */}
         <Flexbox flexGrow={ 1 } flexDirection='column' justifyContent='space-around'>
           { this.renderFinalPlayersStanding() }
           { this.renderFinalPartiesStanding() }

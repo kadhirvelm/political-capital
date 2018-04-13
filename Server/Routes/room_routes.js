@@ -1,155 +1,133 @@
-var R = require('ramda');
 var _ = require('underscore');
+
+const VERSION = '0.5.1';
+const MILLISECONDS_PER_MINUTE = 1000 * 60;
+const DELETE_INACTIVE_ROOMS_AFTER_SET_MINUTES = 20;
+const DELETE_ACTIVE_ROOMS_AFTER_SET_MINUTES = 60 * 12;
+var CURRENT_GAME_MANAGERS = {};
 
 module.exports = function(app, io, db) {
 
 	app.get('/', (req, res) => {
-		res.send('Political Capital Server Running - V 0.4.0');
-	});
+		res.send('Political Capital Server Running - V ' + VERSION);
+  });
 
-	var ObjectID = require('mongodb').ObjectID;
+  /** Turning on game managers. */
 
-	var currentGameManagers = [];
+  var GameManager = require('./GameManager');
+	var CommonwealthGameManager = require('./CommonwealthGameManager');
 
-	turnAllGameManagersOn();
+	createGameManager = (gameType, id, settings) => {
+		switch (gameType){
+			case 'Commonwealth':
+				return new CommonwealthGameManager(io, id, deleteRoom, db, settings);
+			default:
+				return new GameManager(io, id, deleteRoom, db, settings);
+		}
+  };
+
+  function turnOnGameManager(item) {
+		if (!Object.keys(CURRENT_GAME_MANAGERS).includes(item._id.toString())) {
+			var gameManager = createGameManager(item.gameType, item._id, item.settings);
+      CURRENT_GAME_MANAGERS[gameManager._id.toString()] = gameManager;
+		}
+	}
+
+	function turnAllGameManagersOn() {
+		db.collection('rooms').find().toArray( function(err, items) {
+      items.forEach((element) => turnOnGameManager(element));
+		});
+  }
+
+  /** Creating New Rooms. */
 
 	function reduceGamemanager(gameManager){
 		return {
-			gameManagerName: gameManager.namespace,
-			roomID: gameManager.roomID,
-			admin: gameManager.admin,
+			_id: gameManager._id,
 			settings: gameManager.settings,
 		};
 	}
 
-	function createNewRoom(req, res, gameName){
-		var gameManager = createGameManager(req.body.gameType || 'Vanilla', gameName, undefined, req.body.admin);
-		var newRoom = {gameType: req.body.gameType || 'Vanilla', roomName: gameName, password: req.body.password, admin: req.body.admin, gameManager: reduceGamemanager(gameManager), inGame: false, players: {}, settings: {}};
+	function createNewRoom(req, res){
+		var gameManager = createGameManager(req.body.gameType, req.body._id);
+		var newRoom = {_id: req.body._id, gameType: req.body.gameType, gameManager: reduceGamemanager(gameManager), inGame: false, players: {}, settings: {}, timeStamp: new Date()};
 		db.collection('rooms').insert(newRoom, (err, result) => {
 			if (err) {
 				res.send({'error': err});
 			} else {
-				gameManager.updateRoomID(result.ops[0]._id.toString());
-				currentGameManagers.push(gameManager);
-        res.send(result.ops[0]);
-      }
+				CURRENT_GAME_MANAGERS[gameManager._id.toString()] = gameManager;
+				res.send(result.ops[0]);
+			}
 		});
-	}
+  }
 
 	app.post('/rooms', (req, res) => {
-		const gameName = req.body.roomName.replaceAll(' ', '%20');
-		if (!R.contains(gameName.hashCode(), currentGameManagers)) {
-      		createNewRoom(req, res, gameName);
+		if (!Object.keys(CURRENT_GAME_MANAGERS).includes(req.body._id.toString())) {
+			createNewRoom(req, res);
 		} else {
-			res.status(400).send({'error': 'Duplicate game name not allowed.'});
+			res.status(400).send({'error': 'Duplicate game id not allowed.'});
 		}
-	});
+  });
 
-	app.get('/rooms', (req, res) => {
-		db.collection('rooms').find().toArray( function(err, items) {
-			R.forEach(turnOnGameManager, items);
-			res.send(items);
-		});
-	});
+  /** Checking if a room exists before joining. */
 
-	app.post('/room/exists', (req, res) => {
-		const details = {'_id' : new ObjectID(req.body.roomID)};
-		db.collection('rooms').findOne(details, (err, item) => {
+	app.post('/rooms/exists', (req, res) => {
+		db.collection('rooms').findOne({_id: parseInt(req.body._id, 10)}, (err, item) => {
 			if (!_.isNull(item)){
-				res.send({exists: true});
+				res.send({exists: true, room: item});
 			} else {
-				res.send({exists: false});
+				res.status(400).send({exists: false});
 			}
 		});
-	});
+  });
 
-	function turnAllGameManagersOn() {
-		db.collection('rooms').find().toArray( function(err, items) {
-			R.forEach(turnOnGameManager, items);
-		});
-	}
+  /** Deleting room logic. */
 
-	function turnOnGameManager(item) {
-		if (!containsGameManager(item._id.toString())) {
-			var gameManager = createGameManager(item.gameType, item.roomName, item._id.toString(), item.admin, item.settings);
-			currentGameManagers.push(gameManager);
-		}
-	}
-
-	app.put('/rooms', (req, res) => {
-		const details = {'_id' : new ObjectID(req.body.roomID)};
-		const newRoom = {$set: {roomName: req.body.roomName.replaceAll(' ', '_'), password: req.body.password}};
-		db.collection('rooms').update(details, newRoom, (err, result) => {
-			if (err){
-				res.send({'error': err});
-			} else {
-				res.send(result);
-			}
-		});
-	});
-
-	app.delete('/rooms', (req, res) => {
+  app.delete('/rooms', (req, res) => {
 		const callback = (err, item) => {
 			if (err){
 				res.send({'error': err});
 			} else {
-				res.send({'message': req.body.roomID + ' deleted.'});
+				res.send({'message': req.body._id + ' deleted.'});
 			}
 		};
-		shutdownRoomSocket(roomID);
-		deleteRoom(req.body.roomID, callback);
+		deleteRoom(req.body._id, callback);
 	});
 
-	containsGameManager = (roomID) => {
-		return _.contains(_.pluck(currentGameManagers, 'roomID'), roomID.toString());
-	};
-
-	shutdownRoomSocket = (roomID) => {
-		const gameManager = _.first(_.filter(currentGameManagers, (manager) => {
-			return manager.roomID === roomID;
-		}));
-		if (gameManager){
-			gameManager.disconnect();
-		}
-	};
-
-	var GameManager = require('./GameManager');
-	var CommonwealthGameManager = require('./CommonwealthGameManager');
-
-	createGameManager = (gameType, gameManagerName, roomID, admin, settings) => {
-		switch (gameType){
-			case 'Commonwealth':
-				return new CommonwealthGameManager(io, gameManagerName, roomID || 'PENDING', deleteRoom, db, admin, settings);
-			default:
-				return new GameManager(io, gameManagerName, roomID || 'PENDING', deleteRoom, db, admin, settings);
-		}
+  shutdownRoomSocket = (roomID) => {
+		if (CURRENT_GAME_MANAGERS[roomID.toString()]){
+			CURRENT_GAME_MANAGERS[roomID.toString()].disconnect();
+    }
+    delete CURRENT_GAME_MANAGERS[roomID.toString()];
 	};
 
 	deleteRoom = (roomID, callback) => {
-		if (roomID !== 'PENDING') {
-			shutdownRoomSocket(roomID);
-			const details = {'_id' : new ObjectID(roomID)};
-			console.log(roomID + ' should be deleted');
-			db.collection('rooms').deleteOne(details, callback);
-			currentGameManagers = R.filter( (gameManagerID) => gameManagerID === roomID, currentGameManagers);
-		}
-	};
+		shutdownRoomSocket(roomID);
+    db.collection('rooms').deleteOne({_id: parseInt(roomID, 10)}, callback);
+    console.log('Deleted Room - ' + roomID);
+  };
 
-};
+  /** Timed loop, checking for inactive rooms. */
 
-String.prototype.hashCode = function() {
-  var hash = 0, i, chr;
-  if (this.length === 0) {
-    return hash;
+  function deleteStrayRoomsAfterInactivity(){
+    db.collection('rooms').find().toArray( function(err, allRooms) {
+      allRooms.forEach((room) => {
+				const timeDifference = ((new Date().getTime() - new Date(room.timeStamp).getTime()) / MILLISECONDS_PER_MINUTE);
+        if ((Object.keys(room.players).length === 0 && timeDifference > DELETE_ACTIVE_ROOMS_AFTER_SET_MINUTES) || (timeDifference > DELETE_ACTIVE_ROOMS_AFTER_SET_MINUTES)){
+          this.deleteRoom(room._id);
+        }
+      });
+		});
+  };
+
+  function deletingStrayRoomsLoop(){
+    deleteStrayRoomsAfterInactivity();
+    setTimeout(() => {
+      deletingStrayRoomsLoop();
+    }, DELETE_INACTIVE_ROOMS_AFTER_SET_MINUTES * MILLISECONDS_PER_MINUTE);
   }
-  for (i = 0; i < this.length; i++) {
-    chr   = this.charCodeAt(i);
-    hash  = ((hash << 5) - hash) + chr;
-    hash |= 0; // Convert to 32bit integer
-  }
-  return hash;
-};
 
-String.prototype.replaceAll = function(str1, str2, ignore) {
-  return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g,'\\$&'),(ignore?'gi':'g')),(typeof (str2)=='string')?str2.replace(/\$/g,'$$$$'):str2);
+  deletingStrayRoomsLoop();
+  turnAllGameManagersOn();
+
 };

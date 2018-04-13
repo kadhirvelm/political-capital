@@ -21,4 +21,199 @@
     font-family: 'Didact Gothic', Helvetica, sans-serif;
   }
 
+  h2 {
+    font-family: 'Didact Gothic', Helvetica, sans-serif;
+  }
+
   @import url('https://fonts.googleapis.com/css?family=Didact+Gothic');
+
+.game-creation-box {
+  margin: 10px;
+  padding: 20px;
+  border:#ede9e6 solid 1px;
+  opacity: 0.8;
+  transition: opacity 100ms linear;
+}
+
+.blinker { 
+  animation: blink 1.5s ease-in-out 3;
+}
+
+@keyframes blink {
+  50% {
+    background: #F7DC6F;
+  }
+}
+
+.game-creation-box:hover {
+  opacity: 1;
+  transition: opacity 100ms linear;
+}
+
+.increase-size {
+  transition: font-size 0.25s ease-in-out;
+}
+
+.room-identifier {
+  font-size: 2.5vw;
+  background: white;
+  padding: 20px;
+  margin-top: 20px;
+  border: gray solid 1px;
+  z-index: 10;
+}
+
+.hover-me-indicator {
+  animation: blink_blue 2s linear infinite;
+}
+
+@keyframes blink_blue {
+  50% {
+    background: #AED6F1;
+  }
+}
+
+.room-identifier:hover {
+  animation: blink 1.0s ease-in-out 1;
+}
+
+.room-identifier:hover .increase-size{
+  font-size: 30vw;
+  transition: font-size 0.25s ease-in-out;
+}
+
+.hide-me-on-increase {
+  opacity: 1;
+  transition: opacity 0.25s ease-in-out .20s;
+}
+
+.room-identifier:hover .hide-me-on-increase{
+  opacity: 0;
+  transition: opacity 0.25s ease-in-out;
+}
+
+.player-table {
+  border: #F2F3F4 solid 1px;
+  background: white;
+  padding: 10px;
+  margin-bottom: 10px;
+  margin-left: 10px;
+  width: 90%;
+  animation: fade-in 1s 1;
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.is-ready {
+  transition: background 1.5s linear, border 1.0s linear;
+  animation: flash_green 1.5s ease-in-out 2;
+}
+
+@keyframes flash_green {
+  50% {
+    background: #D5F5E3;
+    border: #82E0AA solid 1px;
+    opacity: 0.75;
+  }
+}
+
+.no-moving {
+  max-width: 100%;
+  max-height: 100%;
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+.player-table-font-scaled {
+  font-size: 2.5vmin;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.disappear-after-10-seconds {
+  opacity: 0;
+  animation: opacity-change 10s ease-in-out;
+}
+
+@keyframes opacity-change {
+  20% {
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.pop-on-first-show {
+  position: absolute;
+  left: 12vw;
+  white-space: nowrap;
+  animation: expand-pop 2.5s ease-in-out;
+  transition: opacity 1s linear;
+}
+
+@keyframes expand-pop {
+  0% {
+    opacity: 0;
+    top: 50vh;
+    left: 50vw;
+    transform: translate(-50%, -50%);
+  }
+  20%{
+    opacity: 1;
+    top: 50vh;
+    left: 50vw;
+    transform: translate(-50%, -50%);
+    background: white;
+    border: gray 0.5px solid;
+    padding: 15px;
+    font-size: 10vw;
+  }
+  60%{
+    opacity: 1;
+    top: 50vh;
+    left: 50vw;
+    transform: translate(-50%, -50%);
+    background: white;
+    border: gray 0.5px solid;
+    padding: 15px;
+    font-size: 10vw;
+  }
+  80% {
+    top: 1vh;
+    left: 12vw;
+    transform: translateX(15px);
+  }
+}
+
+.darkened-overlay {
+  position: fixed;
+  top: 0%;
+  left: 0%;
+  width: 100%;
+  height: 100%;
+  opacity: 0.35;
+  background: black;
+  z-index: 2;
+  animation: fade-in-opacity 1s ease-in-out; 
+}
+
+@keyframes fade-in-opacity {
+  50% {
+    opacity: 0.5;
+  }
+}

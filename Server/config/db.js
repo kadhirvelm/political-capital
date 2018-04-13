@@ -1,6 +1,6 @@
 if (process.env.NODE_ENV === 'development'){
 	module.exports = {
-		url: process.env.MONGO_URL || '192.168.99.100:32768'
+		url: 'mongodb://mongodb:27017/political_capital'
 	};
 } else {
 	console.log('Accessing mlab database');

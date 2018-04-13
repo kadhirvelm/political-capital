@@ -16,7 +16,6 @@ before_install:
 script:
 - set -e
 - yarn run install_all
-- yarn run test
 - set +e
 after_success:
 - if [ $TRAVIS_BRANCH = 'master' ]; then eval "yarn run build"; chmod +x ./deploy.sh && ./deploy.sh; fi

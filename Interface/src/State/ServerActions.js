@@ -1,30 +1,17 @@
 import $ from 'jquery'
 
 export const FAILED_REQUEST = 'FAILED_REQUEST'
+export const RESET = 'RESET'
 
-export const SET_GAME_TYPE = 'SET_GAME_TYPE'
-export const REMOVE_GAME_TYPE = 'REMOVE_GAME_TYPE'
-
-function setGameType(gameType){
+function reset(){
   return {
-    type: SET_GAME_TYPE,
-    gameType: gameType,
+    type: RESET,
   }
 }
 
-function removeGameType(){
-  return {
-    type: REMOVE_GAME_TYPE,
-  }
-}
-
-export function changeGameType(gameType){
+export function resetEverything(){
   return (dispatch) => {
-    if(gameType){
-      dispatch(setGameType(gameType))
-    } else {
-      dispatch(removeGameType())
-    }
+    dispatch(reset())
   }
 }
 
@@ -46,20 +33,32 @@ function joinRoomRequest(){
   }
 }
 
-function joinRoomSuccess(room, socket){
+function joinRoomSuccess(room){
   return {
     type: JOIN_ROOM_SUCCESS,
     isFetching: false,
     connectedRoom: room,
-    managingSocket: socket,
   }
 }
 
-export function setRooms(room, socket) {
+export function attemptToJoinRoom(id, callback) {
   return (dispatch) => {
-    dispatch(joinRoomRequest(room))
-    dispatch(joinRoomSuccess(room, socket))
-    dispatch(changeGameType(room.gameType))
+    dispatch(joinRoomRequest())
+    $.ajax({
+      url: process.env.REACT_APP_POLITICAL_CAPITAL + '/rooms/exists',
+      type: 'POST',
+      data: JSON.stringify({ _id: id }),
+      dataType: 'json',
+      contentType: 'application/json',
+      cache: false,
+      success: function(response) {
+        dispatch(joinRoomSuccess(response.room))
+      },
+      error: function(error) {
+        dispatch(failed(error))
+        callback(error)
+      },
+    })
   }
 }
 
@@ -103,90 +102,6 @@ export function disconnect() {
   }
 }
 
-export const GET_ROOMS_REQUEST = 'GET_ROOMS_REQUEST'
-export const GET_ROOMS_SUCCESS = 'GET_ROOMS_SUCCESS'
-
-function getRoomsRequeset(){
-  return {
-    type: GET_ROOMS_REQUEST,
-    isFetching: true,
-  }
-}
-
-function getRoomsSuccess(rooms){
-  return {
-    type: GET_ROOMS_SUCCESS,
-    isFetching: false,
-    rooms,
-  }
-}
-
-export function getCurrentRooms(callback){
-  return (dispatch) => {
-    dispatch(getRoomsRequeset())
-    $.ajax({
-      url: process.env.REACT_APP_POLITICAL_CAPITAL + '/rooms',
-      type: 'GET',
-      dataType: 'json',
-      contentType: 'application/json',
-      cache: false,
-      success: function(data) {
-        dispatch(getRoomsSuccess(data))
-        if (callback) {
-          callback(data)
-        }
-      },
-      error: function(error) {
-        dispatch(failed(error))
-      },
-    })
-  }
-}
-
-export const GET_SPECIFIC_ROOM_REQUEST = 'GET_SPECIFIC_ROOM_REQUEST'
-export const GET_SPECIFIC_ROOM_SUCCESS = 'GET_SPECIFIC_ROOM_SUCCESS'
-
-function getSpecificRoomRequest(){
-  return {
-    type: GET_SPECIFIC_ROOM_REQUEST,
-    isFetching: true,
-  }
-}
-
-function getSpecificRoomSuccess(room){
-  return {
-    type: GET_SPECIFIC_ROOM_SUCCESS,
-    isFetching: false,
-    room,
-  }
-}
-
-export function getSpecificRoom(roomID, callback){
-  const data = { roomID: roomID }
-  return (dispatch) => {
-    dispatch(getSpecificRoomRequest())
-
-    $.ajax({
-      url: process.env.REACT_APP_POLITICAL_CAPITAL + '/room/exists',
-      type: 'POST',
-      data: JSON.stringify(data),
-      dataType: 'json',
-      contentType: 'application/json',
-      cache: false,
-      success: function(room) {
-        dispatch(getSpecificRoomSuccess(room))
-        if (callback) {
-          callback(room)
-        }
-      },
-      error: function(error) {
-        console.log(error)
-        dispatch(failed(error))
-      },
-    })
-  }
-}
-
 export const READY_UP_SUCCESS = 'READY_UP_SUCCESS'
 
 function readyUpSuccess(name, party){
@@ -209,16 +124,17 @@ export function readyUp(name, party, callback){
 
 export const IN_GAME = 'IN_GAME'
 
-function inGameSuccess(canStartGame){
+function inGameSuccess(canStartGame, isAdmin){
   return {
     type: IN_GAME,
     inGame: canStartGame,
+    isAdmin: isAdmin,
   }
 }
 
-export function inGame(canStartGame){
+export function inGame(canStartGame, isAdmin = false){
   return (dispatch) => {
-    dispatch(inGameSuccess(canStartGame))
+    dispatch(inGameSuccess(canStartGame, isAdmin))
   }
 }
 
@@ -251,16 +167,16 @@ function createRoomsRequeset(){
   }
 }
 
-function createRoomsSuccess(newRoom){
+function createRoomsSuccess(connectedRoom){
   return {
     type: CREATE_ROOMS_SUCCESS,
     isFetching: false,
-    newRoom,
+    connectedRoom,
   }
 }
 
-export function createNewRoom(name, password, admin, gameType, callback){
-  const data = { roomName: name, password: password, admin: admin, gameType: gameType }
+export function createNewRoom(id, gameType, callback){
+  const data = { _id: id, gameType: gameType }
   return (dispatch) => {
     dispatch(createRoomsRequeset())
     $.ajax({
@@ -272,14 +188,13 @@ export function createNewRoom(name, password, admin, gameType, callback){
       cache: false,
       success: function(returnedData) {
         dispatch(createRoomsSuccess(returnedData))
-        if (callback) {
-          callback(returnedData)
-        }
-        console.log(returnedData)
       },
       error: function(error) {
         console.log(error)
         dispatch(failed(error.responseJSON))
+        if (callback) {
+          callback(error)
+        }
       },
     })
   }
@@ -309,5 +224,35 @@ export function changeEndGameStatus(hasSeen){
     } else {
       dispatch(showEndGameStatus())
     }
+  }
+}
+
+export const IS_JOINING_ROOM = 'IS_JOINING_ROOM'
+
+function joinRoom(){
+  return {
+    type: IS_JOINING_ROOM,
+    isJoiningRoom: true,
+  }
+}
+
+export function isJoiningRoom(){
+  return (dispatch) => {
+    dispatch(joinRoom())
+  }
+}
+
+export const IS_CREATING_ROOM = 'IS_CREATING_ROOM'
+
+function createRoom(){
+  return {
+    type: IS_CREATING_ROOM,
+    isCreatingRoom: true,
+  }
+}
+
+export function isCreatingRoom(){
+  return (dispatch) => {
+    dispatch(createRoom())
   }
 }

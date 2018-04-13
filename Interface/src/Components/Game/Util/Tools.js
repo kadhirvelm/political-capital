@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import Flexbox from 'flexbox-react'
-import { Link } from 'react-router-dom'
 
 import Dialog from 'material-ui/Dialog'
 import RaisedButton from 'material-ui/RaisedButton'
@@ -11,9 +10,12 @@ import MenuItem from 'material-ui/MenuItem'
 import { Table, TableBody, TableHeader, TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui/Table'
 import Divider from 'material-ui/Divider'
 import Subheader from 'material-ui/Subheader'
+import Menu from 'material-ui/Menu'
 
 import { listOfPlayers, sortPartiesOnAveragePartyWorth } from './util.js'
 import { colors, allColorHexes } from '../../../styles/colors'
+import '../../../styles/global.css'
+
 import { _ } from 'underscore'
 import { curry, map, sortWith, descend } from 'ramda'
 import { svgIcon } from '../../../Images/icons'
@@ -24,6 +26,7 @@ class Tools extends Component {
     this.state = Object.assign({}, this.propsConst(props), {
       openDialog: false,
       confirmed: false,
+      openTools: false,
       openTryingToDisconnect: props.openTryingToDisconnect,
     })
     this.allColorHexes = allColorHexes
@@ -64,12 +67,6 @@ class Tools extends Component {
     this.setState({ amount: parseInt(event.target.value, 10) || '' })
   }
 
-  changeDrawer = (open) => this.setState({ openTools: open })
-  openDrawer = () => this.changeDrawer(!this.state.openTools)
-
-  closeDialog = () => this.setState({ openDialog: false })
-  openDialog = (title, event) => this.setState({ changeDrawer: false, openDialog: true, title: title })
-  curryOpenDialog = curry(this.openDialog)
   changeConfirmed = () => this.setState({ confirmed: !this.state.confirmed })
 
   returnIndividualPlayers = (allParties) => {
@@ -198,6 +195,14 @@ class Tools extends Component {
     )
   }
 
+  sortParties(parties){
+    return parties
+  }
+
+  totalPartyAverageWorth(party){
+    return 0
+  }
+
   renderPartyBreakdown = () => {
     return(
       <Flexbox flexGrow={ 1 } justifyContent='flex-start' style={ { width: Math.max(240, window.innerWidth * 0.65) + 'px' } }>
@@ -224,14 +229,6 @@ class Tools extends Component {
     )
   }
 
-  renderLinkToOveriew = () => {
-    return(
-      <Flexbox justifyContent='center'>
-        <Link to={ '/overview/' + this.state.connectedRoom.roomName } target='blank' style={ { textDecoration: 'none', color: colors.LIGHT_BLUE } }> Game Overview </Link>
-      </Flexbox>
-    )
-  }
-
   renderDisconnectButton = () => {
     return(
       <Flexbox justifyContent='center'>
@@ -250,8 +247,6 @@ class Tools extends Component {
         return this.renderCurrentStandings()
       case 'Party Breakdown':
         return this.renderPartyBreakdown()
-      case 'Game Overview':
-        return this.renderLinkToOveriew()
       case 'Disconnect':
         return this.renderDisconnectButton()
       default:
@@ -259,46 +254,63 @@ class Tools extends Component {
     }
   }
 
+  openDialog = (title) => {
+    return () => this.setState({ openDialog: true, title: title })
+  }
+
   renderDrawerWithMenuOptions = () => {
     return(
-      <Drawer docked={ false } width='50%' openSecondary={ false } open={ this.state.openTools } onRequestChange={ this.changeDrawer } style={ { zIndex: 2 } } containerStyle={ { zIndex: 2 } } overlayStyle={ { zIndex: 2 } }>
+      <Drawer width='50%' open={ this.state.openTools > 0 } openSecondary={ true } onRequestChange={ this.changeDrawer } style={ { zIndex: 3 } } containerStyle={ { zIndex: 3 } } overlayStyle={ { zIndex: 3 } }>
         { this.state.currentRound ?
           <div>
             <Subheader> Actions </Subheader>
-            <MenuItem onTouchTap={ this.curryOpenDialog('Bribe') }> Bribe </MenuItem>
-            { /* <MenuItem onTouchTap={ this.curryOpenDialog('Investigate') }> Investigate </MenuItem> */ }
+            <Menu>
+              <MenuItem onClick={ this.openDialog('Bribe') } primaryText='Bribe' />
+            </Menu>
             <Divider />
             <Subheader> Information </Subheader>
-            <MenuItem onTouchTap={ this.curryOpenDialog('Round History') }> Round History </MenuItem>
-            <MenuItem onTouchTap={ this.curryOpenDialog('Current Standings') }> Current Standings </MenuItem>
-            <MenuItem onTouchTap={ this.curryOpenDialog('Party Breakdown') }> Party Breakdown </MenuItem>
+            <Menu>
+              <MenuItem onClick={ this.openDialog('Round History') } primaryText='Round History' />
+              <MenuItem onClick={ this.openDialog('Current Standings') } primaryText='Current Standings' />
+              <MenuItem onClick={ this.openDialog('Party Breakdown') } primaryText='Party Breakdown' />
+            </Menu>
             <Divider />
           </div>
           :
           <div />
         }
         <Subheader> Logistics </Subheader>
-        <MenuItem onTouchTap={ this.curryOpenDialog('Game Overview') }> Game Overview </MenuItem>
-        <MenuItem onTouchTap={ this.curryOpenDialog('Disconnect') }> Disconnect </MenuItem>
+        <Menu>
+          <MenuItem onClick={ this.openDialog('Disconnect') } primaryText='Disconnect' />
+        </Menu>
       </Drawer>
     )
   }
 
+  closeDialog = () => this.setState({ openDialog: false })
+
   renderGlobalDialog = () => {
     return(
-      <Dialog open={ this.state.openDialog } title={ this.state.title || '' } onRequestClose={ this.closeDialog }
-        autoDetectWindowHeight={ false } autoScrollBodyContent={ true } style={ { zIndex: 3 } } contentStyle={ { zIndex: 3 } } overlayStyle={ { zIndex: 2 } }>
+      <Dialog open={ this.state.openDialog > 0 } title={ this.state.title || '' } onRequestClose={ this.closeDialog }
+        autoDetectWindowHeight={ false } autoScrollBodyContent={ true } style={ { zIndex: 4 } } contentStyle={ { zIndex: 4 } } overlayStyle={ { zIndex: 3 } }>
         <div> { this.getSelectedOption() } </div>
       </Dialog>
     )
   }
 
+  closeDrawer = () => {
+    let currTools = this.state.openTools
+    this.setState({ openTools: --currTools })
+  }
+  openDrawer = () => this.setState({ openTools: 2 })
+
   render() {
     return (
-      <Flexbox flexDirection='column'>
-        <IconButton onTouchTap={ this.openDrawer } tooltip='Tools'>
+      <Flexbox flexDirection='column' onClick={ this.handleTouch }>
+        <IconButton onTouchTap={ this.openDrawer }>
           { svgIcon('menu') }
         </IconButton>
+        <div onClick={ this.closeDrawer } className={ this.state.openTools ? 'darkened-overlay' : '' } />
         { this.renderDrawerWithMenuOptions() }
         { this.renderGlobalDialog() }
       </Flexbox>
