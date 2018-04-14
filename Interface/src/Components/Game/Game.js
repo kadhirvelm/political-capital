@@ -449,8 +449,8 @@ class PoliticalCapitalGame extends Component {
     return (
       <Dialog id='Party Name Dialog' title='Set Party Name' modal={ true } open={ !this.allPartiesSubmitted() } autoDetectWindowHeight={ false } repositionOnUpdate={ false } style={ { zIndex: 3 } } contentStyle={ { zIndex: 3 } } overlayStyle={ { zIndex: 2 } }>
         <Flexbox flexDirection='column'>
-          <Flexbox flexBasis='auto' justifyContent='center' alignItems='center' style={ { margin: '7px' } }>
-            <IconButton style={ { width: '30px', height: '30px', top: '50%', transform: 'translateY(50%)', marginRight: '15px' } } iconStyle={ { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' } } onClick={ this.requestNewPartyName }> { svgIcon('dice') } </IconButton>
+          <Flexbox justifyContent='center' alignItems='center' style={ { margin: '7px' } }>
+            <IconButton style={ { position: 'relative', width: '30px', height: '30px', marginRight: '15px' } } iconStyle={ { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' } } onClick={ this.requestNewPartyName }> { svgIcon('dice') } </IconButton>
             <TextField id='PartyName' value={ this.state.playerPartyName || '' } label='Party Name' floatingLabelText='Party Name'
               disabled={ !this.hasNotSubmittedPartyName() } onChange={ this.adjustPartyName } multiLine={ true } rows={ 3 } errorText={ this.state.errorName || '' } />
           </Flexbox>

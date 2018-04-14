@@ -777,7 +777,7 @@ class GameManager {
 
   handleStartingAndClosingGame(socket){
     socket.on('closeGame', () =>  {
-      this.endGameIfNotEnoughPlayers(socket);
+      this.endGameIfNotEnoughPlayers();
     });
 
     socket.on('startGame', () => {

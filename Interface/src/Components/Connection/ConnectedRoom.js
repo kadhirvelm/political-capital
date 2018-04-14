@@ -224,11 +224,11 @@ class ConnectedRoom extends Component {
 
   renderCurrentPlayer = () => {
     return(
-      <Flexbox style={ { marginTop: '20px', marginBottom: '20px' } }>
-        <Flexbox flexBasis='50%' flexWrap='wrap' justifyContent='center'>
-          <font style={ { textDecoration: 'underline' } }> Selected { this.partyType } </font>
+      <Flexbox style={ { marginTop: '20px', marginBottom: '10px', marginLeft: '15px' } }>
+        <Flexbox flexBasis='30%' flexWrap='wrap' justifyContent='center'>
+          <font style={ { textDecoration: 'underline' } }> { this.partyType } </font>
         </Flexbox>
-        <Flexbox flexBasis='50%' flexWrap='wrap' justifyContent='center'>
+        <Flexbox flexBasis='70%' flexWrap='wrap' justifyContent='flex-start'>
           <font style={ { textDecoration: 'underline' } }> Name </font>
         </Flexbox>
       </Flexbox>
@@ -240,7 +240,7 @@ class ConnectedRoom extends Component {
       this.props.renderReadyPlayer(entry)
       :
       (
-        <Flexbox flexBasis='50%' flexWrap='wrap' justifyContent='center'>
+        <Flexbox flexBasis='30%' flexWrap='wrap' justifyContent='center'>
           <font size={ 4 } color={ colors.DARK_GRAY } style={ entry.isReady ? { fontStyle: 'normal' } : { fontStyle: 'italic' } }>
             <font style={ { marginBottom: '5px', borderBottomWidth: '2px', borderBottomStyle: 'solid', borderBottomColor: this.fetchColor(entry) } }> { this.fetchColor(entry, true) } </font>
             { !entry.isReady && <font>*</font>}
@@ -251,11 +251,11 @@ class ConnectedRoom extends Component {
 
   renderPlayersViewTable = () => {
     return(
-      <div>
+      <div style={ { marginLeft: '15px' } }>
         { this.state.players.map((entry, index) => (
-          <Flexbox id={ entry.name } key={ index } flexGrow={ 1 }>
+          <Flexbox id={ entry.name } key={ index } flexGrow={ 1 } style={ { marginBottom: '10px' } }>
             { this.renderReadyPlayer(entry) }
-            <Flexbox flexBasis='50%' flexWrap='wrap' justifyContent='center' alignItems='center'>
+            <Flexbox flexBasis='70%' flexWrap='wrap' justifyContent='flex-start' alignItems='center'>
               <font size={ 4 } color={ colors.DARK_GRAY }> { entry.name } </font>
             </Flexbox>
           </Flexbox>
@@ -285,13 +285,9 @@ class ConnectedRoom extends Component {
 
   renderReadyButton = () => {
     return(
-      <Flexbox flexGrow={ 1 } justifyContent='center' style={ { marginTop: '15px', marginBottom: '15px' } }>
-        <Flexbox flexBasis='85%'>
-          { (this.state.startGame && this.state.isAdmin) ?
-            <RaisedButton fullWidth={ true } primary={ true } label='Proceed To Game' onClick={ this.startGame } disabled={ this.state.players.length <= 1 } style={ { width: '50%', margin: '10px' } } />
-            :
-            <RaisedButton id='Ready Up' fullWidth={ true } primary={ true } label={ this.state.playerReady ? 'Waiting' : 'Ready' } disabled={ this.state.playerReady } onTouchTap={ this.readyUp } style={ { width: '20%', margin: '3px' } } />
-          }
+      <Flexbox justifyContent='center' style={ { position: 'fixed', bottom: '5%', left: '50%', transform: 'translate(-50%, -10%)', width: '100%', marginTop: '15px', marginBottom: '15px' } }>
+        <Flexbox style={ { width: '90%' } }>
+          <RaisedButton id='Ready Up' fullWidth={ true } primary={ true } label={ this.state.playerReady ? 'Waiting' : 'Ready' } disabled={ this.state.playerReady } onTouchTap={ this.readyUp } style={ { height: '10vh' } } labelStyle={ { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '10vmin' } } />
         </Flexbox>
       </Flexbox>
     )
