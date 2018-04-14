@@ -4,6 +4,7 @@ import Flexbox from 'flexbox-react'
 import GameCreationDialog from './GameCreationDialog'
 import '../../styles/global.css'
 
+import { resetEverything } from '../../State/ServerActions'
 import { colors, allColors, allColorHexes } from '../../styles/colors'
 import { _ } from 'underscore'
 
@@ -29,6 +30,10 @@ class GameCreator extends Component {
 
   componentWillReceiveProps(nextProps){
     this.setState(this.propsConst(nextProps))
+  }
+
+  resetToHome = () => {
+    this.state.dispatch(resetEverything())
   }
 
   renderGameCreation = () => {
