@@ -758,7 +758,7 @@ class GameManager {
   removePlayer(playerName){
     this.players = _.omit(this.players, playerName);
     if (_.keys(this.players).length <= 1 && this.inGame){
-      this.endGameIfNotEnoughPlayers(socket);
+      this.endGameIfNotEnoughPlayers();
     } else {
       this.updateAllPlayers();
     }
