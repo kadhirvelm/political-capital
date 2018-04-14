@@ -20,9 +20,9 @@ module.exports = function(app, io, db) {
 	createGameManager = (gameType, id, settings) => {
 		switch (gameType){
 			case 'Commonwealth':
-				return new CommonwealthGameManager(io, id, deleteRoom, db, settings);
+				return new CommonwealthGameManager(io, id, db, settings);
 			default:
-				return new GameManager(io, id, deleteRoom, db, settings);
+				return new GameManager(io, id, db, settings);
 		}
   };
 
@@ -102,9 +102,11 @@ module.exports = function(app, io, db) {
 	};
 
 	deleteRoom = (roomID, callback) => {
-		shutdownRoomSocket(roomID);
-    db.collection('rooms').deleteOne({_id: parseInt(roomID, 10)}, callback);
-    console.log('Deleted Room - ' + roomID);
+		if (CURRENT_GAME_MANAGERS[roomID.toString()]){
+			shutdownRoomSocket(roomID);
+			db.collection('rooms').deleteOne({_id: parseInt(roomID, 10)}, callback);
+			console.log('Deleted Room - ' + roomID);
+		}
   };
 
   /** Timed loop, checking for inactive rooms. */

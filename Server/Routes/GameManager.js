@@ -5,13 +5,12 @@ var returnRandomPartyName = require('./Catalog').returnRandomPartyName;
 
 class GameManager {
 
-  constructor(io, id, deleteRoom, db, settings){
+  constructor(io, id, db, settings){
     this.io = io;
     this._id = id;
     this.roomSocket = io.of(this._id);
     this.handleRoomSocketConnection();
 
-    this.deleteRoom = deleteRoom;
     this.disconnect = this.disconnect;
     this.db = db;
     this.settings = settings;
@@ -180,20 +179,6 @@ class GameManager {
     this.unreadyPlayersWithNewSettings();
     this.updateRoomDetails();
     this.roomSocket.emit('updatedSettings', newSettings);
-  }
-
-  checkDeleteRoom(){
-    if (this.roomSocket){
-      setTimeout(() => {
-        this.roomSocket.clients( (error, clients) => {
-          if (clients.length === 0 && process.env.REACT_APP_DEBUG !== 'true') {
-            this.deleteRoom(this._id);
-          }
-        });
-      }, 30000);
-    } else {
-      this.deleteRoom(this._id);
-    }
   }
 
   updateAllPlayers(){
@@ -763,12 +748,10 @@ class GameManager {
   endGameIfNotEnoughPlayers(){
     this.setInGame(false);
     this.roomSocket.emit('closeGame');
-    this.deleteRoom(this._id);
   }
 
   updateAllPlayers(){
     this.emitFullGame();
-    this.checkDeleteRoom();
     this.updateRoomDetails();
   }
 
@@ -811,7 +794,6 @@ class GameManager {
 
     socket.on('disconnect', () => {
       this.playerNames = _.omit(this.playerNames, socket.id);
-      this.checkDeleteRoom();
     });
   }
 
